@@ -1,0 +1,58 @@
+@startuml ProcessoSelecao
+
+[*] --> Cadastrado : Candidato insere dados
+Cadastrado --> DocumentosBaixados : Download de documentos
+DocumentosBaixados --> EmValidacao : Inicia validação
+
+state EmValidacao {
+  [*] --> Analisando
+  Analisando --> Validado : Documentos OK
+  Analisando --> ComPendencia : Faltam docs
+  Analisando --> Rejeitado : Docs inválidos
+  ComPendencia --> [*] : Aguarda correção
+}
+
+Validado --> EmAvaliacao : Enviado p/ avaliadores
+Rejeitado --> [*] : Processo encerrado
+
+state EmAvaliacao {
+  [*] --> AguardandoAvaliadores
+  AguardandoAvaliadores --> SendoAvaliado : 1+ avaliadores aceitam
+  SendoAvaliado --> AvaliadoParcial : Recebe 1 barema
+  AvaliadoParcial --> TotalmenteAvaliado : Todos baremas recebidos
+  
+  state "Problema de Acesso" as Problema {
+    [*] --> Notificado
+    Notificado --> Resolvido : Correção aplicada
+    Resolvido --> [*]
+  }
+  
+  SendoAvaliado --> Problema : Avaliador reporta
+  Problema --> SendoAvaliado : Retoma
+}
+
+TotalmenteAvaliado --> Classificado : Notas consolidadas
+
+state Classificado {
+  [*] --> Aprovado : Nota ≥ corte
+  [*] --> EmListaEspera : Nota próxima corte
+  [*] --> Reprovado : Nota < corte
+}
+
+Aprovado --> [*] : Carta oferta enviada
+EmListaEspera --> [*] : Aguarda desistência
+Reprovado --> [*] : Notificação enviada
+
+note right of Cadastrado
+  Dados básicos inseridos 
+  manualmente pelo candidato
+end note
+
+note left of Rejeitado
+  <b>Motivos comuns:</b>
+  - Documentos falsificados
+  - Fora do prazo
+  - Incompletos
+end note
+
+@enduml

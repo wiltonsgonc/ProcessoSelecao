@@ -1,0 +1,66 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: processo-selecao-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Processo@123
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql/data
+      - sqlserver_log:/var/opt/mssql/log
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Processo@123" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 3s
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: ProcessoSelecao.Api/Dockerfile
+    container_name: processo-selecao-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProcessoSelecaoDb;User Id=sa;Password=Processo@123;TrustServerCertificate=True;
+      - JwtSettings__SecretKey=ProcessoSelecao_SuperSecretKey_2024_Minimum32Characters
+      - JwtSettings__Issuer=ProcessoSelecaoApi
+      - JwtSettings__Audience=ProcessoSelecaoWeb
+      - EmailSettings__SmtpHost=smtp.example.com
+      - EmailSettings__SmtpPort=587
+      - EmailSettings__SmtpUser=
+      - EmailSettings__SmtpPassword=
+      - EmailSettings__FromEmail=noreply@processoselecao.com
+    ports:
+      - "5000:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    volumes:
+      - documentos_data:/app/documentos
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: processo-selecao-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+
+networks:
+  processo-selecao-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
+  sqlserver_log:
+  documentos_data:

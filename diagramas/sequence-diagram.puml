@@ -1,0 +1,54 @@
+@startuml ProcessoSelecao
+actor "Usuário" as C
+participant "Aplicação Web" as App
+participant "Banco de Dados" as BD
+participant "Serviço de E-mail" as Email
+actor "Avaliador" as Aval
+
+' Fase 1: Consulta e Download
+C -> App: Consulta candidatos (matrícula)
+App -> BD: getDadosCandidato(matrícula)
+BD --> App: Dados candidato + metadados docs
+App --> C: Exibe dados e opção download
+
+C -> App: Solicita download documentos
+App -> BD: downloadDocumentos(candidatoId)
+BD --> App: Arquivos PDF/DOC
+App --> C: Download disponível
+
+' Fase 2: Validação e Preparação
+C -> App: Valida documentos
+App -> App: checkValidadeDocumentos()
+App --> C: Resultado validação (OK/Erros)
+
+C -> App: Inicia preparação envio
+App -> App: compactaDocumentos()
+App -> BD: uploadZip(candidatoId, arquivo)
+BD --> App: URL compartilhável
+
+' Fase 3: Seleção e Notificação
+C -> App: Seleciona avaliadores
+App -> Email: enviaNotificação(avaliador, URL)
+Email --> Aval: E-mail com link
+
+' Fase 4: Avaliação
+Aval -> BD: GET URL (acessa documentos)
+BD --> Aval: Serve arquivos ZIP
+Aval -> App: GET Formulário barema
+App --> Aval: Formulário barema
+Aval -> App: POST Barema preenchido
+App -> C: Notifica "Barema recebido"
+
+' Fase 5: Consolidação
+C -> App: Visualiza todas avaliações
+App -> App: calculaResultados()
+App --> C: Ranking final candidatos
+
+note over Aval,BD
+  <b>Problema comum:</b>
+  Avaliadores externos têm
+  problemas de acesso ao BD
+  (firewall, autenticação)
+end note
+
+@enduml

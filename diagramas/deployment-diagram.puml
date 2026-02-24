@@ -1,0 +1,67 @@
+@startuml ProcessoSelecao
+node "Load Balancer" as LB
+
+node "Servidores Web" as WebCluster {
+  node "Web Server 1" as WS1
+  node "Web Server 2" as WS2
+  node "Web Server 3" as WS3
+}
+
+node "Servidores Aplicação" as AppCluster {
+  node "App Server 1" as AS1
+  node "App Server 2" as AS2
+}
+
+database "Cluster PostgreSQL" as DBCluster {
+  node "Primary DB" as PDB
+  node "Replica 1" as R1
+  node "Replica 2" as R2
+}
+
+node "Message Queue" as MQ {
+  [RabbitMQ Cluster]
+}
+
+node "Cache" as Cache {
+  [Redis Cluster]
+}
+
+node "Sistema de Armazenamento" as Storage {
+  [Bucket Documentos]
+  [Bucket Backups]
+}
+
+' Conexões
+LB -> WebCluster : HTTP/HTTPS
+WebCluster -> AppCluster : RPC/HTTP
+AppCluster -> DBCluster : JDBC
+AppCluster -> MQ : AMQP
+AppCluster -> Cache : Redis Protocol
+AppCluster -> Storage : REST API
+
+' Usuários
+actor "Usuário" as C
+actor "Avaliador Interno" as AI
+actor "Avaliador Externo" as AE
+actor "Administrador" as Admin
+
+C -> LB : Acesso Web
+AI -> LB : Acesso Web
+AE -> LB : Acesso Web
+Admin -> AppCluster : SSH/Management
+
+note right of AE
+  <b>Avaliador Externo:</b>
+  Acesso via VPN ou
+  link temporário com
+  autenticação forte
+end note
+
+note top of Storage
+  <b>Documentos sensíveis:</b>
+  - Criptografia em repouso
+  - Links com expiração
+  - Log de acesso detalhado
+end note
+
+@enduml

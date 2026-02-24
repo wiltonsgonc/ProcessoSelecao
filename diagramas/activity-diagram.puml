@@ -1,0 +1,36 @@
+@startuml ProcessoSelecao
+start
+:Usuário ativa um formulário de cadastro de candidato;
+:Candidato faz a inscrição e envio de documentos;
+:Usuário valida documentos;
+if (Documentos válidos?) then (Sim)
+  :Prepara arquivos compactados;
+  :Seleciona avaliadores;
+  :Upload para Cloud Storage;
+  :Envia e-mail com link para avaliadores;
+  
+  fork
+    :Avaliador interno acessa Cloud;
+  fork again
+    :Avaliador externo tenta acessar Cloud;
+    if (Acesso bem-sucedido?) then (Sim)
+      :Preenche barema online;
+    else (Não)
+      :Reporta problema de acesso;
+      :Sistema envia documentos por e-mail;
+      :Preenche barema offline;
+    endif
+  end fork
+  
+  :Envia avaliação;
+  :Coordenador recebe barema;
+  :Consolida resultados;
+  stop
+else (Não)
+  :Solicita documentos;
+  :Rejeita candidato;
+  :Registra motivo da rejeição;
+  stop
+endif
+
+@enduml

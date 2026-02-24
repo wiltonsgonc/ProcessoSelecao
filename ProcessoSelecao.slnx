@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src\backend\ProcessoSelecao.Domain\ProcessoSelecao.Domain.csproj" />
+  <Project Path="src\backend\ProcessoSelecao.Infrastructure\ProcessoSelecao.Infrastructure.csproj" />
+  <Project Path="src\backend\ProcessoSelecao.Application\ProcessoSelecao.Application.csproj" />
+  <Project Path="src\backend\ProcessoSelecao.Api\ProcessoSelecao.Api.csproj" />
+</Solution>

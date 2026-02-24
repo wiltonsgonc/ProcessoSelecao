@@ -1,0 +1,104 @@
+@startuml ProcessoSelecao
+' Classes principais
+class Candidato {
+    - id: long
+    - nome: string
+    - matricula: string
+    - email: string
+    - areaPesquisa: string
+    - statusValidacao: StatusValidacao
+    - dataCadastro: DateTime
+  
+    + ValidarDocumentos(): bool
+    + CalcularPontuacao(): float
+}
+
+class Documento {
+    - id: long
+    - tipo: TipoDocumento
+    - nomeArquivo: string
+    - caminhoLocal: string
+    - hashValidacao: string
+    - dataUpload: DateTime
+    - validado: bool
+    - motivoRejeicao: string
+  
+    + VerificarIntegridade(): bool
+    + ExtrairMetadados(): Dictionary<string, string>
+}
+
+enum TipoDocumento {
+    HistoricoEscolar
+    ComprovanteMatricula
+    CartaIntencao
+    CurriculumLatte
+    CartaRecomendacao
+}
+
+enum StatusValidacao {
+    Pendente
+    Validado
+    Rejeitado
+    EmAnalise
+}
+
+class Avaliador {
+    - id: long
+    - nome: string
+    - email: string
+    - tipo: TipoAvaliador
+    - areaEspecializacao: string
+    - instituicao: string
+    - ativo: bool
+  
+    + PreencherBarema(barema: Barema): void
+    + ListarAvaliacoesPendentes(): List<Avaliacao>
+}
+
+enum TipoAvaliador {
+    Interno
+    Externo
+}
+
+class Barema {
+    - id: long
+    - candidato: Candidato
+    - avaliador: Avaliador
+    - criterios: Dictionary<string, float>
+    - notaFinal: float
+    - observacoes: string
+    - dataPreenchimento: DateTime
+    - status: StatusBarema
+  
+    + CalcularNotaFinal(): float
+    + ValidarCompletude(): bool
+}
+
+class ProcessoSelecao {
+    - id: long
+    - nome: string
+    - dataInicio: DateTime
+    - dataFim: DateTime
+    - vagasDisponiveis: int
+    - status: StatusProcesso
+  
+    + IniciarProcesso(): void
+    + FinalizarProcesso(): void
+    + GerarRelatorio(): Relatorio
+}
+
+' Relacionamentos
+Candidato "1" *-- "0..*" Documento : possui
+Candidato "1" -- "1..*" Barema : é avaliado por
+Avaliador "1" -- "0..*" Barema : preenche
+Barema "1" -- "1" Avaliacao : contém
+ProcessoSelecao "1" *-- "0..*" Candidato : inclui
+ProcessoSelecao "1" *-- "0..*" Avaliador : designa
+
+' Interfaces de serviço
+interface EmailNotificationService {
+    + SendNotification(to: string, subject: string, body: string): void
+    + SendBulkNotification(recipients: List<string>, template: string): void
+}
+
+@enduml

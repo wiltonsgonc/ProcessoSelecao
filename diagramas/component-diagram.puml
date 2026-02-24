@@ -1,0 +1,66 @@
+@startuml ProcessoSelecao
+package "Sistema de Seleção IC/Pesquisa" {
+  
+  [Frontend Web] as Frontend
+  [API Gateway] as Gateway
+  
+  component "Módulo Cadastro" as ModCad {
+    [Candidato Service]
+    [Documento Service]
+  }
+  
+  component "Módulo Avaliação" as ModAv {
+    [Avaliador Service]
+    [Barema Service]
+    [Calculadora Notas]
+  }
+  
+  component "Módulo Processo" as ModProc {
+    [Workflow Engine]
+    [Scheduler]
+    [Relatório Service]
+  }
+  
+  component "Módulo Notificação" as ModNot {
+    [Email Service]
+    [Template Engine]
+    [Queue Manager]
+  }
+  
+  database "Banco de Dados" as DB {
+    [Tabela Candidatos]
+    [Tabela Documentos]
+    [Tabela Avaliações]
+  }
+  
+  node "Sistema de Armazenamento" as Storage {
+    [Arquivos ZIP]
+    [Documentos PDF]
+  }
+  
+  ' Conexões
+  Frontend --> Gateway : HTTP/HTTPS
+  Gateway --> ModCad : REST
+  Gateway --> ModAv : REST
+  Gateway --> ModProc : REST
+  
+  ModCad --> DB : JDBC
+  ModAv --> DB : JDBC
+  ModProc --> DB : JDBC
+  
+  ModCad --> Storage : API Upload/Download
+  
+  ModNot --> Storage : Gera links
+  ModNot --> ModCad : Busca dados
+  ModNot --> ModAv : Notifica avaliações
+  
+  ModProc --> ModNot : Dispara notificações
+  ModAv --> ModNot : Notifica conclusão
+  
+  note right of Storage
+    <b>Provedores suportados:</b>
+    - Storage local
+  end note
+}
+
+@enduml

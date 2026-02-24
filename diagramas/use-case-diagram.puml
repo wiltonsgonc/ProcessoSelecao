@@ -1,0 +1,70 @@
+@startuml ProcessoSelecao
+left to right direction
+
+actor "Usuário" as Usuario
+actor "Avaliador Interno" as AvaliadorInt
+actor "Avaliador Externo" as AvaliadorExt
+
+rectangle "Sistema de Seleção IC/Pesquisa" {
+  (Consultar dados no BD) as UC1
+  (Baixar documentos dos candidatos) as UC2
+  (Validar documentos) as UC3
+  (Preparar arquivos compactados) as UC4
+  (Selecionar lista de avaliadores) as UC5
+  (Enviar documentos para sistema) as UC6
+  (Notificar avaliadores via e-mail) as UC7
+  (Receber retorno do barema) as UC8
+  (Consolidar avaliações) as UC9
+  
+  (Receber notificação por e-mail) as UC10
+  (Acessar documentos no sistema) as UC11
+  (Preencher barema de avaliação) as UC12
+  (Submeter avaliação) as UC13
+  
+  (Reportar problema de acesso) as UC14
+  (Validar integridade de documentos) as UC15
+  (Rejeitar candidato) as UC16
+}
+
+' Relações principais
+Usuario --> UC1
+Usuario --> UC2
+Usuario --> UC3
+Usuario --> UC4
+Usuario --> UC5
+Usuario --> UC6
+Usuario --> UC7
+Usuario --> UC8
+Usuario --> UC9
+
+AvaliadorInt --> UC10
+AvaliadorInt --> UC11
+AvaliadorInt --> UC12
+AvaliadorInt --> UC13
+
+AvaliadorExt --> UC10
+AvaliadorExt --> UC11
+AvaliadorExt --> UC12
+AvaliadorExt --> UC13
+AvaliadorExt --> UC14
+
+' Generalização
+AvaliadorInt <|-- AvaliadorExt
+
+' Extensões (problemas/fluxos alternativos)
+UC11 .> UC14 : <<extend>>\nse acesso falhar
+UC3 .> UC15 : <<extend>>\nvalidação detalhada
+UC3 .> UC16 : <<extend>>\ndocumentos inválidos
+
+' Inclusões
+UC1 <.. UC2 : <<include>>
+UC8 <.. UC9 : <<include>>
+
+note right of AvaliadorExt
+  <b>Problema identificado:</b>
+  Acesso ao sistema
+  frequentemente falha
+  para avaliadores externos
+end note
+
+@enduml
