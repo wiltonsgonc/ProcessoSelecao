@@ -4,10 +4,11 @@ Sistema para gerenciamento de processos de seleção de Iniciação Científica 
 
 ## Arquitetura
 
-- **Backend**: .NET 8 Web API com Entity Framework Core
-- **Frontend**: Angular 18
+- **Backend**: .NET 10 Web API com Entity Framework Core
+- **Frontend**: Angular 19 com Angular Material
 - **Banco de Dados**: SQL Server 2022
-- **Containers**: Podman + WSL
+- **Containers**: Docker
+- **Autenticação**: JWT
 
 ## Estrutura do Projeto
 
@@ -22,28 +23,28 @@ ProcessoSelecao/
 │   └── frontend/                         # Angular App
 ├── scripts/                              # Scripts de inicialização
 ├── docker-compose.yml                    # Orquestração dos containers
-└── diagramas/                            # Diagramas UML
+├── diagramas/                            # Diagramas UML (PUML)
+└── README.md
 ```
 
 ## Pré-requisitos
 
-- WSL 2 instalado
-- Podman instalado no WSL
-- podman-compose (opcional): `pip install podman-compose`
+- Docker instalado e em execução
+- .NET 10 SDK (para desenvolvimento local)
+- Node.js 18+ e npm (para desenvolvimento local)
+- Angular CLI 19 (opcional): `npm install -g @angular/cli`
 
 ## Executar o Ambiente
 
-### Opção 1: Usando podman-compose
+### Opção 1: Usando docker-compose
 
 ```bash
-# No WSL
-podman-compose up -d
+docker-compose up -d
 ```
 
-### Opção 2: Usando scripts manuais
+### Opção 2: Usando scripts
 
 ```bash
-# No WSL
 chmod +x scripts/*.sh
 ./scripts/start-dev.sh
 ```
@@ -99,8 +100,7 @@ scripts\start.bat
 ## Parar o Ambiente
 
 ```bash
-# Com podman-compose
-podman-compose down
+docker-compose down
 
 # Ou com script
 ./scripts/stop.sh
@@ -130,6 +130,9 @@ npm start
 | Variável | Descrição | Padrão |
 |----------|-----------|--------|
 | ConnectionStrings__DefaultConnection | String de conexão SQL Server | - |
+| JwtSettings__SecretKey | Chave secreta JWT | - |
+| JwtSettings__Issuer | Emissor do JWT | - |
+| JwtSettings__Audience | Audiência do JWT | - |
 | EmailSettings__SmtpHost | Servidor SMTP | smtp.example.com |
 | EmailSettings__SmtpPort | Porta SMTP | 587 |
 | EmailSettings__SmtpUser | Usuário SMTP | - |
