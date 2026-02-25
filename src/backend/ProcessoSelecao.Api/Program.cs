@@ -7,8 +7,18 @@ using ProcessoSelecao.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var environment = builder.Environment.EnvironmentName;
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+if (environment == "Development")
+{
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new() { Title = "ProcessoSelecao API", Version = "v1" });
+    });
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -52,6 +62,15 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+if (environment == "Development")
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProcessoSelecao API v1");
+    });
+}
 
 app.UseCors("AllowAngular");
 app.UseAuthorization();
