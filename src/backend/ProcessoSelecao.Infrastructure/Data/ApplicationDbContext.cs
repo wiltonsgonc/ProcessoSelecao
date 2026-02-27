@@ -3,24 +3,47 @@ using DomainEntities = ProcessoSelecao.Domain.Entities;
 
 namespace ProcessoSelecao.Infrastructure.Data;
 
+/// <summary>
+/// Contexto do Entity Framework Core para o banco de dados do ProcessoSelecao
+/// </summary>
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+    /// <summary>Candidatos cadastrados no sistema</summary>
     public DbSet<DomainEntities.Candidato> Candidatos => Set<DomainEntities.Candidato>();
+    
+    /// <summary>Documentos dos candidatos</summary>
     public DbSet<DomainEntities.Documento> Documentos => Set<DomainEntities.Documento>();
+    
+    /// <summary>Avaliadores dos processos</summary>
     public DbSet<DomainEntities.Avaliador> Avaliadores => Set<DomainEntities.Avaliador>();
+    
+    /// <summary>Baremas/Avaliações</summary>
     public DbSet<DomainEntities.Barema> Baremas => Set<DomainEntities.Barema>();
+    
+    /// <summary>Processos de Seleção</summary>
     public DbSet<DomainEntities.ProcessoSelecao> ProcessosSelecao => Set<DomainEntities.ProcessoSelecao>();
+    
+    /// <summary>Editais publicados</summary>
     public DbSet<DomainEntities.Edital> Editais => Set<DomainEntities.Edital>();
+    
+    /// <summary>Opções de curso dos editais</summary>
     public DbSet<DomainEntities.OpcaoCurso> OpcoesCurso => Set<DomainEntities.OpcaoCurso>();
+    
+    /// <summary>Inscrições dos candidatos</summary>
     public DbSet<DomainEntities.Inscricao> Inscricoes => Set<DomainEntities.Inscricao>();
+    
+    /// <summary>Documentos das inscrições</summary>
     public DbSet<DomainEntities.DocumentoInscricao> DocumentosInscricao => Set<DomainEntities.DocumentoInscricao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // ============================================
+        // Candidato
+        // ============================================
         modelBuilder.Entity<DomainEntities.Candidato>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -32,6 +55,9 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Matricula).IsUnique();
         });
 
+        // ============================================
+        // Documento
+        // ============================================
         modelBuilder.Entity<DomainEntities.Documento>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -42,6 +68,9 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Candidato).WithMany(c => c.Documentos).HasForeignKey(e => e.CandidatoId);
         });
 
+        // ============================================
+        // Avaliador
+        // ============================================
         modelBuilder.Entity<DomainEntities.Avaliador>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -52,6 +81,9 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Email).IsUnique();
         });
 
+        // ============================================
+        // Barema
+        // ============================================
         modelBuilder.Entity<DomainEntities.Barema>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -61,6 +93,9 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Avaliador).WithMany(a => a.Baremas).HasForeignKey(e => e.AvaliadorId);
         });
 
+        // ============================================
+        // ProcessoSelecao
+        // ============================================
         modelBuilder.Entity<DomainEntities.ProcessoSelecao>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -68,6 +103,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Descricao).HasMaxLength(1000);
         });
 
+        // ============================================
+        // Edital
+        // ============================================
         modelBuilder.Entity<DomainEntities.Edital>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -88,6 +126,9 @@ public class ApplicationDbContext : DbContext
             );
         });
 
+        // ============================================
+        // OpcaoCurso
+        // ============================================
         modelBuilder.Entity<DomainEntities.OpcaoCurso>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -98,6 +139,9 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Edital).WithMany(ed => ed.OpcoesCurso).HasForeignKey(e => e.EditalId);
         });
 
+        // ============================================
+        // Inscricao
+        // ============================================
         modelBuilder.Entity<DomainEntities.Inscricao>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -128,6 +172,9 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.EditalId, e.NumeroDocumento }).IsUnique();
         });
 
+        // ============================================
+        // DocumentoInscricao
+        // ============================================
         modelBuilder.Entity<DomainEntities.DocumentoInscricao>(entity =>
         {
             entity.HasKey(e => e.Id);

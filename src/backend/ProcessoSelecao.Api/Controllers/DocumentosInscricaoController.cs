@@ -8,6 +8,9 @@ using ProcessoSelecao.Infrastructure.Data;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Documentos de Inscrição
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class DocumentosInscricaoController : ControllerBase
@@ -21,6 +24,12 @@ public class DocumentosInscricaoController : ControllerBase
         _env = env;
     }
 
+    /// <summary>
+    /// Realiza upload de um documento para uma inscrição
+    /// </summary>
+    /// <param name="file">Arquivo a ser enviado</param>
+    /// <param name="inscricaoId">ID da inscrição</param>
+    /// <param name="tipoDocumento">Tipo do documento (enum TipoDocumentoInscricao)</param>
     [HttpPost("upload")]
     public async Task<ActionResult<DocumentoInscricaoDto>> Upload(IFormFile file, int inscricaoId, int tipoDocumento)
     {
@@ -77,6 +86,10 @@ public class DocumentosInscricaoController : ControllerBase
         return Ok(dto);
     }
 
+    /// <summary>
+    /// Retorna todos os documentos de uma inscrição
+    /// </summary>
+    /// <param name="inscricaoId">ID da inscrição</param>
     [HttpGet("inscricao/{inscricaoId}")]
     public async Task<ActionResult<IEnumerable<DocumentoInscricaoDto>>> GetByInscricao(int inscricaoId)
     {
@@ -96,6 +109,10 @@ public class DocumentosInscricaoController : ControllerBase
         return Ok(documentos);
     }
 
+    /// <summary>
+    /// Retorna um documento pelo ID
+    /// </summary>
+    /// <param name="id">ID do documento</param>
     [HttpGet("{id}")]
     public async Task<ActionResult<DocumentoInscricaoDto>> GetById(int id)
     {
@@ -116,6 +133,10 @@ public class DocumentosInscricaoController : ControllerBase
         return Ok(dto);
     }
 
+    /// <summary>
+    /// Remove um documento
+    /// </summary>
+    /// <param name="id">ID do documento</param>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
