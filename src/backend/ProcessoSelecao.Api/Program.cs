@@ -11,14 +11,7 @@ var environment = builder.Environment.EnvironmentName;
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-if (environment == "Development")
-{
-    builder.Services.AddSwaggerGen(c =>
-    {
-        c.SwaggerDoc("v1", new() { Title = "ProcessoSelecao API", Version = "v1" });
-    });
-}
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -28,6 +21,10 @@ builder.Services.AddScoped<IDocumentoRepository, DocumentoRepository>();
 builder.Services.AddScoped<IAvaliadorRepository, AvaliadorRepository>();
 builder.Services.AddScoped<IBaremaRepository, BaremaRepository>();
 builder.Services.AddScoped<IProcessoSelecaoRepository, ProcessoSelecaoRepository>();
+builder.Services.AddScoped<IEditalRepository, EditalRepository>();
+builder.Services.AddScoped<IOpcaoCursoRepository, OpcaoCursoRepository>();
+builder.Services.AddScoped<IInscricaoRepository, InscricaoRepository>();
+builder.Services.AddScoped<IDocumentoInscricaoRepository, DocumentoInscricaoRepository>();
 
 builder.Services.AddScoped<ICandidatoService, CandidatoService>();
 builder.Services.AddScoped<IDocumentoService, DocumentoService>();
@@ -35,6 +32,8 @@ builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+builder.Services.AddScoped<EditalService>();
+builder.Services.AddScoped<InscricaoService>();
 
 builder.Services.AddSingleton<EmailSettings>(sp =>
 {
@@ -63,14 +62,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (environment == "Development")
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProcessoSelecao API v1");
-    });
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.MapGet("/api/health", () => "OK");
 
 app.UseCors("AllowAngular");
 app.UseAuthorization();

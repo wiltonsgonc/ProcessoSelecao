@@ -12,6 +12,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<DomainEntities.Avaliador> Avaliadores => Set<DomainEntities.Avaliador>();
     public DbSet<DomainEntities.Barema> Baremas => Set<DomainEntities.Barema>();
     public DbSet<DomainEntities.ProcessoSelecao> ProcessosSelecao => Set<DomainEntities.ProcessoSelecao>();
+    public DbSet<DomainEntities.Edital> Editais => Set<DomainEntities.Edital>();
+    public DbSet<DomainEntities.OpcaoCurso> OpcoesCurso => Set<DomainEntities.OpcaoCurso>();
+    public DbSet<DomainEntities.Inscricao> Inscricoes => Set<DomainEntities.Inscricao>();
+    public DbSet<DomainEntities.DocumentoInscricao> DocumentosInscricao => Set<DomainEntities.DocumentoInscricao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +66,77 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descricao).HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<DomainEntities.Edital>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Titulo).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Descricao).HasMaxLength(2000);
+            entity.Property(e => e.TextoEdital).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.LocaisProva).HasConversion(
+                v => string.Join(",", v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
+            entity.Property(e => e.Campi).HasConversion(
+                v => string.Join(",", v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
+            entity.Property(e => e.FormasInscricao).HasConversion(
+                v => string.Join(",", v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
+        });
+
+        modelBuilder.Entity<DomainEntities.OpcaoCurso>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Descricao).HasMaxLength(500);
+            entity.Property(e => e.Campus).HasMaxLength(200);
+            entity.Property(e => e.LocalProva).HasMaxLength(200);
+            entity.HasOne(e => e.Edital).WithMany(ed => ed.OpcoesCurso).HasForeignKey(e => e.EditalId);
+        });
+
+        modelBuilder.Entity<DomainEntities.Inscricao>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.TipoDocumento).HasMaxLength(50);
+            entity.Property(e => e.NumeroDocumento).HasMaxLength(50);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Telefone1).HasMaxLength(20);
+            entity.Property(e => e.Telefone2).HasMaxLength(20);
+            entity.Property(e => e.PaisNatal).HasMaxLength(100);
+            entity.Property(e => e.EstadoNatal).HasMaxLength(100);
+            entity.Property(e => e.Naturalidade).HasMaxLength(100);
+            entity.Property(e => e.NomeSocial).HasMaxLength(200);
+            entity.Property(e => e.EstadoCivil).HasMaxLength(50);
+            entity.Property(e => e.Nacionalidade).HasMaxLength(100);
+            entity.Property(e => e.Sexo).HasMaxLength(20);
+            entity.Property(e => e.CorRaca).HasMaxLength(50);
+            entity.Property(e => e.AutorizaDadosPessoais).HasMaxLength(10);
+            entity.Property(e => e.TipoVisto).HasMaxLength(50);
+            entity.Property(e => e.NumeroRegistroGeral).HasMaxLength(50);
+            entity.Property(e => e.LocalRealizacaoProva).HasMaxLength(200);
+            entity.Property(e => e.CampusRealizacaoProva).HasMaxLength(200);
+            entity.Property(e => e.DefOutrasNecessidades).HasMaxLength(500);
+            
+            entity.HasOne(e => e.Edital).WithMany(ed => ed.Inscricoes).HasForeignKey(e => e.EditalId);
+            entity.HasOne(e => e.OpcaoCurso).WithMany(oc => oc.Inscricoes).HasForeignKey(e => e.OpcaoCursoId);
+            
+            entity.HasIndex(e => new { e.EditalId, e.NumeroDocumento }).IsUnique();
+        });
+
+        modelBuilder.Entity<DomainEntities.DocumentoInscricao>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.NomeArquivoOriginal).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.NomeArquivoSalvo).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.CaminhoLocal).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ContentType).HasMaxLength(100);
+            entity.Property(e => e.HashValidacao).HasMaxLength(100);
+            entity.HasOne(e => e.Inscricao).WithMany(i => i.Documentos).HasForeignKey(e => e.InscricaoId);
         });
     }
 }
