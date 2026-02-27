@@ -6,6 +6,9 @@ using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Application.Services;
 
+/// <summary>
+/// Serviço para manipulação de Editais
+/// </summary>
 public class EditalService
 {
     private readonly IEditalRepository _editalRepository;
@@ -19,18 +22,29 @@ public class EditalService
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Retorna todos os editais
+    /// </summary>
     public async Task<IEnumerable<EditalDto>> GetAllAsync()
     {
         var editais = await _editalRepository.GetAllAsync();
         return _mapper.Map<IEnumerable<EditalDto>>(editais);
     }
 
+    /// <summary>
+    /// Retorna apenas editais publicados
+    /// </summary>
     public async Task<IEnumerable<EditalDto>> GetPublishedAsync()
     {
         var editais = await _editalRepository.GetPublishedAsync();
         return _mapper.Map<IEnumerable<EditalDto>>(editais);
     }
 
+    /// <summary>
+    /// Retorna um edital pelo ID com suas opções de curso
+    /// </summary>
+    /// <param name="id">ID do edital</param>
+    /// <returns>Dados do edital ou null se não encontrado</returns>
     public async Task<EditalDto?> GetByIdAsync(int id)
     {
         var edital = await _editalRepository.GetByIdWithOptionsAsync(id);
@@ -41,6 +55,11 @@ public class EditalService
         return dto;
     }
 
+    /// <summary>
+    /// Cria um novo edital
+    /// </summary>
+    /// <param name="createDto">Dados do edital a ser criado</param>
+    /// <returns>Dados do edital criado</returns>
     public async Task<EditalDto> CreateAsync(EditalCreateDto createDto)
     {
         var edital = new Edital
@@ -81,6 +100,11 @@ public class EditalService
         return _mapper.Map<EditalDto>(created);
     }
 
+    /// <summary>
+    /// Atualiza um edital existente
+    /// </summary>
+    /// <param name="updateDto">Dados do edital a ser atualizado</param>
+    /// <returns>Dados do edital atualizado ou null se não encontrado</returns>
     public async Task<EditalDto?> UpdateAsync(EditalUpdateDto updateDto)
     {
         var edital = await _editalRepository.GetByIdWithOptionsAsync(updateDto.Id);
@@ -109,12 +133,22 @@ public class EditalService
         return _mapper.Map<EditalDto>(updated);
     }
 
+    /// <summary>
+    /// Remove um edital
+    /// </summary>
+    /// <param name="id">ID do edital a ser removido</param>
+    /// <returns>True se removido com sucesso</returns>
     public async Task<bool> DeleteAsync(int id)
     {
         await _editalRepository.DeleteAsync(id);
         return true;
     }
 
+    /// <summary>
+    /// Publica um edital (altera status para Published)
+    /// </summary>
+    /// <param name="id">ID do edital a ser publicado</param>
+    /// <returns>True se publicado com sucesso</returns>
     public async Task<bool> PublicarAsync(int id)
     {
         var edital = await _editalRepository.GetByIdAsync(id);
@@ -125,6 +159,11 @@ public class EditalService
         return true;
     }
 
+    /// <summary>
+    /// Encerra um edital (altera status para Encerrado)
+    /// </summary>
+    /// <param name="id">ID do edital a ser encerrado</param>
+    /// <returns>True se encerrado com sucesso</returns>
     public async Task<bool> EncerrarAsync(int id)
     {
         var edital = await _editalRepository.GetByIdAsync(id);

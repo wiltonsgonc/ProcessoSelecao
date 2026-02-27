@@ -2,6 +2,9 @@ using ProcessoSelecao.Domain.Enums;
 
 namespace ProcessoSelecao.Application.DTOs;
 
+/// <summary>
+/// DTO para leitura de dados do Edital
+/// </summary>
 public class EditalDto
 {
     public int Id { get; set; }
@@ -29,6 +32,9 @@ public class EditalDto
     public bool ExigeHistoricoGraduacao { get; set; } = false;
 }
 
+/// <summary>
+/// DTO para criação de novo Edital
+/// </summary>
 public class EditalCreateDto
 {
     public string Titulo { get; set; } = string.Empty;
@@ -53,6 +59,9 @@ public class EditalCreateDto
     public bool ExigeHistoricoGraduacao { get; set; } = false;
 }
 
+/// <summary>
+/// DTO para atualização de Edital existente
+/// </summary>
 public class EditalUpdateDto
 {
     public int Id { get; set; }

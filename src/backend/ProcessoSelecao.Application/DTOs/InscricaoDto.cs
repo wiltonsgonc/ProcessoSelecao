@@ -2,6 +2,9 @@ using ProcessoSelecao.Domain.Enums;
 
 namespace ProcessoSelecao.Application.DTOs;
 
+/// <summary>
+/// DTO para leitura de dados da Inscrição
+/// </summary>
 public class InscricaoDto
 {
     public int Id { get; set; }
@@ -10,7 +13,7 @@ public class InscricaoDto
     public int? OpcaoCursoId { get; set; }
     public string? NomeOpcaoCurso { get; set; }
     
-    // Página 1
+    // Página 1 - Dados Iniciais
     public string Nome { get; set; } = string.Empty;
     public DateTime DataNascimento { get; set; }
     public string TipoDocumento { get; set; } = string.Empty;
@@ -20,7 +23,7 @@ public class InscricaoDto
     public string? Telefone2 { get; set; }
     public bool AceitaPoliticaPrivacidade { get; set; }
     
-    // Página 2
+    // Página 2 - Dados Pessoais
     public string? PaisNatal { get; set; }
     public string? EstadoNatal { get; set; }
     public string? Naturalidade { get; set; }
@@ -36,7 +39,7 @@ public class InscricaoDto
     public string? NumeroRegistroGeral { get; set; }
     public DateTime? DataVencimentoRg { get; set; }
     
-    // Página 3
+    // Página 3 - Opção de Interesse
     public FormaInscricao? FormaInscricao { get; set; }
     public string? LocalRealizacaoProva { get; set; }
     public string? CampusRealizacaoProva { get; set; }
@@ -57,12 +60,15 @@ public class InscricaoDto
     public List<DocumentoInscricaoDto> Documentos { get; set; } = new();
 }
 
+/// <summary>
+/// DTO para criação de nova Inscrição
+/// </summary>
 public class InscricaoCreateDto
 {
     public int EditalId { get; set; }
     public int? OpcaoCursoId { get; set; }
     
-    // Página 1
+    // Página 1 - Dados Iniciais
     public string Nome { get; set; } = string.Empty;
     public DateTime DataNascimento { get; set; }
     public string TipoDocumento { get; set; } = string.Empty;
@@ -72,7 +78,7 @@ public class InscricaoCreateDto
     public string? Telefone2 { get; set; }
     public bool AceitaPoliticaPrivacidade { get; set; }
     
-    // Página 2
+    // Página 2 - Dados Pessoais
     public string? PaisNatal { get; set; }
     public string? EstadoNatal { get; set; }
     public string? Naturalidade { get; set; }
@@ -88,7 +94,7 @@ public class InscricaoCreateDto
     public string? NumeroRegistroGeral { get; set; }
     public DateTime? DataVencimentoRg { get; set; }
     
-    // Página 3
+    // Página 3 - Opção de Interesse
     public FormaInscricao? FormaInscricao { get; set; }
     public string? LocalRealizacaoProva { get; set; }
     public string? CampusRealizacaoProva { get; set; }
@@ -105,6 +111,9 @@ public class InscricaoCreateDto
     public string? DefOutrasNecessidades { get; set; }
 }
 
+/// <summary>
+/// DTO para leitura de dados do Documento de Inscrição
+/// </summary>
 public class DocumentoInscricaoDto
 {
     public long Id { get; set; }

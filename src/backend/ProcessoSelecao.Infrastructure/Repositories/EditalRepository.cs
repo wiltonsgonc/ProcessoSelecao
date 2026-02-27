@@ -5,6 +5,9 @@ using ProcessoSelecao.Infrastructure.Data;
 
 namespace ProcessoSelecao.Infrastructure.Repositories;
 
+/// <summary>
+/// Repositório para operações com Editais
+/// </summary>
 public class EditalRepository : RepositoryBase<Edital>, IEditalRepository
 {
     private readonly ApplicationDbContext _context;
@@ -26,6 +29,9 @@ public class EditalRepository : RepositoryBase<Edital>, IEditalRepository
     }
 }
 
+/// <summary>
+/// Repositório para operações com Opções de Curso
+/// </summary>
 public class OpcaoCursoRepository : RepositoryBase<OpcaoCurso>, IOpcaoCursoRepository
 {
     private readonly ApplicationDbContext _context;
@@ -39,6 +45,9 @@ public class OpcaoCursoRepository : RepositoryBase<OpcaoCurso>, IOpcaoCursoRepos
     }
 }
 
+/// <summary>
+/// Repositório para operações com Inscrições
+/// </summary>
 public class InscricaoRepository : RepositoryBase<Inscricao>, IInscricaoRepository
 {
     private readonly ApplicationDbContext _context;
@@ -69,6 +78,9 @@ public class InscricaoRepository : RepositoryBase<Inscricao>, IInscricaoReposito
     }
 }
 
+/// <summary>
+/// Repositório para operações com Documentos de Inscrição
+/// </summary>
 public class DocumentoInscricaoRepository : RepositoryBase<DocumentoInscricao>, IDocumentoInscricaoRepository
 {
     private readonly ApplicationDbContext _context;

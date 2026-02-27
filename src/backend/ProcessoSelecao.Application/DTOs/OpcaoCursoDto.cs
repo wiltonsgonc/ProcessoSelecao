@@ -1,5 +1,8 @@
 namespace ProcessoSelecao.Application.DTOs;
 
+/// <summary>
+/// DTO para leitura de dados da Opção de Curso
+/// </summary>
 public class OpcaoCursoDto
 {
     public int Id { get; set; }
@@ -11,6 +14,9 @@ public class OpcaoCursoDto
     public string? LocalProva { get; set; }
 }
 
+/// <summary>
+/// DTO para criação de nova Opção de Curso
+/// </summary>
 public class OpcaoCursoCreateDto
 {
     public string Nome { get; set; } = string.Empty;

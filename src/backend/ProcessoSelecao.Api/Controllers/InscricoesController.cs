@@ -4,6 +4,9 @@ using ProcessoSelecao.Application.Services;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Inscrições
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class InscricoesController : ControllerBase
@@ -15,6 +18,9 @@ public class InscricoesController : ControllerBase
         _inscricaoService = inscricaoService;
     }
 
+    /// <summary>
+    /// Retorna todas as inscrições
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<InscricaoDto>>> GetAll()
     {
@@ -22,6 +28,10 @@ public class InscricoesController : ControllerBase
         return Ok(inscricoes);
     }
 
+    /// <summary>
+    /// Retorna todas as inscrições de um edital específico
+    /// </summary>
+    /// <param name="editalId">ID do edital</param>
     [HttpGet("edital/{editalId}")]
     public async Task<ActionResult<IEnumerable<InscricaoDto>>> GetByEdital(int editalId)
     {
@@ -29,6 +39,10 @@ public class InscricoesController : ControllerBase
         return Ok(inscricoes);
     }
 
+    /// <summary>
+    /// Retorna uma inscrição pelo ID
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
     [HttpGet("{id}")]
     public async Task<ActionResult<InscricaoDto>> GetById(int id)
     {
@@ -37,6 +51,10 @@ public class InscricoesController : ControllerBase
         return Ok(inscricao);
     }
 
+    /// <summary>
+    /// Cria uma nova inscrição
+    /// </summary>
+    /// <param name="createDto">Dados da inscrição</param>
     [HttpPost]
     public async Task<ActionResult<InscricaoDto>> Create([FromBody] InscricaoCreateDto createDto)
     {
@@ -51,6 +69,11 @@ public class InscricoesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Atualiza uma inscrição existente
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
+    /// <param name="updateDto">Dados atualizados</param>
     [HttpPut("{id}")]
     public async Task<ActionResult<InscricaoDto>> Update(int id, [FromBody] InscricaoCreateDto updateDto)
     {
@@ -66,6 +89,10 @@ public class InscricoesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Confirma uma inscrição
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
     [HttpPost("{id}/confirmar")]
     public async Task<ActionResult> Confirmar(int id)
     {
@@ -81,6 +108,10 @@ public class InscricoesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Cancela uma inscrição
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
     [HttpPost("{id}/cancelar")]
     public async Task<ActionResult> Cancelar(int id)
     {
@@ -89,6 +120,10 @@ public class InscricoesController : ControllerBase
         return Ok(new { message = "Inscrição cancelada com sucesso" });
     }
 
+    /// <summary>
+    /// Valida os documentos de uma inscrição
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
     [HttpPost("{id}/validar-documentos")]
     public async Task<ActionResult> ValidarDocumentos(int id)
     {

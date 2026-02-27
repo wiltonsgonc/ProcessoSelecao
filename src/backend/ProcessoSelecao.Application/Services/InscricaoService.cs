@@ -6,6 +6,9 @@ using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Application.Services;
 
+/// <summary>
+/// Serviço para manipulação de Inscrições
+/// </summary>
 public class InscricaoService
 {
     private readonly IInscricaoRepository _inscricaoRepository;
@@ -25,18 +28,31 @@ public class InscricaoService
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Retorna todas as inscrições
+    /// </summary>
     public async Task<IEnumerable<InscricaoDto>> GetAllAsync()
     {
         var inscricoes = await _inscricaoRepository.GetAllAsync();
         return _mapper.Map<IEnumerable<InscricaoDto>>(inscricoes);
     }
 
+    /// <summary>
+    /// Retorna todas as inscrições de um edital específico
+    /// </summary>
+    /// <param name="editalId">ID do edital</param>
+    /// <returns>Lista de inscrições</returns>
     public async Task<IEnumerable<InscricaoDto>> GetByEditalIdAsync(int editalId)
     {
         var inscricoes = await _inscricaoRepository.GetByEditalIdAsync(editalId);
         return _mapper.Map<IEnumerable<InscricaoDto>>(inscricoes);
     }
 
+    /// <summary>
+    /// Retorna uma inscrição pelo ID com seus documentos
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
+    /// <returns>Dados da inscrição ou null se não encontrada</returns>
     public async Task<InscricaoDto?> GetByIdAsync(int id)
     {
         var inscricao = await _inscricaoRepository.GetByIdWithDocumentsAsync(id);
@@ -48,6 +64,13 @@ public class InscricaoService
         return dto;
     }
 
+    /// <summary>
+    /// Cria uma nova inscrição
+    /// Valida se o edital está aberto e se o candidato já não está inscrito
+    /// </summary>
+    /// <param name="createDto">Dados da inscrição</param>
+    /// <returns>Dados da inscrição criada</returns>
+    /// <exception cref="InvalidOperationException">Quando o edital não existe, está fechado ou candidato já inscrito</exception>
     public async Task<InscricaoDto> CreateAsync(InscricaoCreateDto createDto)
     {
         var edital = await _editalRepository.GetByIdAsync(createDto.EditalId);
@@ -108,6 +131,13 @@ public class InscricaoService
         return dto;
     }
 
+    /// <summary>
+    /// Atualiza uma inscrição existente
+    /// Apenas inscrições pendentes podem ser alteradas
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
+    /// <param name="updateDto">Dados atualizados</param>
+    /// <returns>Dados da inscrição atualizada</returns>
     public async Task<InscricaoDto?> UpdateAsync(int id, InscricaoCreateDto updateDto)
     {
         var inscricao = await _inscricaoRepository.GetByIdAsync(id);
@@ -122,6 +152,11 @@ public class InscricaoService
         return _mapper.Map<InscricaoDto>(updated);
     }
 
+    /// <summary>
+    /// Confirma uma inscrição
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
+    /// <returns>True se confirmada com sucesso</returns>
     public async Task<bool> ConfirmarAsync(int id)
     {
         var inscricao = await _inscricaoRepository.GetByIdAsync(id);
@@ -135,6 +170,11 @@ public class InscricaoService
         return true;
     }
 
+    /// <summary>
+    /// Cancela uma inscrição
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
+    /// <returns>True se cancelada com sucesso</returns>
     public async Task<bool> CancelarAsync(int id)
     {
         var inscricao = await _inscricaoRepository.GetByIdAsync(id);
@@ -145,6 +185,11 @@ public class InscricaoService
         return true;
     }
 
+    /// <summary>
+    /// Valida se todos os documentos obrigatórios foram enviados
+    /// </summary>
+    /// <param name="id">ID da inscrição</param>
+    /// <returns>True se todos os documentos estão presentes</returns>
     public async Task<bool> ValidarDocumentosAsync(int id)
     {
         var inscricao = await _inscricaoRepository.GetByIdWithDocumentsAsync(id);

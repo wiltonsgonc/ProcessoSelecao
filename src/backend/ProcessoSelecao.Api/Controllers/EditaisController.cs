@@ -4,6 +4,9 @@ using ProcessoSelecao.Application.Services;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Editais
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class EditaisController : ControllerBase
@@ -15,6 +18,9 @@ public class EditaisController : ControllerBase
         _editalService = editalService;
     }
 
+    /// <summary>
+    /// Retorna todos os editais
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EditalDto>>> GetAll()
     {
@@ -22,6 +28,9 @@ public class EditaisController : ControllerBase
         return Ok(editais);
     }
 
+    /// <summary>
+    /// Retorna apenas editais publicados
+    /// </summary>
     [HttpGet("publicados")]
     public async Task<ActionResult<IEnumerable<EditalDto>>> GetPublished()
     {
@@ -29,6 +38,10 @@ public class EditaisController : ControllerBase
         return Ok(editais);
     }
 
+    /// <summary>
+    /// Retorna um edital pelo ID
+    /// </summary>
+    /// <param name="id">ID do edital</param>
     [HttpGet("{id}")]
     public async Task<ActionResult<EditalDto>> GetById(int id)
     {
@@ -37,6 +50,10 @@ public class EditaisController : ControllerBase
         return Ok(edital);
     }
 
+    /// <summary>
+    /// Cria um novo edital
+    /// </summary>
+    /// <param name="createDto">Dados do edital</param>
     [HttpPost]
     public async Task<ActionResult<EditalDto>> Create([FromBody] EditalCreateDto createDto)
     {
@@ -44,6 +61,11 @@ public class EditaisController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = edital.Id }, edital);
     }
 
+    /// <summary>
+    /// Atualiza um edital existente
+    /// </summary>
+    /// <param name="id">ID do edital</param>
+    /// <param name="updateDto">Dados atualizados</param>
     [HttpPut("{id}")]
     public async Task<ActionResult<EditalDto>> Update(int id, [FromBody] EditalUpdateDto updateDto)
     {
@@ -53,6 +75,10 @@ public class EditaisController : ControllerBase
         return Ok(edital);
     }
 
+    /// <summary>
+    /// Remove um edital
+    /// </summary>
+    /// <param name="id">ID do edital</param>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
@@ -61,6 +87,10 @@ public class EditaisController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Publica um edital (altera status para publicado)
+    /// </summary>
+    /// <param name="id">ID do edital</param>
     [HttpPost("{id}/publicar")]
     public async Task<ActionResult> Publicar(int id)
     {
@@ -69,6 +99,10 @@ public class EditaisController : ControllerBase
         return Ok(new { message = "Edital publicado com sucesso" });
     }
 
+    /// <summary>
+    /// Encerra um edital
+    /// </summary>
+    /// <param name="id">ID do edital</param>
     [HttpPost("{id}/encerrar")]
     public async Task<ActionResult> Encerrar(int id)
     {
