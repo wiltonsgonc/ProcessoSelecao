@@ -5,17 +5,36 @@ using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Application.Services;
 
+/// <summary>
+/// Interface do serviço de Documentos
+/// </summary>
 public interface IDocumentoService
 {
+    /// <summary>Retorna todos os documentos</summary>
     Task<IEnumerable<DocumentoDto>> GetAllAsync();
+    
+    /// <summary>Retorna um documento pelo ID</summary>
     Task<DocumentoDto?> GetByIdAsync(long id);
+    
+    /// <summary>Cria um novo documento com upload de arquivo</summary>
     Task<DocumentoDto> CreateAsync(CreateDocumentoDto dto, Stream fileStream, string caminhoBase);
+    
+    /// <summary>Valida um documento</summary>
     Task<DocumentoDto> ValidateAsync(long id, ValidateDocumentoDto dto);
+    
+    /// <summary>Remove um documento</summary>
     Task DeleteAsync(long id);
+    
+    /// <summary>Retorna documentos de um candidato</summary>
     Task<IEnumerable<DocumentoDto>> GetByCandidatoIdAsync(long candidatoId);
+    
+    /// <summary>Retorna o caminho do arquivo</summary>
     Task<string> GetFilePathAsync(long id);
 }
 
+/// <summary>
+/// Serviço para manipulação de Documentos
+/// </summary>
 public class DocumentoService : IDocumentoService
 {
     private readonly IDocumentoRepository _repository;
@@ -27,18 +46,21 @@ public class DocumentoService : IDocumentoService
         _mapper = mapper;
     }
 
+    /// <summary>Retorna todos os documentos</summary>
     public async Task<IEnumerable<DocumentoDto>> GetAllAsync()
     {
         var documentos = await _repository.GetAllAsync();
         return _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
     }
 
+    /// <summary>Retorna um documento pelo ID</summary>
     public async Task<DocumentoDto?> GetByIdAsync(long id)
     {
         var documento = await _repository.GetByIdAsync(id);
         return documento != null ? _mapper.Map<DocumentoDto>(documento) : null;
     }
 
+    /// <summary>Cria um novo documento com upload de arquivo</summary>
     public async Task<DocumentoDto> CreateAsync(CreateDocumentoDto dto, Stream fileStream, string caminhoBase)
     {
         var caminhoDiretorio = Path.Combine(caminhoBase, dto.CandidatoId.ToString());
@@ -67,6 +89,7 @@ public class DocumentoService : IDocumentoService
         return _mapper.Map<DocumentoDto>(created);
     }
 
+    /// <summary>Valida um documento</summary>
     public async Task<DocumentoDto> ValidateAsync(long id, ValidateDocumentoDto dto)
     {
         var documento = await _repository.GetByIdAsync(id) ?? throw new Exception("Documento não encontrado");
@@ -76,6 +99,7 @@ public class DocumentoService : IDocumentoService
         return _mapper.Map<DocumentoDto>(updated);
     }
 
+    /// <summary>Remove um documento</summary>
     public async Task DeleteAsync(long id)
     {
         var documento = await _repository.GetByIdAsync(id);
@@ -86,12 +110,14 @@ public class DocumentoService : IDocumentoService
         await _repository.DeleteAsync(id);
     }
 
+    /// <summary>Retorna documentos de um candidato</summary>
     public async Task<IEnumerable<DocumentoDto>> GetByCandidatoIdAsync(long candidatoId)
     {
         var documentos = await _repository.GetByCandidatoIdAsync(candidatoId);
         return _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
     }
 
+    /// <summary>Retorna o caminho do arquivo</summary>
     public async Task<string> GetFilePathAsync(long id)
     {
         var documento = await _repository.GetByIdAsync(id) ?? throw new Exception("Documento não encontrado");

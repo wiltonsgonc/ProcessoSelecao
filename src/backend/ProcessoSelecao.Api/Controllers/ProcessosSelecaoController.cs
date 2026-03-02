@@ -4,6 +4,9 @@ using ProcessoSelecao.Application.Services;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Processos de Seleção
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class ProcessosSelecaoController : ControllerBase
@@ -15,6 +18,7 @@ public class ProcessosSelecaoController : ControllerBase
         _service = service;
     }
 
+    /// <summary>Retorna todos os processos</summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProcessoSelecaoDto>>> GetAll()
     {
@@ -22,6 +26,7 @@ public class ProcessosSelecaoController : ControllerBase
         return Ok(processos);
     }
 
+    /// <summary>Retorna um processo pelo ID</summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<ProcessoSelecaoDto>> GetById(long id)
     {
@@ -30,6 +35,7 @@ public class ProcessosSelecaoController : ControllerBase
         return Ok(processo);
     }
 
+    /// <summary>Cria um novo processo</summary>
     [HttpPost]
     public async Task<ActionResult<ProcessoSelecaoDto>> Create([FromBody] CreateProcessoSelecaoDto dto)
     {
@@ -37,6 +43,7 @@ public class ProcessosSelecaoController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = processo.Id }, processo);
     }
 
+    /// <summary>Atualiza um processo</summary>
     [HttpPut("{id}")]
     public async Task<ActionResult<ProcessoSelecaoDto>> Update(long id, [FromBody] UpdateProcessoSelecaoDto dto)
     {
@@ -51,6 +58,7 @@ public class ProcessosSelecaoController : ControllerBase
         }
     }
 
+    /// <summary>Inicia um processo</summary>
     [HttpPost("{id}/iniciar")]
     public async Task<ActionResult<ProcessoSelecaoDto>> Iniciar(long id)
     {
@@ -65,6 +73,7 @@ public class ProcessosSelecaoController : ControllerBase
         }
     }
 
+    /// <summary>Finaliza um processo</summary>
     [HttpPost("{id}/finalizar")]
     public async Task<ActionResult<ProcessoSelecaoDto>> Finalizar(long id)
     {
@@ -79,6 +88,7 @@ public class ProcessosSelecaoController : ControllerBase
         }
     }
 
+    /// <summary>Remove um processo</summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(long id)
     {

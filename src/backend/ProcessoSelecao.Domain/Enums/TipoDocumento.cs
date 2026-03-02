@@ -1,5 +1,8 @@
 namespace ProcessoSelecao.Domain.Enums;
 
+/// <summary>
+/// Tipo de documento exigido no processo
+/// </summary>
 public enum TipoDocumento
 {
     HistoricoEscolar = 1,

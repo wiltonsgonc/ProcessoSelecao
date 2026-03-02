@@ -4,6 +4,9 @@ using ProcessoSelecao.Application.Services;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Candidatos
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class CandidatosController : ControllerBase
@@ -15,6 +18,7 @@ public class CandidatosController : ControllerBase
         _service = service;
     }
 
+    /// <summary>Retorna todos os candidatos</summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CandidatoDto>>> GetAll()
     {
@@ -22,6 +26,7 @@ public class CandidatosController : ControllerBase
         return Ok(candidatos);
     }
 
+    /// <summary>Retorna um candidato pelo ID</summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<CandidatoDto>> GetById(long id)
     {
@@ -30,6 +35,7 @@ public class CandidatosController : ControllerBase
         return Ok(candidato);
     }
 
+    /// <summary>Retorna candidatos de um processo</summary>
     [HttpGet("processo/{processoId}")]
     public async Task<ActionResult<IEnumerable<CandidatoDto>>> GetByProcessoId(long processoId)
     {
@@ -37,6 +43,7 @@ public class CandidatosController : ControllerBase
         return Ok(candidatos);
     }
 
+    /// <summary>Retorna a pontuação de um candidato</summary>
     [HttpGet("{id}/pontuacao")]
     public async Task<ActionResult<float>> GetPontuacao(long id)
     {
@@ -44,6 +51,7 @@ public class CandidatosController : ControllerBase
         return Ok(pontuacao);
     }
 
+    /// <summary>Cria um novo candidato</summary>
     [HttpPost]
     public async Task<ActionResult<CandidatoDto>> Create([FromBody] CreateCandidatoDto dto)
     {
@@ -51,6 +59,7 @@ public class CandidatosController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = candidato.Id }, candidato);
     }
 
+    /// <summary>Atualiza um candidato</summary>
     [HttpPut("{id}")]
     public async Task<ActionResult<CandidatoDto>> Update(long id, [FromBody] UpdateCandidatoDto dto)
     {
@@ -65,6 +74,7 @@ public class CandidatosController : ControllerBase
         }
     }
 
+    /// <summary>Remove um candidato</summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(long id)
     {
