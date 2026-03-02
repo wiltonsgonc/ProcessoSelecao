@@ -21,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
       <router-outlet></router-outlet>
     </div>
     <footer class="footer">
-      <p>&copy; 2026 Sistema de Processo Seletivo</p>
+      <p>2026 Sistema de Processo Seletivo</p>
     </footer>
   `,
   styles: [`
