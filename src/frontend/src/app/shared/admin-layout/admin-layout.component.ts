@@ -42,12 +42,6 @@ import { MatIconModule } from '@angular/material/icon';
             Baremas
           </a>
         </li>
-        <li>
-          <a routerLink="/admin/editais" routerLinkActive="active">
-            <mat-icon>description</mat-icon>
-            Editais
-          </a>
-        </li>
       </ul>
       <div class="sidebar-footer">
         <a routerLink="/">
