@@ -21,7 +21,9 @@ builder.Services.AddSwaggerGen();
 
 // Configuração do Entity Framework Core com SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.MigrationsAssembly("ProcessoSelecao.Infrastructure")));
 
 // ============================================
 // Registro de Repositories (Dependency Injection)
@@ -31,10 +33,6 @@ builder.Services.AddScoped<IDocumentoRepository, DocumentoRepository>();
 builder.Services.AddScoped<IAvaliadorRepository, AvaliadorRepository>();
 builder.Services.AddScoped<IBaremaRepository, BaremaRepository>();
 builder.Services.AddScoped<IProcessoSelecaoRepository, ProcessoSelecaoRepository>();
-builder.Services.AddScoped<IEditalRepository, EditalRepository>();
-builder.Services.AddScoped<IOpcaoCursoRepository, OpcaoCursoRepository>();
-builder.Services.AddScoped<IInscricaoRepository, InscricaoRepository>();
-builder.Services.AddScoped<IDocumentoInscricaoRepository, DocumentoInscricaoRepository>();
 
 // ============================================
 // Registro de Services
@@ -45,8 +43,6 @@ builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
-builder.Services.AddScoped<EditalService>();
-builder.Services.AddScoped<InscricaoService>();
 
 // ============================================
 // Configuração de Email
