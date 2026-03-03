@@ -76,13 +76,22 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Configura a URL da aplicação
+app.Urls.Add("http://localhost:5001");
+
 // ============================================
 // Configuração do Pipeline de Requisições
 // ============================================
 
 // Swagger em ambiente de desenvolvimento
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Configura a aplicação para usar a porta 5001
+app.Urls.Add("http://localhost:5001");
 
 // Endpoint de health check
 app.MapGet("/api/health", () => "OK");
