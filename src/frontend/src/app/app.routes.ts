@@ -11,6 +11,10 @@ export const routes: Routes = [
       { 
         path: 'processos', 
         loadComponent: () => import('./modules/processos/processo-list/processo-list.component').then(m => m.ProcessoListComponent)
+      },
+      { 
+        path: 'inscricao/:processoId', 
+        loadComponent: () => import('./modules/formulario/formulario-inscricao/formulario-inscricao.component').then(m => m.FormularioInscricaoComponent)
       }
     ]
   },

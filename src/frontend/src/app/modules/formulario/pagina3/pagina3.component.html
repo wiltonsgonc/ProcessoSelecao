@@ -1,0 +1,43 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h2>Documentos</h2>
+  
+  <div>
+    <label for="rgCpfCandidato">RG e CPF Candidato (PDF):</label>
+    <input id="rgCpfCandidato" type="file" (change)="onFileChange($event, 'rgCpfCandidato')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <label for="anexoI">Anexo I do edital:</label>
+    <input id="anexoI" type="file" (change)="onFileChange($event, 'anexoI')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <label for="curriculoLattesCandidato">Currículo Lattes do candidato atualizado:</label>
+    <input id="curriculoLattesCandidato" type="file" (change)="onFileChange($event, 'curriculoLattesCandidato')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <label for="curriculoLattesOrientador">Currículo Lattes do orientador atualizado:</label>
+    <input id="curriculoLattesOrientador" type="file" (change)="onFileChange($event, 'curriculoLattesOrientador')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <label for="anexoII">Anexo II (ver edital):</label>
+    <input id="anexoII" type="file" (change)="onFileChange($event, 'anexoII')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <label for="comprovanteMatricula">Comprovante de Matrícula Assinado Instituição de Ensino:</label>
+    <input id="comprovanteMatricula" type="file" (change)="onFileChange($event, 'comprovanteMatricula')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <label for="historicoEscolar">Histórico Escolar graduação (ver edital):</label>
+    <input id="historicoEscolar" type="file" (change)="onFileChange($event, 'historicoEscolar')" accept=".pdf" />
+  </div>
+  
+  <div>
+    <button type="button" (click)="onAnterior()">Anterior</button>
+    <button type="submit">Próximo</button>
+  </div>
+</form>

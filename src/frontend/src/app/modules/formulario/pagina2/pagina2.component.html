@@ -1,0 +1,105 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h2>Dados Básicos</h2>
+  <div>
+    <label for="nome">Nome:</label>
+    <input id="nome" formControlName="nome" placeholder="Nome" />
+  </div>
+  
+  <div>
+    <label for="dataNascimento">Data de Nascimento:</label>
+    <input id="dataNascimento" formControlName="dataNascimento" type="date" placeholder="Data de Nascimento" />
+  </div>
+  
+  <div>
+    <label for="paisNatal">País Natal:</label>
+    <input id="paisNatal" formControlName="paisNatal" placeholder="País Natal" />
+  </div>
+  
+  <div>
+    <label for="estadoNatal">Estado Natal:</label>
+    <input id="estadoNatal" formControlName="estadoNatal" placeholder="Estado Natal" />
+  </div>
+  
+  <div>
+    <label for="naturalidade">Naturalidade:</label>
+    <input id="naturalidade" formControlName="naturalidade" placeholder="Naturalidade" />
+  </div>
+  
+  <div>
+    <label for="nomeSocial">Nome Social:</label>
+    <input id="nomeSocial" formControlName="nomeSocial" placeholder="Nome Social" />
+  </div>
+  
+  <div>
+    <label for="estadoCivil">Estado Civil:</label>
+    <input id="estadoCivil" formControlName="estadoCivil" placeholder="Estado Civil" />
+  </div>
+  
+  <div>
+    <label for="nacionalidade">Nacionalidade:</label>
+    <input id="nacionalidade" formControlName="nacionalidade" placeholder="Nacionalidade" />
+  </div>
+  
+  <div>
+    <label for="email">E-mail:</label>
+    <input id="email" formControlName="email" type="email" placeholder="E-mail" />
+  </div>
+  
+  <div>
+    <label for="sexo">Sexo:</label>
+    <input id="sexo" formControlName="sexo" placeholder="Sexo" />
+  </div>
+  
+  <h2>Documentos</h2>
+  <div>
+    <label for="cpf">CPF:</label>
+    <input id="cpf" formControlName="cpf" placeholder="CPF" />
+  </div>
+  
+  <h2>Endereço</h2>
+  <div>
+    <label for="telefone1">Telefone 1:</label>
+    <input id="telefone1" formControlName="telefone1" placeholder="Telefone 1" />
+  </div>
+  
+  <div>
+    <label for="telefone2">Telefone 2:</label>
+    <input id="telefone2" formControlName="telefone2" placeholder="Telefone 2" />
+  </div>
+  
+  <h2>Informações Adicionais</h2>
+  <div>
+    <label for="corRaca">Cor/Raça:</label>
+    <input id="corRaca" formControlName="corRaca" placeholder="Cor/Raça" />
+  </div>
+  
+  <div>
+    <label for="autorizacaoDados">Autorizo a utilização de dados pessoais:</label>
+    <select id="autorizacaoDados" formControlName="autorizacaoDados">
+      <option value="">Selecione</option>
+      <option value="sim">Sim</option>
+      <option value="nao">Não</option>
+    </select>
+  </div>
+  
+  <h2>Dados Gerais de Estrangeiros</h2>
+  <div>
+    <label for="tipoVisto">Tipo de Visto:</label>
+    <input id="tipoVisto" formControlName="tipoVisto" placeholder="Tipo de Visto" />
+  </div>
+  
+  <div>
+    <label for="numeroRegistroGeral">Número Registro Geral:</label>
+    <input id="numeroRegistroGeral" formControlName="numeroRegistroGeral" placeholder="Número Registro Geral" />
+  </div>
+  
+  <div>
+    <label for="dataVencimentoRG">Data Vencimento RG:</label>
+    <input id="dataVencimentoRG" formControlName="dataVencimentoRG" type="date" placeholder="Data Vencimento RG" />
+  </div>
+  
+  <div>
+    <button type="button" (click)="onAnterior()">Anterior</button>
+    <button type="submit">Próximo</button>
+  </div>
+</form>

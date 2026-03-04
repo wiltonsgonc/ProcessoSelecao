@@ -1,0 +1,52 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="nome">Nome:</label>
+    <input id="nome" formControlName="nome" placeholder="Nome" />
+  </div>
+  
+  <div>
+    <label for="dataNascimento">Data de Nascimento:</label>
+    <input id="dataNascimento" formControlName="dataNascimento" type="date" placeholder="Data de Nascimento" />
+  </div>
+  
+  <div>
+    <label for="tipoDocumento">Tipo de Documento:</label>
+    <select id="tipoDocumento" formControlName="tipoDocumento">
+      <option value="">Selecione</option>
+      <option value="CPF">CPF</option>
+      <option value="RG">RG</option>
+      <option value="E-mail">E-mail</option>
+    </select>
+  </div>
+  
+  <div>
+    <label for="numeroDocumento">Número do Documento:</label>
+    <input id="numeroDocumento" formControlName="numeroDocumento" placeholder="Número do Documento" />
+  </div>
+  
+  <div>
+    <label for="email">E-mail:</label>
+    <input id="email" formControlName="email" type="email" placeholder="E-mail" />
+  </div>
+  
+  <div>
+    <label for="telefone">Telefone:</label>
+    <input id="telefone" formControlName="telefone" placeholder="Telefone" />
+  </div>
+  
+  <div>
+    <label for="areaOfertada">Área Ofertada:</label>
+    <select id="areaOfertada" formControlName="areaOfertada">
+      <option value="">Selecione</option>
+      <option value="area1">Área 1</option>
+      <option value="area2">Área 2</option>
+    </select>
+  </div>
+  
+  <div>
+    <input type="checkbox" id="politicaPrivacidade" formControlName="politicaPrivacidade" />
+    <label for="politicaPrivacidade">Concordo com a Política de Privacidade</label>
+  </div>
+  
+  <button type="submit">Continuar</button>
+</form>
