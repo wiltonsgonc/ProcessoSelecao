@@ -12,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 var environment = builder.Environment.EnvironmentName;
 
+// Configura a URL da aplicação
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5002);
+});
+
 // Adiciona serviços de controllers e API Explorer
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -76,9 +82,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configura a URL da aplicação
-app.Urls.Add("http://localhost:5001");
-
 // ============================================
 // Configuração do Pipeline de Requisições
 // ============================================
@@ -89,9 +92,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// Configura a aplicação para usar a porta 5001
-app.Urls.Add("http://localhost:5001");
 
 // Endpoint de health check
 app.MapGet("/api/health", () => "OK");
