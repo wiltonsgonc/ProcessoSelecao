@@ -39,27 +39,20 @@ ProcessoSelecao/
 ### Opção 1: Usando docker-compose
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-### Opção 2: Usando scripts
+### Opção 2: Usando podman-compose
 
 ```bash
-chmod +x scripts/*.sh
-./scripts/start-dev.sh
-```
-
-### Opção 3: Windows (PowerShell/CMD)
-
-```cmd
-scripts\start.bat
+podman compose up -d
 ```
 
 ## Acessos
 
 - **Frontend**: http://localhost:4200
-- **Backend API**: http://localhost:5000
-- **Swagger**: http://localhost:5000/swagger
+- **Backend API**: http://localhost:5002
+- **Swagger**: http://localhost:5002/swagger
 - **SQL Server**: localhost:1433 (user: sa, password: Processo@123)
 
 ## Funcionalidades
