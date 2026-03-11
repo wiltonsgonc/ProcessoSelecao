@@ -53,7 +53,10 @@ podman compose up -d
 - **Frontend**: http://localhost:4200
 - **Backend API**: http://localhost:5002
 - **Swagger**: http://localhost:5002/swagger
-- **SQL Server**: localhost:1433 (user: sa, password: Processo@123)
+- **SQL Server**: localhost:1433
+  - **Admin User**: sa / Processo@123
+  - **App User**: db_user / DbUser@123
+  - **Database**: ProcessoSelecaoDb
 
 ## Funcionalidades
 
@@ -79,6 +82,41 @@ podman compose up -d
 - Criar baremas de avaliação
 - Definir critérios e notas
 - Calcular nota final
+
+## Acesso ao Banco de Dados
+
+### Conexão via DBeaver ou SSMS
+
+**Configurações de conexão:**
+- **Servidor**: localhost,1433
+- **Autenticação**: SQL Server Authentication
+- **Usuário**: db_user
+- **Senha**: DbUser@123
+- **Banco de dados**: ProcessoSelecaoDb
+
+### Conexão via Command Line
+
+```bash
+# Conectar usando sqlcmd
+sqlcmd -S localhost,1433 -U db_user -P "DbUser@123" -d ProcessoSelecaoDb
+
+# Listar tabelas
+SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';
+```
+
+### Backup e Restauração
+
+```bash
+# Criar backup
+docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
+  -S localhost -U sa -P "Processo@123" \
+  -Q "BACKUP DATABASE [ProcessoSelecaoDb] TO DISK = '/var/opt/mssql/backup/backup.bak' WITH COMPRESSION"
+
+# Restaurar backup
+docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
+  -S localhost -U sa -P "Processo@123" \
+  -Q "RESTORE DATABASE [ProcessoSelecaoDb] FROM DISK = '/var/opt/mssql/backup/backup.bak' WITH REPLACE"
+```
 
 ## APIs Disponíveis
 
