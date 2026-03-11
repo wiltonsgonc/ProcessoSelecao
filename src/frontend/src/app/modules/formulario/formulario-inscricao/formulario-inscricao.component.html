@@ -1,4 +1,4 @@
-<div class="formulario-container">
+<div class="formulario-container" *ngIf="!carregando && processoEncontrado">
   <div class="progresso">
     <div class="barra-progresso" [style.width.%]="getProgresso()"></div>
   </div>
@@ -38,3 +38,9 @@
     </div>
   </div>
 </div>
+
+<div *ngIf="carregando" class="carregando">
+  <p>Carregando...</p>
+</div>
+
+<app-pagina-nao-encontrada *ngIf="!carregando && !processoEncontrado"></app-pagina-nao-encontrada>

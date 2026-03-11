@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormularioService } from '../../../core/services/formulario.service';
+import { ProcessoSelecaoService } from '../../../core/services/processo-selecao.service';
 import { Pagina1Component } from '../pagina1/pagina1.component';
 import { Pagina2Component } from '../pagina2/pagina2.component';
 import { Pagina3Component } from '../pagina3/pagina3.component';
 import { Pagina4Component } from '../pagina4/pagina4.component';
+import { PaginaNaoEncontradaComponent } from '../../../shared/pagina-nao-encontrada/pagina-nao-encontrada.component';
 
 @Component({
   selector: 'app-formulario-inscricao',
@@ -14,7 +17,8 @@ import { Pagina4Component } from '../pagina4/pagina4.component';
     Pagina1Component,
     Pagina2Component,
     Pagina3Component,
-    Pagina4Component
+    Pagina4Component,
+    PaginaNaoEncontradaComponent
   ],
   templateUrl: './formulario-inscricao.component.html',
   styleUrls: ['./formulario-inscricao.component.css']
@@ -24,10 +28,36 @@ export class FormularioInscricaoComponent implements OnInit {
   totalPaginas = 4;
   mostrarModalConfirmacao = false;
   termoAceito = false;
+  processoEncontrado = true;
+  carregando = true;
 
-  constructor(public formularioService: FormularioService) {}
+  constructor(
+    public formularioService: FormularioService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private processoSelecaoService: ProcessoSelecaoService
+  ) {}
 
   ngOnInit() {
+    const processoId = this.route.snapshot.paramMap.get('processoId');
+    
+    if (processoId) {
+      this.processoSelecaoService.getById(+processoId).subscribe({
+        next: (processo) => {
+          this.carregando = false;
+          this.processoEncontrado = true;
+          this.formularioService.salvarPagina4({ processoSeletivo: processo.nome });
+        },
+        error: () => {
+          this.carregando = false;
+          this.processoEncontrado = false;
+        }
+      });
+    } else {
+      this.carregando = false;
+      this.processoEncontrado = false;
+    }
+
     this.formularioService.paginaAtual$.subscribe(pagina => {
       this.paginaAtual = pagina;
     });

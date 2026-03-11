@@ -7,10 +7,9 @@ export const routes: Routes = [
     path: '',
     component: PublicLayoutComponent,
     children: [
-      { path: '', redirectTo: 'processos', pathMatch: 'full' },
       { 
-        path: 'processos', 
-        loadComponent: () => import('./modules/processos/processo-list/processo-list.component').then(m => m.ProcessoListComponent)
+        path: '', 
+        loadComponent: () => import('./modules/home/home.component').then(m => m.HomeComponent)
       },
       { 
         path: 'inscricao/:processoId', 
@@ -45,5 +44,11 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: '**', redirectTo: '' }
+  { path: '**', component: PublicLayoutComponent, children: [
+      { 
+        path: '', 
+        loadComponent: () => import('./shared/pagina-nao-encontrada/pagina-nao-encontrada.component').then(m => m.PaginaNaoEncontradaComponent)
+      }
+    ]
+  }
 ];
