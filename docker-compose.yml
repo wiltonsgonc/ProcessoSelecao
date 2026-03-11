@@ -56,7 +56,8 @@ services:
       - EmailSettings__SmtpPassword=${SMTP_PASSWORD}
       - EmailSettings__FromEmail=${FROM_EMAIL}
     ports:
-      - "5000:8080"
+      - "5000:5000"
+      - "5002:5002"
     depends_on:
       sqlserver:
         condition: service_healthy

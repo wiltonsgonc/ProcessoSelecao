@@ -15,7 +15,10 @@ var environment = builder.Environment.EnvironmentName;
 // Configura a URL da aplicação
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
+    // API e Swagger na porta 5002
     serverOptions.ListenAnyIP(5002);
+    // Aplicação web na porta 5000
+    serverOptions.ListenAnyIP(5000);
 });
 
 // Adiciona serviços de controllers e API Explorer
