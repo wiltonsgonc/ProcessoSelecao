@@ -18,9 +18,17 @@ EXPOSE 8080
 
 RUN mkdir -p /app/documentos
 
-# Install EF Core tools for migrations
+# Instalar netcat para garantir que o backend só tente acessar o banco de dados quando o SQL Server estiver realmente pronto
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
+# Instalar ferramentas EF Core para migrations
 RUN dotnet tool install --global dotnet-ef
 
 COPY --from=build /app/publish .
 ENV PATH="${PATH}:/root/.dotnet/tools"
-ENTRYPOINT ["dotnet", "ProcessoSelecao.Api.dll"]
+
+# Script de entrypoint para inicialização do banco de dados
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

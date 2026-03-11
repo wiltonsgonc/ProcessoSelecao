@@ -8,17 +8,34 @@ services:
       - ACCEPT_EULA=${ACCEPT_EULA}
       - SA_PASSWORD=${SA_PASSWORD}
       - MSSQL_PID=${MSSQL_PID}
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD}
     ports:
       - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
+      - sqlserver_backup:/var/opt/mssql/backup
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
       interval: 10s
       retries: 10
       start_period: 10s
       timeout: 3s
+    command: |
+      bash -c "
+      /opt/mssql/bin/sqlservr &
+      for i in {1..30}; do
+        if /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${SA_PASSWORD}' -C -Q 'SELECT 1' > /dev/null 2>&1; then
+          echo 'SQL Server is ready'
+          break
+        fi
+        echo 'Waiting for SQL Server...'
+        sleep 1
+      done
+      echo 'Creating database user for external access...'
+      /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${SA_PASSWORD}' -C -d master -i /docker-entrypoint-initdb.d/init.sql
+      wait"
 
   backend:
     build:
@@ -45,6 +62,7 @@ services:
         condition: service_healthy
     volumes:
       - documentos_data:/app/documentos
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   frontend:
     build:
@@ -67,4 +85,5 @@ networks:
 volumes:
   sqlserver_data:
   sqlserver_log:
+  sqlserver_backup:
   documentos_data:
