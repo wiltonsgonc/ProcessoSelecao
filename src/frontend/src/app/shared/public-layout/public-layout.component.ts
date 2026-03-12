@@ -9,15 +9,11 @@ import { LayoutService } from '../../core/services/layout.service';
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, MatToolbarModule],
   template: `
     <mat-toolbar color="primary" class="header">
       <span class="logo" routerLink="/">Processo Seletivo</span>
       <span class="spacer"></span>
-      <button mat-button routerLink="/admin">
-        <mat-icon>admin_panel_settings</mat-icon>
-        Área Administrativa
-      </button>
     </mat-toolbar>
     <div class="content">
       <router-outlet></router-outlet>
