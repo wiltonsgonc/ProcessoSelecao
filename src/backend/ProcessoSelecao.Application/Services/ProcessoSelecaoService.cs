@@ -86,11 +86,12 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
     /// <summary>Remove um processo</summary>
     public async Task DeleteAsync(long id)
     {
-        var processo = await _repository.GetByIdAsync(id);
-        if (processo != null && processo.Status != StatusProcesso.Finalizado)
+        var processo = await _repository.GetByIdAsync(id) ?? throw new Exception("Processo não encontrado");
+        if (processo.Status == StatusProcesso.Finalizado)
         {
-            await _repository.DeleteAsync(id);
+            throw new Exception("Não é possível excluir um processo finalizados");
         }
+        await _repository.DeleteAsync(id);
     }
 
     /// <summary>Inicia um processo</summary>

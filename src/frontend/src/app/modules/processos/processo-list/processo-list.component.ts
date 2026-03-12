@@ -133,7 +133,7 @@ export class ProcessoListComponent implements OnInit {
     if (confirm('Deseja excluir este processo?')) {
       this.service.delete(id).subscribe({
         next: () => this.load(),
-        error: (err) => console.error('Erro ao excluir', err)
+        error: (err) => alert(err.error || 'Erro ao excluir')
       });
     }
   }

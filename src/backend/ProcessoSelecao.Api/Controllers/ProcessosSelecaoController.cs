@@ -92,7 +92,14 @@ public class ProcessosSelecaoController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(long id)
     {
-        await _service.DeleteAsync(id);
-        return NoContent();
+        try
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
