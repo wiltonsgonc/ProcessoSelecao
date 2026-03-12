@@ -38,8 +38,13 @@ export class Pagina4Component implements OnInit {
   }
 
   ngOnInit() {
+    const dadosAtuais = this.formularioService['dadosPagina4'].value;
+    if (dadosAtuais.processoSeletivo) {
+      this.form.patchValue(dadosAtuais);
+    }
+    
     this.formularioService.dadosPagina4$.subscribe(dados => {
-      if (dados && Object.keys(dados).length > 0) {
+      if (dados && dados.processoSeletivo) {
         this.form.patchValue(dados);
       }
     });
