@@ -95,3 +95,8 @@ temp/
 
 # Documentation
 docs/
+
+# Build Scripts (Windows)
+build-backend.bat
+build-frontend.bat
+build-full.bat
