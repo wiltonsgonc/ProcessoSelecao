@@ -152,10 +152,14 @@ export interface CreateProcessoSelecao {
   nome: string;
   descricao?: string;
   vagasDisponiveis: number;
+  dataInicio?: string;
+  dataFim?: string;
 }
 
 export interface UpdateProcessoSelecao {
   nome: string;
   descricao?: string;
   vagasDisponiveis: number;
+  dataInicio?: string;
+  dataFim?: string;
 }

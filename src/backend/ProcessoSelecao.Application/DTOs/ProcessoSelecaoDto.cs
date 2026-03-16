@@ -26,6 +26,8 @@ public class CreateProcessoSelecaoDto
     public string Nome { get; set; } = string.Empty;
     public string? Descricao { get; set; }
     public int VagasDisponiveis { get; set; }
+    public DateTime? DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
 }
 
 /// <summary>
@@ -36,4 +38,6 @@ public class UpdateProcessoSelecaoDto
     public string Nome { get; set; } = string.Empty;
     public string? Descricao { get; set; }
     public int VagasDisponiveis { get; set; }
+    public DateTime? DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
 }

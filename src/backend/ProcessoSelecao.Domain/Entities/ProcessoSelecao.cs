@@ -39,7 +39,10 @@ public class ProcessoSelecao : BaseEntity
         if (Status == StatusProcesso.Rascunho)
         {
             Status = StatusProcesso.Aberto;
-            DataInicio = DateTime.UtcNow;
+            if (DataInicio == default)
+            {
+                DataInicio = DateTime.UtcNow;
+            }
         }
     }
 
@@ -53,5 +56,34 @@ public class ProcessoSelecao : BaseEntity
             Status = StatusProcesso.Finalizado;
             DataFim = DateTime.UtcNow;
         }
+    }
+
+    /// <summary>
+    /// Verifica se o prazo do processo expirou e encerra automaticamente
+    /// </summary>
+    public bool VerificarPrazoExpirado()
+    {
+        if (DataFim.HasValue && DateTime.UtcNow > DataFim.Value && Status != StatusProcesso.Finalizado)
+        {
+            Status = StatusProcesso.Finalizado;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Verifica se o processo está dentro do prazo de vigência
+    /// </summary>
+    public bool EstaWithinPrazo()
+    {
+        var now = DateTime.UtcNow;
+        
+        if (DataInicio > now)
+            return false;
+            
+        if (DataFim.HasValue && now > DataFim.Value)
+            return false;
+            
+        return Status == StatusProcesso.Aberto || Status == StatusProcesso.EmAndamento;
     }
 }

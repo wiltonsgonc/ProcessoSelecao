@@ -51,6 +51,15 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
     public async Task<IEnumerable<ProcessoSelecaoDto>> GetAllAsync()
     {
         var processos = await _repository.GetAllAsync();
+        
+        foreach (var processo in processos)
+        {
+            if (processo.VerificarPrazoExpirado())
+            {
+                await _repository.UpdateAsync(processo);
+            }
+        }
+        
         return processos.Select(MapToDto);
     }
 
@@ -58,6 +67,12 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
     public async Task<ProcessoSelecaoDto?> GetByIdAsync(long id)
     {
         var processo = await _repository.GetByIdAsync(id);
+        
+        if (processo != null && processo.VerificarPrazoExpirado())
+        {
+            await _repository.UpdateAsync(processo);
+        }
+        
         return processo != null ? MapToDto(processo) : null;
     }
 
@@ -98,7 +113,19 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
     public async Task<ProcessoSelecaoDto> IniciarAsync(long id)
     {
         var entity = await _repository.GetByIdAsync(id) ?? throw new Exception("Processo não encontrado");
+        
+        if (entity.DataFim.HasValue && DateTime.UtcNow > entity.DataFim.Value)
+        {
+            throw new Exception("O prazo para este processo já expirou");
+        }
+        
         entity.IniciarProcesso();
+        
+        if (entity.DataInicio == default)
+        {
+            entity.DataInicio = DateTime.UtcNow;
+        }
+        
         var updated = await _repository.UpdateAsync(entity);
         return MapToDto(updated);
     }

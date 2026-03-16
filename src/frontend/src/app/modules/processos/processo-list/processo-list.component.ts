@@ -29,6 +29,14 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
           <label>Vagas Disponíveis</label>
           <input type="number" class="form-control" [(ngModel)]="formData.vagasDisponiveis" name="vagas" required>
         </div>
+        <div class="form-group">
+          <label>Data de Início</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.dataInicio" name="dataInicio">
+        </div>
+        <div class="form-group">
+          <label>Data de Término</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.dataFim" name="dataFim">
+        </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
         <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancelar</button>
       </form>
@@ -42,6 +50,8 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
               <th>ID</th>
               <th>Nome</th>
               <th>Vagas</th>
+              <th>Início</th>
+              <th>Término</th>
               <th>Status</th>
               <th>Candidatos</th>
               <th>Ações</th>
@@ -52,6 +62,8 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
               <td>{{ processo.id }}</td>
               <td>{{ processo.nome }}</td>
               <td>{{ processo.vagasDisponiveis }}</td>
+              <td>{{ processo.dataInicio | date:'dd/MM/yyyy' }}</td>
+              <td>{{ processo.dataFim | date:'dd/MM/yyyy' }}</td>
               <td>
                 <span [class]="'badge badge-' + getStatusClass(processo.status)">
                   {{ getStatusLabel(processo.status) }}
@@ -78,7 +90,7 @@ export class ProcessoListComponent implements OnInit {
   processos: ProcessoSelecao[] = [];
   showForm = false;
   editingId: number | null = null;
-  formData: any = { nome: '', descricao: '', vagasDisponiveis: 1 };
+  formData: any = { nome: '', descricao: '', vagasDisponiveis: 1, dataInicio: '', dataFim: '' };
 
   constructor(private service: ProcessoSelecaoService) {}
 
@@ -95,7 +107,13 @@ export class ProcessoListComponent implements OnInit {
 
   edit(processo: ProcessoSelecao) {
     this.editingId = processo.id;
-    this.formData = { nome: processo.nome, descricao: processo.descricao, vagasDisponiveis: processo.vagasDisponiveis };
+    this.formData = { 
+      nome: processo.nome, 
+      descricao: processo.descricao, 
+      vagasDisponiveis: processo.vagasDisponiveis,
+      dataInicio: processo.dataInicio ? processo.dataInicio.split('T')[0] : '',
+      dataFim: processo.dataFim ? processo.dataFim.split('T')[0] : ''
+    };
     this.showForm = true;
   }
 
@@ -121,7 +139,7 @@ export class ProcessoListComponent implements OnInit {
   cancelForm() {
     this.showForm = false;
     this.editingId = null;
-    this.formData = { nome: '', descricao: '', vagasDisponiveis: 1 };
+    this.formData = { nome: '', descricao: '', vagasDisponiveis: 1, dataInicio: '', dataFim: '' };
   }
 
   iniciar(id: number) {
