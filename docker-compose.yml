@@ -40,12 +40,12 @@ services:
   backend:
     build:
       context: ./src/backend
-      dockerfile: ProcessoSelecao.Api/Dockerfile
+      dockerfile: ProcessoSelecao.Api/Dockerfile.dev
     container_name: processo-selecao-backend
     env_file:
       - .env
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=${DB_HOST};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;
       - JwtSettings__SecretKey=${JWT_SECRETKEY}
       - JwtSettings__Issuer=${JWT_ISSUER}
@@ -56,14 +56,14 @@ services:
       - EmailSettings__SmtpPassword=${SMTP_PASSWORD}
       - EmailSettings__FromEmail=${FROM_EMAIL}
     ports:
-      - "5000:5000"
       - "5002:5002"
     depends_on:
       sqlserver:
         condition: service_healthy
     volumes:
+      - ./src/backend:/src
+      - backend_cache:/src/.dotnet
       - documentos_data:/app/documentos
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   frontend:
     build:
@@ -88,3 +88,4 @@ volumes:
   sqlserver_log:
   sqlserver_backup:
   documentos_data:
+  backend_cache:

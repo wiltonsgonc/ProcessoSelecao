@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS development
+WORKDIR /src
+
+COPY ["ProcessoSelecao.Api/ProcessoSelecao.Api.csproj", "ProcessoSelecao.Api/"]
+COPY ["ProcessoSelecao.Application/ProcessoSelecao.Application.csproj", "ProcessoSelecao.Application/"]
+COPY ["ProcessoSelecao.Infrastructure/ProcessoSelecao.Infrastructure.csproj", "ProcessoSelecao.Infrastructure/"]
+COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj", "ProcessoSelecao.Domain/"]
+COPY ["ProcessoSelecao.Shared/ProcessoSelecao.Shared.csproj", "ProcessoSelecao.Shared/"]
+
+RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/ProcessoSelecao.Api"
+EXPOSE 5002
+
+CMD ["dotnet", "watch", "--urls", "http://0.0.0.0:5002"]

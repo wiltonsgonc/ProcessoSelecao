@@ -1,3 +1,4 @@
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -12,6 +13,7 @@ COPY . .
 WORKDIR "/src/ProcessoSelecao.Api"
 RUN dotnet publish "ProcessoSelecao.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+# Runtime stage (production)
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS runtime
 WORKDIR /app
 EXPOSE 8080
