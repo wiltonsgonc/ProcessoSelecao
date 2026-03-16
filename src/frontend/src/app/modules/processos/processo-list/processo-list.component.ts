@@ -60,6 +60,7 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
               <td>{{ processo.totalCandidatos }}</td>
               <td>
                 <button class="btn btn-sm btn-primary" (click)="edit(processo)">Editar</button>
+                <button class="btn btn-sm btn-info" (click)="copiarLink(processo.id)">Copiar Link</button>
                 <button class="btn btn-sm btn-secondary" (click)="iniciar(processo.id)" 
                         *ngIf="processo.status === 0">Iniciar</button>
                 <button class="btn btn-sm btn-danger" (click)="finalizar(processo.id)" 
@@ -99,13 +100,21 @@ export class ProcessoListComponent implements OnInit {
   }
 
   save() {
+    console.log('Salvando processo:', this.formData);
     const op = this.editingId 
       ? this.service.update(this.editingId, this.formData)
       : this.service.create(this.formData);
     
     op.subscribe({
-      next: () => { this.cancelForm(); this.load(); },
-      error: (err) => console.error('Erro ao salvar', err)
+      next: (result) => { 
+        console.log('Sucesso:', result); 
+        this.cancelForm(); 
+        this.load(); 
+      },
+      error: (err) => { 
+        console.error('Erro ao salvar', err);
+        alert('Erro: ' + JSON.stringify(err));
+      }
     });
   }
 
@@ -136,6 +145,15 @@ export class ProcessoListComponent implements OnInit {
         error: (err) => alert(err.error || 'Erro ao excluir')
       });
     }
+  }
+
+  copiarLink(id: number) {
+    const url = `${window.location.origin}/inscricao/${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copiado para a área de transferência!');
+    }).catch(() => {
+      alert('Link: ' + url);
+    });
   }
 
   getStatusLabel(status: StatusProcesso): string {
