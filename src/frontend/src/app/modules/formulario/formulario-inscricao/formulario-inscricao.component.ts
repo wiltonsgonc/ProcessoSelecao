@@ -87,7 +87,7 @@ export class FormularioInscricaoComponent implements OnInit {
     if (this.termoAceito) {
       this.formularioService.enviarInscricaoCompleta().subscribe({
         next: (response) => {
-          console.log('Inscrição enviada com sucesso:', response);
+          // console.log('Inscrição enviada com sucesso:', response);
           this.fecharModalConfirmacao();
           alert('Inscrição realizada com sucesso!');
           this.formularioService.limparDados();

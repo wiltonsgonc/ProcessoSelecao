@@ -118,14 +118,14 @@ export class ProcessoListComponent implements OnInit {
   }
 
   save() {
-    console.log('Salvando processo:', this.formData);
+    // console.log('Salvando processo:', this.formData);
     const op = this.editingId 
       ? this.service.update(this.editingId, this.formData)
       : this.service.create(this.formData);
     
     op.subscribe({
       next: (result) => { 
-        console.log('Sucesso:', result); 
+        // console.log('Sucesso:', result); 
         this.cancelForm(); 
         this.load(); 
       },
