@@ -5,7 +5,6 @@ COPY ["ProcessoSelecao.Api/ProcessoSelecao.Api.csproj", "ProcessoSelecao.Api/"]
 COPY ["ProcessoSelecao.Application/ProcessoSelecao.Application.csproj", "ProcessoSelecao.Application/"]
 COPY ["ProcessoSelecao.Infrastructure/ProcessoSelecao.Infrastructure.csproj", "ProcessoSelecao.Infrastructure/"]
 COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj", "ProcessoSelecao.Domain/"]
-COPY ["ProcessoSelecao.Shared/ProcessoSelecao.Shared.csproj", "ProcessoSelecao.Shared/"]
 
 RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
 
