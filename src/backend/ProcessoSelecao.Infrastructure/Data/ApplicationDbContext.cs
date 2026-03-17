@@ -87,6 +87,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DomainEntities.ProcessoSelecao>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd().UseIdentityColumn(1, 1);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descricao).HasMaxLength(1000);
         });
