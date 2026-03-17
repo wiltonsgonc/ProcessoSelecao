@@ -41,7 +41,7 @@ public class ProcessoSelecao : BaseEntity
             Status = StatusProcesso.Aberto;
             if (DataInicio == default)
             {
-                DataInicio = DateTime.UtcNow;
+                DataInicio = DateTime.Now;
             }
         }
     }
@@ -54,7 +54,7 @@ public class ProcessoSelecao : BaseEntity
         if (Status == StatusProcesso.EmAndamento || Status == StatusProcesso.Aberto)
         {
             Status = StatusProcesso.Finalizado;
-            DataFim = DateTime.UtcNow;
+            DataFim = DateTime.Now;
         }
     }
 
@@ -63,20 +63,23 @@ public class ProcessoSelecao : BaseEntity
     /// </summary>
     public bool VerificarPrazoExpirado()
     {
-        if (DataFim.HasValue && DateTime.UtcNow > DataFim.Value && Status != StatusProcesso.Finalizado)
+        if (DataFim.HasValue && Status != StatusProcesso.Finalizado)
         {
-            Status = StatusProcesso.Finalizado;
-            return true;
+            if (DateTime.Now > DataFim.Value)
+            {
+                Status = StatusProcesso.Finalizado;
+                return true;
+            }
         }
         return false;
     }
 
     /// <summary>
-    /// Verifica se o processo está dentro do prazo de vigência
+    /// Verifica se o processo está dentro do prazo de vigência (independente do status)
     /// </summary>
-    public bool EstaWithinPrazo()
+    public bool EstaDentroDoPrazo()
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         
         if (DataInicio > now)
             return false;
@@ -84,6 +87,17 @@ public class ProcessoSelecao : BaseEntity
         if (DataFim.HasValue && now > DataFim.Value)
             return false;
             
-        return Status == StatusProcesso.Aberto || Status == StatusProcesso.EmAndamento;
+        return true;
+    }
+
+    /// <summary>
+    /// Reverte o status para EmAndamento se o processo estiver Finalizado mas o prazo ainda for válido
+    /// </summary>
+    public void ReverterSePrazoValido()
+    {
+        if (Status == StatusProcesso.Finalizado && EstaDentroDoPrazo())
+        {
+            Status = StatusProcesso.EmAndamento;
+        }
     }
 }
