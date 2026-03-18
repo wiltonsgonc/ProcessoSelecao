@@ -7,7 +7,7 @@ form {
   padding: 1rem;
 }
 
-div {
+.campo-obrigatorio {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -17,10 +17,26 @@ label {
   font-weight: bold;
 }
 
+.asterisco {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
 input, select {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+input.invalid, select.invalid {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+}
+
+.erro {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 2px;
 }
 
 button {
@@ -34,4 +50,24 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.botoes {
+  margin-top: 1rem;
+}
+
+.info-cookies {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.campo-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.campo-checkbox input {
+  margin-top: 0.25rem;
 }

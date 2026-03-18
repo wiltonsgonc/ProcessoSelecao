@@ -16,7 +16,10 @@ export class Pagina4Component implements OnInit {
 
   form: FormGroup;
 
-  constructor(private fb: FormBuilder, private formularioService: FormularioService) {
+  constructor(
+    private fb: FormBuilder, 
+    private formularioService: FormularioService
+  ) {
     this.form = this.fb.group({
       processoSeletivo: [''],
       areaOfertada: ['', Validators.required],
@@ -50,6 +53,25 @@ export class Pagina4Component implements OnInit {
       const dados: DadosPagina4 = this.form.value;
       this.formularioService.salvarPagina4(dados);
       this.abrirConfirmacao.emit();
+    } else {
+      // Marcar campos obrigatórios como touched para mostrar erros
+      Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        if (control && control.validator) {
+          control.markAsTouched();
+        }
+      });
+      
+      // Mostrar alerta com campos obrigatórios
+      const invalidFields: string[] = [];
+      if (this.form.get('areaOfertada')?.invalid) invalidFields.push('Área ofertada - 1ª opção de curso');
+      if (this.form.get('formaInscricao')?.invalid) invalidFields.push('Forma de inscrição');
+      if (this.form.get('localProva')?.invalid) invalidFields.push('Local de realização da prova');
+      if (this.form.get('campusProva')?.invalid) invalidFields.push('Campus de realização da prova');
+      
+      if (invalidFields.length > 0) {
+        alert(`Por favor, preencha os seguintes campos obrigatórios:\n\n${invalidFields.join('\n')}`);
+      }
     }
   }
 

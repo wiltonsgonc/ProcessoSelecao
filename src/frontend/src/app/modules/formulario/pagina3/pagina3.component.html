@@ -1,42 +1,63 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <h2>Documentos</h2>
   
-  <div>
-    <label for="rgCpfCandidato">RG e CPF Candidato (PDF):</label>
-    <input id="rgCpfCandidato" type="file" (change)="onFileChange($event, 'rgCpfCandidato')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="rgCpfCandidato">RG e CPF Candidato (PDF): <span class="asterisco">*</span></label>
+    <input id="rgCpfCandidato" type="file" (change)="onFileChange($event, 'rgCpfCandidato')" accept=".pdf" [class.invalid]="form.get('rgCpfCandidato')?.invalid && form.get('rgCpfCandidato')?.touched" />
+    <div class="erro" *ngIf="form.get('rgCpfCandidato')?.invalid && form.get('rgCpfCandidato')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="anexoI">Anexo I do edital:</label>
-    <input id="anexoI" type="file" (change)="onFileChange($event, 'anexoI')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="anexoI">Anexo I do edital: <span class="asterisco">*</span></label>
+    <input id="anexoI" type="file" (change)="onFileChange($event, 'anexoI')" accept=".pdf" [class.invalid]="form.get('anexoI')?.invalid && form.get('anexoI')?.touched" />
+    <div class="erro" *ngIf="form.get('anexoI')?.invalid && form.get('anexoI')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="curriculoLattesCandidato">Currículo Lattes do candidato atualizado:</label>
-    <input id="curriculoLattesCandidato" type="file" (change)="onFileChange($event, 'curriculoLattesCandidato')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="curriculoLattesCandidato">Currículo Lattes do candidato atualizado: <span class="asterisco">*</span></label>
+    <input id="curriculoLattesCandidato" type="file" (change)="onFileChange($event, 'curriculoLattesCandidato')" accept=".pdf" [class.invalid]="form.get('curriculoLattesCandidato')?.invalid && form.get('curriculoLattesCandidato')?.touched" />
+    <div class="erro" *ngIf="form.get('curriculoLattesCandidato')?.invalid && form.get('curriculoLattesCandidato')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="curriculoLattesOrientador">Currículo Lattes do orientador atualizado:</label>
-    <input id="curriculoLattesOrientador" type="file" (change)="onFileChange($event, 'curriculoLattesOrientador')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="curriculoLattesOrientador">Currículo Lattes do orientador atualizado: <span class="asterisco">*</span></label>
+    <input id="curriculoLattesOrientador" type="file" (change)="onFileChange($event, 'curriculoLattesOrientador')" accept=".pdf" [class.invalid]="form.get('curriculoLattesOrientador')?.invalid && form.get('curriculoLattesOrientador')?.touched" />
+    <div class="erro" *ngIf="form.get('curriculoLattesOrientador')?.invalid && form.get('curriculoLattesOrientador')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="anexoII">Anexo II (ver edital):</label>
-    <input id="anexoII" type="file" (change)="onFileChange($event, 'anexoII')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="anexoII">Anexo II (ver edital): <span class="asterisco">*</span></label>
+    <input id="anexoII" type="file" (change)="onFileChange($event, 'anexoII')" accept=".pdf" [class.invalid]="form.get('anexoII')?.invalid && form.get('anexoII')?.touched" />
+    <div class="erro" *ngIf="form.get('anexoII')?.invalid && form.get('anexoII')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="comprovanteMatricula">Comprovante de Matrícula Assinado Instituição de Ensino:</label>
-    <input id="comprovanteMatricula" type="file" (change)="onFileChange($event, 'comprovanteMatricula')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="comprovanteMatricula">Comprovante de Matrícula Assinado Instituição de Ensino: <span class="asterisco">*</span></label>
+    <input id="comprovanteMatricula" type="file" (change)="onFileChange($event, 'comprovanteMatricula')" accept=".pdf" [class.invalid]="form.get('comprovanteMatricula')?.invalid && form.get('comprovanteMatricula')?.touched" />
+    <div class="erro" *ngIf="form.get('comprovanteMatricula')?.invalid && form.get('comprovanteMatricula')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="historicoEscolar">Histórico Escolar graduação (ver edital):</label>
-    <input id="historicoEscolar" type="file" (change)="onFileChange($event, 'historicoEscolar')" accept=".pdf" />
+  <div class="campo-obrigatorio">
+    <label for="historicoEscolar">Histórico Escolar graduação (ver edital): <span class="asterisco">*</span></label>
+    <input id="historicoEscolar" type="file" (change)="onFileChange($event, 'historicoEscolar')" accept=".pdf" [class.invalid]="form.get('historicoEscolar')?.invalid && form.get('historicoEscolar')?.touched" />
+    <div class="erro" *ngIf="form.get('historicoEscolar')?.invalid && form.get('historicoEscolar')?.touched">
+      <span>Arquivo obrigatório</span>
+    </div>
   </div>
   
-  <div>
+  <div class="botoes">
     <button type="button" (click)="onAnterior()">Anterior</button>
     <button type="submit">Próximo</button>
   </div>

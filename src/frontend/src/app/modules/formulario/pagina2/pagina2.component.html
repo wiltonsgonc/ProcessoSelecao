@@ -1,13 +1,19 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <h2>Dados Básicos</h2>
-  <div>
-    <label for="nome">Nome:</label>
-    <input id="nome" formControlName="nome" placeholder="Nome" />
+  <div class="campo-obrigatorio">
+    <label for="nome">Nome: <span class="asterisco">*</span></label>
+    <input id="nome" formControlName="nome" placeholder="Nome" [class.invalid]="form.get('nome')?.invalid && form.get('nome')?.touched" />
+    <div class="erro" *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="dataNascimento">Data de Nascimento:</label>
-    <input id="dataNascimento" formControlName="dataNascimento" type="date" placeholder="Data de Nascimento" />
+  <div class="campo-obrigatorio">
+    <label for="dataNascimento">Data de Nascimento: <span class="asterisco">*</span></label>
+    <input id="dataNascimento" formControlName="dataNascimento" type="date" placeholder="Data de Nascimento" [class.invalid]="form.get('dataNascimento')?.invalid && form.get('dataNascimento')?.touched" />
+    <div class="erro" *ngIf="form.get('dataNascimento')?.invalid && form.get('dataNascimento')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
   <div>
@@ -40,31 +46,40 @@
     <input id="nacionalidade" formControlName="nacionalidade" placeholder="Nacionalidade" />
   </div>
   
-  <div>
-    <label for="email">E-mail:</label>
-    <input id="email" formControlName="email" type="email" placeholder="E-mail" />
+  <div class="campo-obrigatorio">
+    <label for="email">E-mail: <span class="asterisco">*</span></label>
+    <input id="email" formControlName="email" type="email" placeholder="E-mail" [class.invalid]="form.get('email')?.invalid && form.get('email')?.touched" />
+    <div class="erro" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
-  <div>
-    <label for="sexo">Sexo:</label>
-    <input id="sexo" formControlName="sexo" placeholder="Sexo" />
+  <div class="campo-obrigatorio">
+    <label for="sexo">Sexo: <span class="asterisco">*</span></label>
+    <input id="sexo" formControlName="sexo" placeholder="Sexo" [class.invalid]="form.get('sexo')?.invalid && form.get('sexo')?.touched" />
+    <div class="erro" *ngIf="form.get('sexo')?.invalid && form.get('sexo')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
   <h2>Documentos</h2>
   <div>
     <label for="cpf">CPF:</label>
-    <input id="cpf" formControlName="cpf" placeholder="CPF" />
+    <input id="cpf" formControlName="cpf" placeholder="Número" />
   </div>
   
   <h2>Endereço</h2>
-  <div>
-    <label for="telefone1">Telefone 1:</label>
-    <input id="telefone1" formControlName="telefone1" placeholder="Telefone 1" />
+  <div class="campo-obrigatorio">
+    <label for="telefone1">Telefone I: <span class="asterisco">*</span></label>
+    <input id="telefone1" formControlName="telefone1" placeholder="Telefone I" [class.invalid]="form.get('telefone1')?.invalid && form.get('telefone1')?.touched" />
+    <div class="erro" *ngIf="form.get('telefone1')?.invalid && form.get('telefone1')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
   <div>
-    <label for="telefone2">Telefone 2:</label>
-    <input id="telefone2" formControlName="telefone2" placeholder="Telefone 2" />
+    <label for="telefone2">Telefone II:</label>
+    <input id="telefone2" formControlName="telefone2" placeholder="Telefone II" />
   </div>
   
   <h2>Informações Adicionais</h2>
@@ -73,13 +88,16 @@
     <input id="corRaca" formControlName="corRaca" placeholder="Cor/Raça" />
   </div>
   
-  <div>
-    <label for="autorizacaoDados">Autorizo a utilização de dados pessoais:</label>
-    <select id="autorizacaoDados" formControlName="autorizacaoDados">
+  <div class="campo-obrigatorio">
+    <label for="autorizacaoDados">Autorizo a utilização de dados pessoais: <span class="asterisco">*</span></label>
+    <select id="autorizacaoDados" formControlName="autorizacaoDados" [class.invalid]="form.get('autorizacaoDados')?.invalid && form.get('autorizacaoDados')?.touched">
       <option value="">Selecione</option>
       <option value="sim">Sim</option>
       <option value="nao">Não</option>
     </select>
+    <div class="erro" *ngIf="form.get('autorizacaoDados')?.invalid && form.get('autorizacaoDados')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
   <h2>Dados Gerais de Estrangeiros</h2>
@@ -89,16 +107,19 @@
   </div>
   
   <div>
-    <label for="numeroRegistroGeral">Número Registro Geral:</label>
-    <input id="numeroRegistroGeral" formControlName="numeroRegistroGeral" placeholder="Número Registro Geral" />
+    <label for="numeroRegistroGeral">Número registro geral:</label>
+    <input id="numeroRegistroGeral" formControlName="numeroRegistroGeral" placeholder="Número registro geral" />
   </div>
   
-  <div>
-    <label for="dataVencimentoRG">Data Vencimento RG:</label>
-    <input id="dataVencimentoRG" formControlName="dataVencimentoRG" type="date" placeholder="Data Vencimento RG" />
+  <div class="campo-obrigatorio">
+    <label for="dataVencimentoRG">Data vencimento RG: <span class="asterisco">*</span></label>
+    <input id="dataVencimentoRG" formControlName="dataVencimentoRG" type="date" placeholder="Data vencimento RG" [class.invalid]="form.get('dataVencimentoRG')?.invalid && form.get('dataVencimentoRG')?.touched" />
+    <div class="erro" *ngIf="form.get('dataVencimentoRG')?.invalid && form.get('dataVencimentoRG')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
   </div>
   
-  <div>
+  <div class="botoes">
     <button type="button" (click)="onAnterior()">Anterior</button>
     <button type="submit">Próximo</button>
   </div>

@@ -19,7 +19,7 @@ h3 {
   padding-bottom: 0.5rem;
 }
 
-div {
+.campo-obrigatorio {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -29,10 +29,26 @@ label {
   font-weight: bold;
 }
 
+.asterisco {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
 input, select {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+input.invalid, select.invalid {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+}
+
+.erro {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 2px;
 }
 
 button {
@@ -55,4 +71,8 @@ button[type="button"] {
 
 button[type="button"]:hover {
   background-color: #5a6268;
+}
+
+.botoes {
+  margin-top: 1rem;
 }

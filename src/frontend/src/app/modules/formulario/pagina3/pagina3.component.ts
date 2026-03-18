@@ -16,7 +16,10 @@ export class Pagina3Component implements OnInit {
 
   form: FormGroup;
 
-  constructor(private fb: FormBuilder, private formularioService: FormularioService) {
+  constructor(
+    private fb: FormBuilder, 
+    private formularioService: FormularioService
+  ) {
     this.form = this.fb.group({
       rgCpfCandidato: [null, Validators.required],
       anexoI: [null, Validators.required],
@@ -50,6 +53,28 @@ export class Pagina3Component implements OnInit {
       const dados: DadosPagina3 = this.form.value;
       this.formularioService.salvarPagina3(dados);
       this.proxima.emit();
+    } else {
+      // Marcar campos obrigatórios como touched para mostrar erros
+      Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        if (control && control.validator) {
+          control.markAsTouched();
+        }
+      });
+      
+      // Mostrar alerta com campos obrigatórios
+      const invalidFields: string[] = [];
+      if (this.form.get('rgCpfCandidato')?.invalid) invalidFields.push('RG e CPF Candidato (PDF)');
+      if (this.form.get('anexoI')?.invalid) invalidFields.push('Anexo I do edital');
+      if (this.form.get('curriculoLattesCandidato')?.invalid) invalidFields.push('Currículo Lattes do candidato atualizado');
+      if (this.form.get('curriculoLattesOrientador')?.invalid) invalidFields.push('Currículo Lattes do orientador atualizado');
+      if (this.form.get('anexoII')?.invalid) invalidFields.push('Anexo II (ver edital)');
+      if (this.form.get('comprovanteMatricula')?.invalid) invalidFields.push('Comprovante de Matrícula Assinado Instituição de Ensino');
+      if (this.form.get('historicoEscolar')?.invalid) invalidFields.push('Histórico Escolar graduação');
+      
+      if (invalidFields.length > 0) {
+        alert(`Por favor, envie os seguintes arquivos obrigatórios:\n\n${invalidFields.join('\n')}`);
+      }
     }
   }
 

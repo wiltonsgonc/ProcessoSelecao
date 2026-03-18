@@ -15,16 +15,19 @@ export class Pagina1Component implements OnInit {
 
   form: FormGroup;
 
-  constructor(private fb: FormBuilder, private formularioService: FormularioService) {
+  constructor(
+    private fb: FormBuilder, 
+    private formularioService: FormularioService
+  ) {
     this.form = this.fb.group({
-      nome: ['', Validators.required],
+      nome: [''],
       dataNascimento: ['', Validators.required],
-      tipoDocumento: ['', Validators.required],
-      numeroDocumento: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      tipoDocumento: [''],
+      numeroDocumento: [''],
+      email: [''],
       telefone: ['', Validators.required],
-      areaOfertada: ['', Validators.required],
-      politicaPrivacidade: [false, Validators.requiredTrue]
+      areaOfertada: [''],
+      politicaPrivacidade: [false]
     });
   }
 
@@ -41,6 +44,23 @@ export class Pagina1Component implements OnInit {
       const dados: DadosPagina1 = this.form.value;
       this.formularioService.salvarPagina1(dados);
       this.proxima.emit();
+    } else {
+      // Marcar campos obrigatórios como touched para mostrar erros
+      Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        if (control && control.validator) {
+          control.markAsTouched();
+        }
+      });
+      
+      // Mostrar alerta com campos obrigatórios
+      const invalidFields: string[] = [];
+      if (this.form.get('dataNascimento')?.invalid) invalidFields.push('Data de nascimento');
+      if (this.form.get('telefone')?.invalid) invalidFields.push('Telefone I');
+      
+      if (invalidFields.length > 0) {
+        alert(`Por favor, preencha os seguintes campos obrigatórios:\n\n${invalidFields.join('\n')}`);
+      }
     }
   }
 }
