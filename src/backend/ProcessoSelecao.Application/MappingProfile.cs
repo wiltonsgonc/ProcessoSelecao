@@ -31,7 +31,13 @@ public class MappingProfile : Profile
         
         // ProcessoSelecao
         CreateMap<DomainEntities.ProcessoSelecao, ProcessoSelecaoDto>();
-        CreateMap<CreateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>();
-        CreateMap<UpdateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>();
+        
+        CreateMap<CreateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>()
+            .ForMember(dest => dest.DataFim, opt => opt.MapFrom(src => 
+                src.DataFim.HasValue ? (DateTime?)src.DataFim.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59) : null));
+        
+        CreateMap<UpdateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>()
+            .ForMember(dest => dest.DataFim, opt => opt.MapFrom(src => 
+                src.DataFim.HasValue ? (DateTime?)src.DataFim.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59) : null));
     }
 }

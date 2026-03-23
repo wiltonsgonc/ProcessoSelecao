@@ -123,7 +123,7 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
     {
         var entity = await _repository.GetByIdAsync(id) ?? throw new Exception("Processo não encontrado");
         
-        if (entity.DataFim.HasValue && DateTime.Now > entity.DataFim.Value)
+        if (entity.DataFim.HasValue && DateTime.UtcNow > entity.DataFim.Value)
         {
             throw new Exception("O prazo para este processo já expirou");
         }

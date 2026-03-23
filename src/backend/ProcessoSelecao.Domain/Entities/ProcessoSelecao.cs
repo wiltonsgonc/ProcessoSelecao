@@ -41,7 +41,7 @@ public class ProcessoSelecao : BaseEntity
             Status = StatusProcesso.Aberto;
             if (DataInicio == default)
             {
-                DataInicio = DateTime.Now;
+                DataInicio = DateTime.UtcNow;
             }
         }
     }
@@ -54,7 +54,7 @@ public class ProcessoSelecao : BaseEntity
         if (Status == StatusProcesso.EmAndamento || Status == StatusProcesso.Aberto)
         {
             Status = StatusProcesso.Finalizado;
-            DataFim = DateTime.Now;
+            DataFim = DateTime.UtcNow;
         }
     }
 
@@ -65,7 +65,7 @@ public class ProcessoSelecao : BaseEntity
     {
         if (DataFim.HasValue && Status != StatusProcesso.Finalizado)
         {
-            if (DateTime.Now > DataFim.Value)
+            if (DateTime.UtcNow > DataFim.Value)
             {
                 Status = StatusProcesso.Finalizado;
                 return true;
@@ -79,7 +79,7 @@ public class ProcessoSelecao : BaseEntity
     /// </summary>
     public bool EstaDentroDoPrazo()
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         
         if (DataInicio > now)
             return false;
