@@ -4,6 +4,9 @@ using ProcessoSelecao.Application.Services;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Avaliadores
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AvaliadoresController : ControllerBase
@@ -15,6 +18,7 @@ public class AvaliadoresController : ControllerBase
         _service = service;
     }
 
+    /// <summary>Retorna todos os avaliadores</summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AvaliadorDto>>> GetAll()
     {
@@ -22,6 +26,7 @@ public class AvaliadoresController : ControllerBase
         return Ok(avaliadores);
     }
 
+    /// <summary>Retorna um avaliador pelo ID</summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<AvaliadorDto>> GetById(long id)
     {
@@ -30,6 +35,7 @@ public class AvaliadoresController : ControllerBase
         return Ok(avaliador);
     }
 
+    /// <summary>Retorna avaliadores de um processo</summary>
     [HttpGet("processo/{processoId}")]
     public async Task<ActionResult<IEnumerable<AvaliadorDto>>> GetByProcessoId(long processoId)
     {
@@ -37,6 +43,7 @@ public class AvaliadoresController : ControllerBase
         return Ok(avaliadores);
     }
 
+    /// <summary>Cria um novo avaliador</summary>
     [HttpPost]
     public async Task<ActionResult<AvaliadorDto>> Create([FromBody] CreateAvaliadorDto dto)
     {
@@ -44,6 +51,7 @@ public class AvaliadoresController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = avaliador.Id }, avaliador);
     }
 
+    /// <summary>Atualiza um avaliador</summary>
     [HttpPut("{id}")]
     public async Task<ActionResult<AvaliadorDto>> Update(long id, [FromBody] UpdateAvaliadorDto dto)
     {
@@ -58,6 +66,7 @@ public class AvaliadoresController : ControllerBase
         }
     }
 
+    /// <summary>Remove um avaliador</summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(long id)
     {

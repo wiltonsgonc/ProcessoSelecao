@@ -42,19 +42,7 @@ import { MatIconModule } from '@angular/material/icon';
             Baremas
           </a>
         </li>
-        <li>
-          <a routerLink="/admin/editais" routerLinkActive="active">
-            <mat-icon>description</mat-icon>
-            Editais
-          </a>
-        </li>
       </ul>
-      <div class="sidebar-footer">
-        <a routerLink="/">
-          <mat-icon>exit_to_app</mat-icon>
-          Ver Site Público
-        </a>
-      </div>
     </div>
     <div class="main-content">
       <router-outlet></router-outlet>
@@ -103,22 +91,6 @@ import { MatIconModule } from '@angular/material/icon';
       border-left: 3px solid #3498db;
     }
     .sidebar-nav li a mat-icon {
-      margin-right: 10px;
-    }
-    .sidebar-footer {
-      padding: 15px 20px;
-      border-top: 1px solid #34495e;
-    }
-    .sidebar-footer a {
-      display: flex;
-      align-items: center;
-      color: #bdc3c7;
-      text-decoration: none;
-    }
-    .sidebar-footer a:hover {
-      color: white;
-    }
-    .sidebar-footer a mat-icon {
       margin-right: 10px;
     }
     .main-content {

@@ -2,6 +2,9 @@ using ProcessoSelecao.Domain.Enums;
 
 namespace ProcessoSelecao.Application.DTOs;
 
+/// <summary>
+/// DTO para leitura de dados do Avaliador
+/// </summary>
 public class AvaliadorDto
 {
     public long Id { get; set; }
@@ -14,6 +17,9 @@ public class AvaliadorDto
     public int AvaliacoesPendentes { get; set; }
 }
 
+/// <summary>
+/// DTO para criação de novo Avaliador
+/// </summary>
 public class CreateAvaliadorDto
 {
     public string Nome { get; set; } = string.Empty;
@@ -24,6 +30,9 @@ public class CreateAvaliadorDto
     public long? ProcessoSelecaoId { get; set; }
 }
 
+/// <summary>
+/// DTO para atualização de Avaliador
+/// </summary>
 public class UpdateAvaliadorDto
 {
     public string Nome { get; set; } = string.Empty;

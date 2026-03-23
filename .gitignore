@@ -92,3 +92,12 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Documentation
+docs/
+
+# Build Scripts (Windows)
+backend.bat
+frontend.bat
+full.bat
+reset-db.bat

@@ -1,5 +1,8 @@
 namespace ProcessoSelecao.Domain.Enums;
 
+/// <summary>
+/// Status de validação de documentos
+/// </summary>
 public enum StatusValidacao
 {
     Pendente = 0,

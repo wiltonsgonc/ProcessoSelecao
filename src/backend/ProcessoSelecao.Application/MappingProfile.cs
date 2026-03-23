@@ -31,23 +31,13 @@ public class MappingProfile : Profile
         
         // ProcessoSelecao
         CreateMap<DomainEntities.ProcessoSelecao, ProcessoSelecaoDto>();
-        CreateMap<CreateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>();
-        CreateMap<UpdateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>();
-
-        // Edital
-        CreateMap<DomainEntities.Edital, EditalDto>();
-        CreateMap<EditalCreateDto, DomainEntities.Edital>();
-        CreateMap<EditalUpdateDto, DomainEntities.Edital>();
-
-        // OpcaoCurso
-        CreateMap<DomainEntities.OpcaoCurso, OpcaoCursoDto>();
-        CreateMap<OpcaoCursoCreateDto, DomainEntities.OpcaoCurso>();
-
-        // Inscricao
-        CreateMap<DomainEntities.Inscricao, InscricaoDto>();
-        CreateMap<InscricaoCreateDto, DomainEntities.Inscricao>();
-
-        // DocumentoInscricao
-        CreateMap<DomainEntities.DocumentoInscricao, DocumentoInscricaoDto>();
+        
+        CreateMap<CreateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>()
+            .ForMember(dest => dest.DataFim, opt => opt.MapFrom(src => 
+                src.DataFim.HasValue ? (DateTime?)src.DataFim.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59) : null));
+        
+        CreateMap<UpdateProcessoSelecaoDto, DomainEntities.ProcessoSelecao>()
+            .ForMember(dest => dest.DataFim, opt => opt.MapFrom(src => 
+                src.DataFim.HasValue ? (DateTime?)src.DataFim.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59) : null));
     }
 }

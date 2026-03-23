@@ -1,0 +1,78 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h2 {
+  margin-top: 1rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+h3 {
+  margin-top: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.campo-obrigatorio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+label {
+  font-weight: bold;
+}
+
+.asterisco {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
+input, select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input.invalid, select.invalid {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+}
+
+.erro {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+button {
+  padding: 0.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button[type="button"] {
+  background-color: #6c757d;
+}
+
+button[type="button"]:hover {
+  background-color: #5a6268;
+}
+
+.botoes {
+  margin-top: 1rem;
+}

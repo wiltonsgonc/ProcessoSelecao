@@ -1,21 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { LayoutService } from '../../core/services/layout.service';
 
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, MatToolbarModule],
   template: `
     <mat-toolbar color="primary" class="header">
       <span class="logo" routerLink="/">Processo Seletivo</span>
       <span class="spacer"></span>
-      <button mat-button routerLink="/admin">
-        <mat-icon>admin_panel_settings</mat-icon>
-        Área Administrativa
-      </button>
     </mat-toolbar>
     <div class="content">
       <router-outlet></router-outlet>
@@ -57,4 +55,6 @@ import { MatIconModule } from '@angular/material/icon';
     }
   `]
 })
-export class PublicLayoutComponent {}
+export class PublicLayoutComponent {
+  layoutService = inject(LayoutService);
+}

@@ -1,5 +1,8 @@
 namespace ProcessoSelecao.Domain.Enums;
 
+/// <summary>
+/// Status do processo de seleção
+/// </summary>
 public enum StatusProcesso
 {
     Rascunho = 0,

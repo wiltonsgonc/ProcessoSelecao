@@ -1,5 +1,8 @@
 namespace ProcessoSelecao.Domain.Enums;
 
+/// <summary>
+/// Status da avaliação/barema
+/// </summary>
 public enum StatusBarema
 {
     Pendente = 0,

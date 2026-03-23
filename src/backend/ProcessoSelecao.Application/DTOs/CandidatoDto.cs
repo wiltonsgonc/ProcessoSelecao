@@ -2,6 +2,9 @@ using ProcessoSelecao.Domain.Enums;
 
 namespace ProcessoSelecao.Application.DTOs;
 
+/// <summary>
+/// DTO para leitura de dados do Candidato
+/// </summary>
 public class CandidatoDto
 {
     public long Id { get; set; }
@@ -17,6 +20,9 @@ public class CandidatoDto
     public int DocumentosValidados { get; set; }
 }
 
+/// <summary>
+/// DTO para criação de novo Candidato
+/// </summary>
 public class CreateCandidatoDto
 {
     public string Nome { get; set; } = string.Empty;
@@ -26,6 +32,9 @@ public class CreateCandidatoDto
     public long ProcessoSelecaoId { get; set; }
 }
 
+/// <summary>
+/// DTO para atualização de Candidato
+/// </summary>
 public class UpdateCandidatoDto
 {
     public string Nome { get; set; } = string.Empty;

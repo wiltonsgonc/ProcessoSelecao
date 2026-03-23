@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ["ProcessoSelecao.Api/ProcessoSelecao.Api.csproj", "ProcessoSelecao.Api/"]
+COPY ["ProcessoSelecao.Application/ProcessoSelecao.Application.csproj", "ProcessoSelecao.Application/"]
+COPY ["ProcessoSelecao.Infrastructure/ProcessoSelecao.Infrastructure.csproj", "ProcessoSelecao.Infrastructure/"]
+COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj", "ProcessoSelecao.Domain/"]
+
+RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
+
+COPY . .
+WORKDIR "/src/ProcessoSelecao.Api"
+RUN dotnet build "ProcessoSelecao.Api.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "ProcessoSelecao.Api.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+EXPOSE 5002
+ENTRYPOINT ["dotnet", "ProcessoSelecao.Api.dll", "--urls", "http://0.0.0.0:5002"]

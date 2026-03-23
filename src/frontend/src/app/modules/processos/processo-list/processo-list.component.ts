@@ -29,6 +29,14 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
           <label>Vagas Disponíveis</label>
           <input type="number" class="form-control" [(ngModel)]="formData.vagasDisponiveis" name="vagas" required>
         </div>
+        <div class="form-group">
+          <label>Data de Início</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.dataInicio" name="dataInicio">
+        </div>
+        <div class="form-group">
+          <label>Data de Término</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.dataFim" name="dataFim">
+        </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
         <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancelar</button>
       </form>
@@ -42,6 +50,8 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
               <th>ID</th>
               <th>Nome</th>
               <th>Vagas</th>
+              <th>Início</th>
+              <th>Término</th>
               <th>Status</th>
               <th>Candidatos</th>
               <th>Ações</th>
@@ -52,6 +62,8 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
               <td>{{ processo.id }}</td>
               <td>{{ processo.nome }}</td>
               <td>{{ processo.vagasDisponiveis }}</td>
+              <td>{{ processo.dataInicio | date:'dd/MM/yyyy' }}</td>
+              <td>{{ processo.dataFim | date:'dd/MM/yyyy' }}</td>
               <td>
                 <span [class]="'badge badge-' + getStatusClass(processo.status)">
                   {{ getStatusLabel(processo.status) }}
@@ -60,6 +72,7 @@ import { ProcessoSelecao, StatusProcesso } from '../../../core/models';
               <td>{{ processo.totalCandidatos }}</td>
               <td>
                 <button class="btn btn-sm btn-primary" (click)="edit(processo)">Editar</button>
+                <button class="btn btn-sm btn-info" (click)="copiarLink(processo.id)">Copiar Link</button>
                 <button class="btn btn-sm btn-secondary" (click)="iniciar(processo.id)" 
                         *ngIf="processo.status === 0">Iniciar</button>
                 <button class="btn btn-sm btn-danger" (click)="finalizar(processo.id)" 
@@ -77,7 +90,7 @@ export class ProcessoListComponent implements OnInit {
   processos: ProcessoSelecao[] = [];
   showForm = false;
   editingId: number | null = null;
-  formData: any = { nome: '', descricao: '', vagasDisponiveis: 1 };
+  formData: any = { nome: '', descricao: '', vagasDisponiveis: 1, dataInicio: '', dataFim: '' };
 
   constructor(private service: ProcessoSelecaoService) {}
 
@@ -94,25 +107,39 @@ export class ProcessoListComponent implements OnInit {
 
   edit(processo: ProcessoSelecao) {
     this.editingId = processo.id;
-    this.formData = { nome: processo.nome, descricao: processo.descricao, vagasDisponiveis: processo.vagasDisponiveis };
+    this.formData = { 
+      nome: processo.nome, 
+      descricao: processo.descricao, 
+      vagasDisponiveis: processo.vagasDisponiveis,
+      dataInicio: processo.dataInicio ? processo.dataInicio.split('T')[0] : '',
+      dataFim: processo.dataFim ? processo.dataFim.split('T')[0] : ''
+    };
     this.showForm = true;
   }
 
   save() {
+    // console.log('Salvando processo:', this.formData);
     const op = this.editingId 
       ? this.service.update(this.editingId, this.formData)
       : this.service.create(this.formData);
     
     op.subscribe({
-      next: () => { this.cancelForm(); this.load(); },
-      error: (err) => console.error('Erro ao salvar', err)
+      next: (result) => { 
+        // console.log('Sucesso:', result); 
+        this.cancelForm(); 
+        this.load(); 
+      },
+      error: (err) => { 
+        console.error('Erro ao salvar', err);
+        alert('Erro: ' + JSON.stringify(err));
+      }
     });
   }
 
   cancelForm() {
     this.showForm = false;
     this.editingId = null;
-    this.formData = { nome: '', descricao: '', vagasDisponiveis: 1 };
+    this.formData = { nome: '', descricao: '', vagasDisponiveis: 1, dataInicio: '', dataFim: '' };
   }
 
   iniciar(id: number) {
@@ -133,9 +160,18 @@ export class ProcessoListComponent implements OnInit {
     if (confirm('Deseja excluir este processo?')) {
       this.service.delete(id).subscribe({
         next: () => this.load(),
-        error: (err) => console.error('Erro ao excluir', err)
+        error: (err) => alert(err.error || 'Erro ao excluir')
       });
     }
+  }
+
+  copiarLink(id: number) {
+    const url = `${window.location.origin}/inscricao/${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copiado para a área de transferência!');
+    }).catch(() => {
+      alert('Link: ' + url);
+    });
   }
 
   getStatusLabel(status: StatusProcesso): string {

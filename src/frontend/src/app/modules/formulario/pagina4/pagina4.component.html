@@ -1,0 +1,123 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h2>OPÇÃO DE INTERESSE</h2>
+  
+  <h3>Processo seletivo e área ofertada</h3>
+  <div>
+    <label for="processoSeletivo">Processo seletivo:</label>
+    <input id="processoSeletivo" formControlName="processoSeletivo" placeholder="Nome do Edital" />
+  </div>
+  
+  <div>
+    <label for="areaOfertada">Área ofertada - 1ª opção de curso:</label>
+    <select id="areaOfertada" formControlName="areaOfertada">
+      <option value="">Selecione</option>
+      <option value="area1">Área 1</option>
+      <option value="area2">Área 2</option>
+    </select>
+  </div>
+  
+  <div>
+    <label for="formaInscricao">Forma de inscrição:</label>
+    <select id="formaInscricao" formControlName="formaInscricao">
+      <option value="">Selecione</option>
+      <option value="online">Online</option>
+      <option value="presencial">Presencial</option>
+    </select>
+  </div>
+  
+  <div>
+    <label for="localProva">Local de realização da prova:</label>
+    <select id="localProva" formControlName="localProva">
+      <option value="">Selecione</option>
+      <option value="local1">Local 1</option>
+      <option value="local2">Local 2</option>
+    </select>
+  </div>
+  
+  <div>
+    <label for="campusProva">Campus de realização da prova:</label>
+    <select id="campusProva" formControlName="campusProva">
+      <option value="">Selecione</option>
+      <option value="campus1">Campus 1</option>
+      <option value="campus2">Campus 2</option>
+    </select>
+  </div>
+  
+  <h3>Informações adicionais</h3>
+  <div>
+    <label for="dataInscricao">Data da inscrição:</label>
+    <input id="dataInscricao" formControlName="dataInscricao" type="date" placeholder="Data da inscrição" />
+  </div>
+  
+  <div>
+    <label for="valorInscricao">Valor da inscrição:</label>
+    <input id="valorInscricao" formControlName="valorInscricao" type="number" placeholder="Valor da inscrição" />
+  </div>
+  
+  <h3>Deficiências</h3>
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaFisica" />
+      Física
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaAuditiva" />
+      Auditiva
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaFala" />
+      Fala
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaVisual" />
+      Visual
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaMental" />
+      Mental
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaIntelectual" />
+      Intelectual
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaReabilitado" />
+      Reabilitado(BR)
+    </label>
+  </div>
+  
+  <div>
+    <label>
+      <input type="checkbox" formControlName="deficienciaMultipla" />
+      Múltipla
+    </label>
+  </div>
+  
+  <div>
+    <label for="motivoOutrasNecessidades">Motivo outras necessidades:</label>
+    <input id="motivoOutrasNecessidades" formControlName="motivoOutrasNecessidades" placeholder="Motivo outras necessidades" />
+  </div>
+  
+  <div>
+    <button type="button" (click)="onAnterior()">Anterior</button>
+    <button type="submit">Finalizar</button>
+  </div>
+</form>

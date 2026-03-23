@@ -1,0 +1,46 @@
+<div class="formulario-container" *ngIf="!carregando && processoEncontrado">
+  <div class="progresso">
+    <div class="barra-progresso" [style.width.%]="getProgresso()"></div>
+  </div>
+  
+  <div class="indicadores-pagina">
+    <span [class.ativa]="paginaAtual >= 1">1</span>
+    <span [class.ativa]="paginaAtual >= 2">2</span>
+    <span [class.ativa]="paginaAtual >= 3">3</span>
+    <span [class.ativa]="paginaAtual >= 4">4</span>
+  </div>
+
+  <div class="conteudo-pagina">
+    <ng-container [ngSwitch]="paginaAtual">
+      <app-pagina1 *ngSwitchCase="1" (proxima)="proximaPagina()"></app-pagina1>
+      <app-pagina2 *ngSwitchCase="2" (proxima)="proximaPagina()" (anterior)="paginaAnterior()"></app-pagina2>
+      <app-pagina3 *ngSwitchCase="3" (proxima)="proximaPagina()" (anterior)="paginaAnterior()"></app-pagina3>
+      <app-pagina4 *ngSwitchCase="4" (anterior)="paginaAnterior()" (abrirConfirmacao)="abrirModalConfirmacao()"></app-pagina4>
+    </ng-container>
+  </div>
+
+  <div class="modal-confirmacao" *ngIf="mostrarModalConfirmacao">
+    <div class="modal-conteudo">
+      <h2>Confirmação dos dados da inscrição</h2>
+      <p>Verifique se todos os dados estão corretos antes de confirmar.</p>
+      
+      <div class="resumo-dados">
+        <h3>Dados do Candidato</h3>
+        <p>Clique em "Li e aceito os termos e condições" para confirmar sua inscrição.</p>
+      </div>
+
+      <div class="modal-botoes">
+        <button type="button" class="btn-voltar" (click)="fecharModalConfirmacao()">Retornar ao cadastro</button>
+        <button type="button" class="btn-confirmar" (click)="confirmarInscricao()">
+          Li e aceito os termos e condições
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="carregando" class="carregando">
+  <p>Carregando...</p>
+</div>
+
+<app-pagina-nao-encontrada *ngIf="!carregando && !processoEncontrado"></app-pagina-nao-encontrada>

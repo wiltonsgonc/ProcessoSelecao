@@ -1,0 +1,65 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="nome">Nome:</label>
+    <input id="nome" formControlName="nome" placeholder="Nome" />
+  </div>
+  
+  <div class="campo-obrigatorio">
+    <label for="dataNascimento">Data de Nascimento: <span class="asterisco">*</span></label>
+    <input id="dataNascimento" formControlName="dataNascimento" type="date" placeholder="Data de Nascimento" [class.invalid]="form.get('dataNascimento')?.invalid && form.get('dataNascimento')?.touched" />
+    <div class="erro" *ngIf="form.get('dataNascimento')?.invalid && form.get('dataNascimento')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
+  </div>
+  
+  <div>
+    <label for="tipoDocumento">Tipo de Documento:</label>
+    <select id="tipoDocumento" formControlName="tipoDocumento">
+      <option value="">Selecione</option>
+      <option value="CPF">CPF</option>
+      <option value="RG">RG</option>
+      <option value="E-mail">E-mail</option>
+    </select>
+  </div>
+  
+  <div>
+    <label for="numeroDocumento">Número do Documento:</label>
+    <input id="numeroDocumento" formControlName="numeroDocumento" placeholder="Número do Documento" />
+  </div>
+  
+  <div>
+    <label for="email">E-mail:</label>
+    <input id="email" formControlName="email" type="email" placeholder="E-mail" />
+  </div>
+  
+  <div class="campo-obrigatorio">
+    <label for="telefone">Telefone I: <span class="asterisco">*</span></label>
+    <input id="telefone" formControlName="telefone" placeholder="Telefone" [class.invalid]="form.get('telefone')?.invalid && form.get('telefone')?.touched" />
+    <div class="erro" *ngIf="form.get('telefone')?.invalid && form.get('telefone')?.touched">
+      <span>Campo obrigatório</span>
+    </div>
+  </div>
+  
+  <div>
+    <label for="areaOfertada">Área Ofertada - 1ª opção de curso:</label>
+    <select id="areaOfertada" formControlName="areaOfertada">
+      <option value="">Selecione</option>
+      <option value="area1">Área 1</option>
+      <option value="area2">Área 2</option>
+    </select>
+  </div>
+  
+  <div class="info-cookies">
+    <p>Nós utilizamos cookies para personalizar anúncios, gerar dados estatístico e garantir que você tenha a melhor experiência no SENAI!</p>
+    <p>Conheça a Política de Privacidade SENAI.</p>
+  </div>
+  
+  <div class="campo-checkbox">
+    <input type="checkbox" id="politicaPrivacidade" formControlName="politicaPrivacidade" />
+    <label for="politicaPrivacidade">Concordo com a Política de Privacidade SENAI.</label>
+  </div>
+  
+  <div class="botoes">
+    <button type="submit">Continuar</button>
+  </div>
+</form>

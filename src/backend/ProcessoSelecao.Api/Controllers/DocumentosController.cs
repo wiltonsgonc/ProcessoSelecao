@@ -4,6 +4,9 @@ using ProcessoSelecao.Application.Services;
 
 namespace ProcessoSelecao.Api.Controllers;
 
+/// <summary>
+/// Controller para manipulação de Documentos
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class DocumentosController : ControllerBase
@@ -17,6 +20,7 @@ public class DocumentosController : ControllerBase
         _configuration = configuration;
     }
 
+    /// <summary>Retorna todos os documentos</summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<DocumentoDto>>> GetAll()
     {
@@ -24,6 +28,7 @@ public class DocumentosController : ControllerBase
         return Ok(documentos);
     }
 
+    /// <summary>Retorna um documento pelo ID</summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<DocumentoDto>> GetById(long id)
     {
@@ -32,6 +37,7 @@ public class DocumentosController : ControllerBase
         return Ok(documento);
     }
 
+    /// <summary>Retorna documentos de um candidato</summary>
     [HttpGet("candidato/{candidatoId}")]
     public async Task<ActionResult<IEnumerable<DocumentoDto>>> GetByCandidatoId(long candidatoId)
     {
@@ -39,6 +45,7 @@ public class DocumentosController : ControllerBase
         return Ok(documentos);
     }
 
+    /// <summary>Download de um documento</summary>
     [HttpGet("{id}/download")]
     public async Task<ActionResult> Download(long id)
     {
@@ -55,6 +62,7 @@ public class DocumentosController : ControllerBase
         }
     }
 
+    /// <summary>Upload de um novo documento</summary>
     [HttpPost]
     public async Task<ActionResult<DocumentoDto>> Create([FromForm] CreateDocumentoDto dto, IFormFile arquivo)
     {
@@ -68,6 +76,7 @@ public class DocumentosController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = documento.Id }, documento);
     }
 
+    /// <summary>Valida um documento</summary>
     [HttpPut("{id}/validar")]
     public async Task<ActionResult<DocumentoDto>> Validate(long id, [FromBody] ValidateDocumentoDto dto)
     {
@@ -82,6 +91,7 @@ public class DocumentosController : ControllerBase
         }
     }
 
+    /// <summary>Remove um documento</summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(long id)
     {

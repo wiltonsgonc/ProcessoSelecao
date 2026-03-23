@@ -7,18 +7,13 @@ export const routes: Routes = [
     path: '',
     component: PublicLayoutComponent,
     children: [
-      { path: '', redirectTo: 'editais', pathMatch: 'full' },
       { 
-        path: 'editais', 
-        loadComponent: () => import('./modules/editais/edital-list/edital-list.component').then(m => m.EditalListComponent)
+        path: '', 
+        loadComponent: () => import('./modules/home/home.component').then(m => m.HomeComponent)
       },
       { 
-        path: 'inscricoes/novo/:editalId', 
-        loadComponent: () => import('./modules/inscricao/inscricao-form/inscricao-form.component').then(m => m.InscricaoFormComponent)
-      },
-      { 
-        path: 'inscricoes/:id', 
-        loadComponent: () => import('./modules/inscricao/inscricao-detail/inscricao-detail.component').then(m => m.InscricaoDetailComponent)
+        path: 'inscricao/:processoId', 
+        loadComponent: () => import('./modules/formulario/formulario-inscricao/formulario-inscricao.component').then(m => m.FormularioInscricaoComponent)
       }
     ]
   },
@@ -46,20 +41,14 @@ export const routes: Routes = [
       { 
         path: 'baremas', 
         loadComponent: () => import('./modules/baremas/barema-list/barema-list.component').then(m => m.BaremaListComponent)
-      },
-      { 
-        path: 'editais', 
-        loadComponent: () => import('./modules/editais/edital-list-admin/edital-list-admin.component').then(m => m.EditalListAdminComponent)
-      },
-      { 
-        path: 'editais/novo', 
-        loadComponent: () => import('./modules/editais/edital-form/edital-form.component').then(m => m.EditalFormComponent)
-      },
-      { 
-        path: 'editais/:id', 
-        loadComponent: () => import('./modules/editais/edital-form/edital-form.component').then(m => m.EditalFormComponent)
       }
     ]
   },
-  { path: '**', redirectTo: '' }
+  { path: '**', component: PublicLayoutComponent, children: [
+      { 
+        path: '', 
+        loadComponent: () => import('./shared/pagina-nao-encontrada/pagina-nao-encontrada.component').then(m => m.PaginaNaoEncontradaComponent)
+      }
+    ]
+  }
 ];

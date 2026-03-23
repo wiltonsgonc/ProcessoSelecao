@@ -5,36 +5,57 @@ using ProcessoSelecao.Domain.Interfaces;
 using ProcessoSelecao.Infrastructure.Data;
 using ProcessoSelecao.Infrastructure.Repositories;
 
+/// <summary>
+/// Configuração e inicialização da aplicação ASP.NET Core
+/// </summary>
 var builder = WebApplication.CreateBuilder(args);
 
 var environment = builder.Environment.EnvironmentName;
 
+// Configura a URL da aplicação
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    // API e Swagger na porta 5002
+    serverOptions.ListenAnyIP(5002);
+    // Aplicação web na porta 5000
+    serverOptions.ListenAnyIP(5000);
+});
+
+// Adiciona serviços de controllers e API Explorer
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Adiciona Swagger/OpenAPI
 builder.Services.AddSwaggerGen();
 
+// Configuração do Entity Framework Core com SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.MigrationsAssembly("ProcessoSelecao.Infrastructure")));
 
+// ============================================
+// Registro de Repositories (Dependency Injection)
+// ============================================
 builder.Services.AddScoped<ICandidatoRepository, CandidatoRepository>();
 builder.Services.AddScoped<IDocumentoRepository, DocumentoRepository>();
 builder.Services.AddScoped<IAvaliadorRepository, AvaliadorRepository>();
 builder.Services.AddScoped<IBaremaRepository, BaremaRepository>();
 builder.Services.AddScoped<IProcessoSelecaoRepository, ProcessoSelecaoRepository>();
-builder.Services.AddScoped<IEditalRepository, EditalRepository>();
-builder.Services.AddScoped<IOpcaoCursoRepository, OpcaoCursoRepository>();
-builder.Services.AddScoped<IInscricaoRepository, InscricaoRepository>();
-builder.Services.AddScoped<IDocumentoInscricaoRepository, DocumentoInscricaoRepository>();
 
+// ============================================
+// Registro de Services
+// ============================================
 builder.Services.AddScoped<ICandidatoService, CandidatoService>();
 builder.Services.AddScoped<IDocumentoService, DocumentoService>();
 builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
-builder.Services.AddScoped<EditalService>();
-builder.Services.AddScoped<InscricaoService>();
 
+// ============================================
+// Configuração de Email
+// ============================================
 builder.Services.AddSingleton<EmailSettings>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
@@ -48,8 +69,10 @@ builder.Services.AddSingleton<EmailSettings>(sp =>
     };
 });
 
+// Configuração do AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+// Configuração de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -62,12 +85,27 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+// ============================================
+// Configuração do Pipeline de Requisições
+// ============================================
 
+// Swagger em ambiente de desenvolvimento
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Endpoint de health check
 app.MapGet("/api/health", () => "OK");
 
+// CORS
 app.UseCors("AllowAngular");
+
+// Autorização
 app.UseAuthorization();
+
+// Mapeamento dos controllers
 app.MapControllers();
+
 app.Run();
