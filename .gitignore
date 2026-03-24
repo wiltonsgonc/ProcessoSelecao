@@ -96,6 +96,11 @@ temp/
 # Documentation
 docs/
 
+# Documentos/Uploads
+documentos/
+/documentos/
+*.pdf
+
 # Build Scripts (Windows)
 backend.bat
 frontend.bat
