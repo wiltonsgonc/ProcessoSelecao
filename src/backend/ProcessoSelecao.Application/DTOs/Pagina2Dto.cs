@@ -3,7 +3,7 @@ namespace ProcessoSelecao.Application.DTOs
     public class Pagina2Dto
     {
         public string Nome { get; set; }
-        public DateTime DataNascimento { get; set; }
+        public string? DataNascimento { get; set; }
         public string PaisNatal { get; set; }
         public string EstadoNatal { get; set; }
         public string Naturalidade { get; set; }
@@ -19,6 +19,6 @@ namespace ProcessoSelecao.Application.DTOs
         public string AutorizacaoDados { get; set; }
         public string TipoVisto { get; set; }
         public string NumeroRegistroGeral { get; set; }
-        public DateTime DataVencimentoRG { get; set; }
+        public string? DataVencimentoRG { get; set; }
     }
 }
