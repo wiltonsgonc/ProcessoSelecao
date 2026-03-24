@@ -38,7 +38,7 @@ export class Pagina2Component implements OnInit {
       autorizacaoDados: ['', Validators.required],
       tipoVisto: [''],
       numeroRegistroGeral: [''],
-      dataVencimentoRG: ['', Validators.required]
+      dataVencimentoRG: ['']
     });
   }
 
@@ -72,7 +72,6 @@ export class Pagina2Component implements OnInit {
       if (this.form.get('sexo')?.invalid) invalidFields.push('Sexo');
       if (this.form.get('telefone1')?.invalid) invalidFields.push('Telefone I');
       if (this.form.get('autorizacaoDados')?.invalid) invalidFields.push('Autorizo a utilização de dados pessoais');
-      if (this.form.get('dataVencimentoRG')?.invalid) invalidFields.push('Data vencimento RG');
       
       if (invalidFields.length > 0) {
         alert(`Por favor, preencha os seguintes campos obrigatórios:\n\n${invalidFields.join('\n')}`);

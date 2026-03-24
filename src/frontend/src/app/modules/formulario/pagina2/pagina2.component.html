@@ -111,12 +111,9 @@
     <input id="numeroRegistroGeral" formControlName="numeroRegistroGeral" placeholder="Número registro geral" />
   </div>
   
-  <div class="campo-obrigatorio">
-    <label for="dataVencimentoRG">Data vencimento RG: <span class="asterisco">*</span></label>
-    <input id="dataVencimentoRG" formControlName="dataVencimentoRG" type="date" placeholder="Data vencimento RG" [class.invalid]="form.get('dataVencimentoRG')?.invalid && form.get('dataVencimentoRG')?.touched" />
-    <div class="erro" *ngIf="form.get('dataVencimentoRG')?.invalid && form.get('dataVencimentoRG')?.touched">
-      <span>Campo obrigatório</span>
-    </div>
+  <div>
+    <label for="dataVencimentoRG">Data vencimento RG:</label>
+    <input id="dataVencimentoRG" formControlName="dataVencimentoRG" type="date" placeholder="Data vencimento RG" />
   </div>
   
   <div class="botoes">
