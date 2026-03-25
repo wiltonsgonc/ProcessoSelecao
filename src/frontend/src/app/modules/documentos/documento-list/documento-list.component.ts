@@ -60,7 +60,8 @@ import { Documento, TipoDocumento } from '../../../core/models';
       </form>
     </div>
 
-    <div class="card">
+    <div class="card" *ngFor="let grupo of documentosAgrupados">
+      <h3>{{ grupo.candidatoNome || 'Candidato #' + grupo.candidatoId }}</h3>
       <div class="table-container">
         <table>
           <thead>
@@ -70,12 +71,11 @@ import { Documento, TipoDocumento } from '../../../core/models';
               <th>Tipo</th>
               <th>Data Upload</th>
               <th>Status</th>
-              <th>Candidato ID</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let doc of documentos">
+            <tr *ngFor="let doc of grupo.documentos">
               <td>{{ doc.id }}</td>
               <td>{{ doc.nomeArquivo }}</td>
               <td>{{ getTipoLabel(doc.tipo) }}</td>
@@ -85,7 +85,6 @@ import { Documento, TipoDocumento } from '../../../core/models';
                   {{ doc.validado ? 'Validado' : 'Pendente' }}
                 </span>
               </td>
-              <td>{{ doc.candidatoId }}</td>
               <td>
                 <button class="btn btn-sm btn-primary" (click)="openValidate(doc)">Validar</button>
                 <button class="btn btn-sm btn-danger" (click)="remove(doc.id)">Excluir</button>
@@ -99,6 +98,7 @@ import { Documento, TipoDocumento } from '../../../core/models';
 })
 export class DocumentoListComponent implements OnInit {
   documentos: Documento[] = [];
+  documentosAgrupados: { candidatoId: number; candidatoNome?: string; documentos: Documento[] }[] = [];
   showForm = false;
   showValidateModal = false;
   selectedFile: File | null = null;
@@ -114,9 +114,27 @@ export class DocumentoListComponent implements OnInit {
 
   load() {
     this.service.getAll().subscribe({
-      next: (data) => this.documentos = data,
+      next: (data) => {
+        this.documentos = data;
+        this.agruparDocumentos();
+      },
       error: (err) => console.error('Erro ao carregar documentos', err)
     });
+  }
+
+  agruparDocumentos() {
+    const grupos = new Map<number, { candidatoId: number; candidatoNome?: string; documentos: Documento[] }>();
+    for (const doc of this.documentos) {
+      if (!grupos.has(doc.candidatoId)) {
+        grupos.set(doc.candidatoId, {
+          candidatoId: doc.candidatoId,
+          candidatoNome: doc.candidatoNome,
+          documentos: []
+        });
+      }
+      grupos.get(doc.candidatoId)!.documentos.push(doc);
+    }
+    this.documentosAgrupados = Array.from(grupos.values());
   }
 
   onFileSelected(event: any) {

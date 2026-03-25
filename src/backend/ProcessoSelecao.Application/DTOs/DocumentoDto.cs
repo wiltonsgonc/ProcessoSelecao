@@ -14,6 +14,7 @@ public class DocumentoDto
     public bool Validado { get; set; }
     public string? MotivoRejeicao { get; set; }
     public long CandidatoId { get; set; }
+    public string? CandidatoNome { get; set; }
 }
 
 /// <summary>

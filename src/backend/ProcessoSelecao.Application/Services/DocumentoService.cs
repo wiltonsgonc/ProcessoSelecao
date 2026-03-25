@@ -50,7 +50,13 @@ public class DocumentoService : IDocumentoService
     public async Task<IEnumerable<DocumentoDto>> GetAllAsync()
     {
         var documentos = await _repository.GetAllAsync();
-        return _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
+        var dtos = _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
+        foreach (var dto in dtos)
+        {
+            var doc = documentos.FirstOrDefault(d => d.Id == dto.Id);
+            dto.CandidatoNome = doc?.Candidato?.Nome;
+        }
+        return dtos;
     }
 
     /// <summary>Retorna um documento pelo ID</summary>

@@ -68,6 +68,7 @@ export interface Documento {
   validado: boolean;
   motivoRejeicao?: string;
   candidatoId: number;
+  candidatoNome?: string;
 }
 
 export interface CreateDocumento {
