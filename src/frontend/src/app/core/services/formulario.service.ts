@@ -67,7 +67,7 @@ export interface DadosPagina4 {
   providedIn: 'root'
 })
 export class FormularioService {
-  private apiUrl = 'http://localhost:5001/api/formulario';
+  private apiUrl = 'http://localhost:5002/api/formulario';
 
   private dadosPagina1 = new BehaviorSubject<DadosPagina1>({});
   private dadosPagina2 = new BehaviorSubject<DadosPagina2>({});
@@ -111,9 +111,12 @@ export class FormularioService {
     return {
       pagina1: this.dadosPagina1.value,
       pagina2: this.dadosPagina2.value,
-      pagina3: this.dadosPagina3.value,
       pagina4: this.dadosPagina4.value
     };
+  }
+
+  getDadosPagina3() {
+    return this.dadosPagina3.value;
   }
 
   limparDados() {
@@ -140,8 +143,36 @@ export class FormularioService {
     return this.http.post(`${this.apiUrl}/pagina4`, dados);
   }
 
-  enviarInscricaoCompleta(): Observable<any> {
+  enviarInscricaoCompleta(processoSelecaoId: number): Observable<any> {
     const dados = this.getDadosCompletos();
-    return this.http.post(`${this.apiUrl}/completa`, dados);
+    const dadosPagina3 = this.getDadosPagina3();
+    
+    const formData = new FormData();
+    formData.append('processoSelecaoId', processoSelecaoId.toString());
+    formData.append('dados', JSON.stringify(dados));
+    
+    if (dadosPagina3.rgCpfCandidato) {
+      formData.append('rgCpfCandidato', dadosPagina3.rgCpfCandidato);
+    }
+    if (dadosPagina3.anexoI) {
+      formData.append('anexoI', dadosPagina3.anexoI);
+    }
+    if (dadosPagina3.curriculoLattesCandidato) {
+      formData.append('curriculoLattesCandidato', dadosPagina3.curriculoLattesCandidato);
+    }
+    if (dadosPagina3.curriculoLattesOrientador) {
+      formData.append('curriculoLattesOrientador', dadosPagina3.curriculoLattesOrientador);
+    }
+    if (dadosPagina3.anexoII) {
+      formData.append('anexoII', dadosPagina3.anexoII);
+    }
+    if (dadosPagina3.comprovanteMatricula) {
+      formData.append('comprovanteMatricula', dadosPagina3.comprovanteMatricula);
+    }
+    if (dadosPagina3.historicoEscolar) {
+      formData.append('historicoEscolar', dadosPagina3.historicoEscolar);
+    }
+
+    return this.http.post(`${this.apiUrl}/completa`, formData);
   }
 }

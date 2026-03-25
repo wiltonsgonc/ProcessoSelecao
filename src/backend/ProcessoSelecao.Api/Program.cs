@@ -52,6 +52,7 @@ builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+builder.Services.AddScoped<IInscricaoService, InscricaoService>();
 
 // ============================================
 // Configuração de Email

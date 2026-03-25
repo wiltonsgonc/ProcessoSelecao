@@ -27,6 +27,11 @@
       <div class="resumo-dados">
         <h3>Dados do Candidato</h3>
         <p>Clique em "Li e aceito os termos e condições" para confirmar sua inscrição.</p>
+        
+        <label class="termo-checkbox">
+          <input type="checkbox" [(ngModel)]="termoAceito" />
+          <span>Li e aceito os termos e condições</span>
+        </label>
       </div>
 
       <div class="modal-botoes">

@@ -3,7 +3,7 @@ namespace ProcessoSelecao.Application.DTOs
     public class Pagina1Dto
     {
         public string Nome { get; set; }
-        public DateTime DataNascimento { get; set; }
+        public string? DataNascimento { get; set; }
         public string TipoDocumento { get; set; }
         public string NumeroDocumento { get; set; }
         public string Email { get; set; }

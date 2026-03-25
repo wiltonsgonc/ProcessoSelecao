@@ -29,7 +29,10 @@ public class ProcessoSelecaoRepository : IProcessoSelecaoRepository
     /// <summary>Retorna todos os processos</summary>
     public async Task<IEnumerable<DomainEntities.ProcessoSelecao>> GetAllAsync()
     {
-        return await _context.ProcessosSelecao.ToListAsync();
+        return await _context.ProcessosSelecao
+            .Include(p => p.Candidatos)
+            .Include(p => p.Avaliadores)
+            .ToListAsync();
     }
 
     /// <summary>Adiciona um novo processo</summary>

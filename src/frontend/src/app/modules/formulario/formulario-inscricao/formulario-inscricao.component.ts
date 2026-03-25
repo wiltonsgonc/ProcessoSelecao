@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormularioService } from '../../../core/services/formulario.service';
 import { ProcessoSelecaoService } from '../../../core/services/processo-selecao.service';
@@ -14,6 +15,7 @@ import { PaginaNaoEncontradaComponent } from '../../../shared/pagina-nao-encontr
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     Pagina1Component,
     Pagina2Component,
     Pagina3Component,
@@ -30,6 +32,7 @@ export class FormularioInscricaoComponent implements OnInit {
   termoAceito = false;
   processoEncontrado = true;
   carregando = true;
+  processoSelecaoId: number | null = null;
 
   constructor(
     public formularioService: FormularioService,
@@ -42,6 +45,7 @@ export class FormularioInscricaoComponent implements OnInit {
     const processoId = this.route.snapshot.paramMap.get('processoId');
     
     if (processoId) {
+      this.processoSelecaoId = +processoId;
       this.processoSelecaoService.getById(+processoId).subscribe({
         next: (processo) => {
           this.carregando = false;
@@ -84,20 +88,28 @@ export class FormularioInscricaoComponent implements OnInit {
   }
 
   confirmarInscricao() {
-    if (this.termoAceito) {
-      this.formularioService.enviarInscricaoCompleta().subscribe({
-        next: (response) => {
-          // console.log('Inscrição enviada com sucesso:', response);
-          this.fecharModalConfirmacao();
-          alert('Inscrição realizada com sucesso!');
-          this.formularioService.limparDados();
-        },
-        error: (error) => {
-          console.error('Erro ao enviar inscrição:', error);
-          alert('Erro ao enviar inscrição. Tente novamente.');
-        }
-      });
+    if (!this.termoAceito) {
+      alert('Você precisa aceitar os termos e condições para confirmar a inscrição.');
+      return;
     }
+
+    if (!this.processoSelecaoId) {
+      alert('Processo de seleção não encontrado.');
+      return;
+    }
+
+    this.formularioService.enviarInscricaoCompleta(this.processoSelecaoId).subscribe({
+      next: (response) => {
+        this.fecharModalConfirmacao();
+        alert('Inscrição realizada com sucesso!');
+        this.formularioService.limparDados();
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        console.error('Erro ao enviar inscrição:', error);
+        alert('Erro ao enviar inscrição. Tente novamente.');
+      }
+    });
   }
 
   getProgresso(): number {
