@@ -61,8 +61,13 @@ import { Documento, TipoDocumento } from '../../../core/models';
     </div>
 
     <div class="card" *ngFor="let grupo of documentosAgrupados">
-      <h3>{{ grupo.candidatoNome || 'Candidato #' + grupo.candidatoId }}</h3>
-      <div class="table-container">
+      <div class="grupo-header" (click)="grupo.expandido = !grupo.expandido" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+        <h3>{{ grupo.candidatoNome || 'Candidato #' + grupo.candidatoId }} ({{ grupo.documentos.length }} documentos)</h3>
+        <button type="button" class="btn btn-sm" [class.btn-secondary]="!grupo.expandido" [class.btn-primary]="grupo.expandido">
+          {{ grupo.expandido ? 'Recolher' : 'Expandir' }}
+        </button>
+      </div>
+      <div class="table-container" *ngIf="grupo.expandido">
         <table>
           <thead>
             <tr>
@@ -98,7 +103,7 @@ import { Documento, TipoDocumento } from '../../../core/models';
 })
 export class DocumentoListComponent implements OnInit {
   documentos: Documento[] = [];
-  documentosAgrupados: { candidatoId: number; candidatoNome?: string; documentos: Documento[] }[] = [];
+  documentosAgrupados: { candidatoId: number; candidatoNome?: string; documentos: Documento[]; expandido: boolean }[] = [];
   showForm = false;
   showValidateModal = false;
   selectedFile: File | null = null;
@@ -123,13 +128,14 @@ export class DocumentoListComponent implements OnInit {
   }
 
   agruparDocumentos() {
-    const grupos = new Map<number, { candidatoId: number; candidatoNome?: string; documentos: Documento[] }>();
+    const grupos = new Map<number, { candidatoId: number; candidatoNome?: string; documentos: Documento[]; expandido: boolean }>();
     for (const doc of this.documentos) {
       if (!grupos.has(doc.candidatoId)) {
         grupos.set(doc.candidatoId, {
           candidatoId: doc.candidatoId,
           candidatoNome: doc.candidatoNome,
-          documentos: []
+          documentos: [],
+          expandido: false
         });
       }
       grupos.get(doc.candidatoId)!.documentos.push(doc);
