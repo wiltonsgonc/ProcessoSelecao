@@ -71,6 +71,9 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: processo-selecao-frontend
+    environment:
+      - NG_HMR=1
+      - NG_CLI_ANALYTICS=false
     ports:
       - "4200:4200"
     depends_on:
