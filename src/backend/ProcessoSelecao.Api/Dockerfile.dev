@@ -13,4 +13,4 @@ COPY . .
 WORKDIR "/src/ProcessoSelecao.Api"
 EXPOSE 5002
 
-CMD ["dotnet", "run", "--project", "ProcessoSelecao.Api.csproj", "--urls", "http://0.0.0.0:5002"]
+CMD ["dotnet", "watch", "run", "--project", "ProcessoSelecao.Api.csproj", "--urls", "http://0.0.0.0:5002"]
