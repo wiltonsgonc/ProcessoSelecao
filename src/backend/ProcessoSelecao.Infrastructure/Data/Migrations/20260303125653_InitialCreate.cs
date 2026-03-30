@@ -64,7 +64,7 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Matricula = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Cpf = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     AreaPesquisa = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     StatusValidacao = table.Column<int>(type: "int", nullable: false),
@@ -173,9 +173,9 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Candidatos_Matricula",
+                name: "IX_Candidatos_Cpf",
                 table: "Candidatos",
-                column: "Matricula",
+                column: "Cpf",
                 unique: true);
 
             migrationBuilder.CreateIndex(

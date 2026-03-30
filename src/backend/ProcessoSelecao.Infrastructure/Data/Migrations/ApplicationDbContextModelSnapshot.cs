@@ -173,9 +173,6 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("Matricula")
-                        .IsUnique();
-
                     b.HasIndex("ProcessoSelecaoId");
 
                     b.ToTable("Candidatos");

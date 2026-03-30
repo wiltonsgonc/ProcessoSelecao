@@ -147,7 +147,7 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Matricula")
+                    b.Property<string>("Cpf")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -168,7 +168,7 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("Matricula")
+                    b.HasIndex("Cpf")
                         .IsUnique();
 
                     b.HasIndex("ProcessoSelecaoId");
