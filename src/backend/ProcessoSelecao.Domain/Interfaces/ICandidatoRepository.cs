@@ -13,8 +13,8 @@ public interface ICandidatoRepository : IRepository<Candidato>
     /// <summary>Busca candidato pelo e-mail</summary>
     Task<Candidato?> GetByEmailAsync(string email);
     
-    /// <summary>Busca candidato pela matrícula</summary>
-    Task<Candidato?> GetByMatriculaAsync(string matricula);
+    /// <summary>Busca candidato pelo CPF</summary>
+    Task<Candidato?> GetByCpfAsync(string cpf);
     
     /// <summary>Retorna candidatos por status de validação</summary>
     Task<IEnumerable<Candidato>> GetByStatusValidacaoAsync(Domain.Enums.StatusValidacao status);
