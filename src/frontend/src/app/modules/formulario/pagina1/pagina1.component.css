@@ -64,10 +64,15 @@ button:hover {
 
 .campo-checkbox {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
 }
 
 .campo-checkbox input {
   margin-top: 0.25rem;
+}
+
+.campo-checkbox .erro {
+  margin-left: 1.5rem;
 }

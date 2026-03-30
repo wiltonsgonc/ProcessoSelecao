@@ -55,8 +55,11 @@
   </div>
   
   <div class="campo-checkbox">
-    <input type="checkbox" id="politicaPrivacidade" formControlName="politicaPrivacidade" />
+    <input type="checkbox" id="politicaPrivacidade" formControlName="politicaPrivacidade" [class.invalid]="form.get('politicaPrivacidade')?.invalid && form.get('politicaPrivacidade')?.touched" />
     <label for="politicaPrivacidade">Concordo com a Política de Privacidade SENAI.</label>
+    <div class="erro" *ngIf="form.get('politicaPrivacidade')?.invalid && form.get('politicaPrivacidade')?.touched">
+      <span>Você precisa aceitar a Política de Privacidade para continuar</span>
+    </div>
   </div>
   
   <div class="botoes">

@@ -27,7 +27,7 @@ export class Pagina1Component implements OnInit {
       email: [''],
       telefone: ['', Validators.required],
       areaOfertada: [''],
-      politicaPrivacidade: [false]
+      politicaPrivacidade: [false, Validators.requiredTrue]
     });
   }
 
@@ -57,6 +57,7 @@ export class Pagina1Component implements OnInit {
       const invalidFields: string[] = [];
       if (this.form.get('dataNascimento')?.invalid) invalidFields.push('Data de nascimento');
       if (this.form.get('telefone')?.invalid) invalidFields.push('Telefone I');
+      if (this.form.get('politicaPrivacidade')?.invalid) invalidFields.push('Política de Privacidade');
       
       if (invalidFields.length > 0) {
         alert(`Por favor, preencha os seguintes campos obrigatórios:\n\n${invalidFields.join('\n')}`);
