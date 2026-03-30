@@ -36,7 +36,7 @@ export enum StatusProcesso {
 export interface Candidato {
   id: number;
   nome: string;
-  matricula: string;
+  cpf: string;
   email: string;
   areaPesquisa?: string;
   statusValidacao: StatusValidacao;
@@ -49,7 +49,7 @@ export interface Candidato {
 
 export interface CreateCandidato {
   nome: string;
-  matricula: string;
+  cpf: string;
   email: string;
   areaPesquisa?: string;
   processoSelecaoId: number;

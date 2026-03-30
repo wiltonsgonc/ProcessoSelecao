@@ -22,8 +22,8 @@ import { Candidato, StatusValidacao } from '../../../core/models';
           <input type="text" class="form-control" [(ngModel)]="formData.nome" name="nome" required>
         </div>
         <div class="form-group">
-          <label>Matrícula</label>
-          <input type="text" class="form-control" [(ngModel)]="formData.matricula" name="matricula" [readonly]="editingId !== null" required>
+          <label>CPF</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.cpf" name="cpf" [readonly]="editingId !== null" required>
         </div>
         <div class="form-group">
           <label>Email</label>
@@ -49,7 +49,7 @@ import { Candidato, StatusValidacao } from '../../../core/models';
             <tr>
               <th>ID</th>
               <th>Nome</th>
-              <th>Matrícula</th>
+              <th>CPF</th>
               <th>Email</th>
               <th>Status</th>
               <th>Pontuação</th>
@@ -61,7 +61,7 @@ import { Candidato, StatusValidacao } from '../../../core/models';
             <tr *ngFor="let candidato of candidatos">
               <td>{{ candidato.id }}</td>
               <td>{{ candidato.nome }}</td>
-              <td>{{ candidato.matricula }}</td>
+              <td>{{ candidato.cpf }}</td>
               <td>{{ candidato.email }}</td>
               <td>
                 <span [class]="'badge badge-' + getStatusClass(candidato.statusValidacao)">
@@ -85,7 +85,7 @@ export class CandidatoListComponent implements OnInit {
   candidatos: Candidato[] = [];
   showForm = false;
   editingId: number | null = null;
-  formData: any = { nome: '', matricula: '', email: '', areaPesquisa: '', processoSelecaoId: null };
+  formData: any = { nome: '', cpf: '', email: '', areaPesquisa: '', processoSelecaoId: null };
 
   constructor(private service: CandidatoService) {}
 
@@ -104,7 +104,7 @@ export class CandidatoListComponent implements OnInit {
     this.editingId = candidato.id;
     this.formData = {
       nome: candidato.nome,
-      matricula: candidato.matricula,
+      cpf: candidato.cpf,
       email: candidato.email,
       areaPesquisa: candidato.areaPesquisa,
       processoSelecaoId: candidato.processoSelecaoId
@@ -126,7 +126,7 @@ export class CandidatoListComponent implements OnInit {
   cancelForm() {
     this.showForm = false;
     this.editingId = null;
-    this.formData = { nome: '', matricula: '', email: '', areaPesquisa: '', processoSelecaoId: null };
+    this.formData = { nome: '', cpf: '', email: '', areaPesquisa: '', processoSelecaoId: null };
   }
 
   remove(id: number) {
