@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { DocumentoService } from '../../../core/services/documento.service';
 import { Documento, TipoDocumento } from '../../../core/models';
 
@@ -60,6 +61,18 @@ import { Documento, TipoDocumento } from '../../../core/models';
       </form>
     </div>
 
+    <div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+      <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Visualizar Documento</h2>
+          <button type="button" class="btn-close" (click)="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <iframe *ngIf="viewUrl" [src]="viewUrl" frameborder="0" class="pdf-viewer"></iframe>
+        </div>
+      </div>
+    </div>
+
     <div class="card" *ngFor="let grupo of documentosAgrupados">
       <div class="grupo-header" (click)="grupo.expandido = !grupo.expandido" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
         <h3>{{ grupo.candidatoNome || 'Candidato #' + grupo.candidatoId }} ({{ grupo.documentos.length }} documentos)</h3>
@@ -91,6 +104,7 @@ import { Documento, TipoDocumento } from '../../../core/models';
                 </span>
               </td>
               <td>
+                <button class="btn btn-sm btn-info" (click)="viewDocument(doc)">Visualizar</button>
                 <button class="btn btn-sm btn-primary" (click)="openValidate(doc)">Validar</button>
                 <button class="btn btn-sm btn-danger" (click)="remove(doc.id)">Excluir</button>
               </td>
@@ -99,19 +113,25 @@ import { Documento, TipoDocumento } from '../../../core/models';
         </table>
       </div>
     </div>
-  `
+  `,
+  styleUrls: ['./documento-list.component.css']
 })
 export class DocumentoListComponent implements OnInit {
   documentos: Documento[] = [];
   documentosAgrupados: { candidatoId: number; candidatoNome?: string; documentos: Documento[]; expandido: boolean }[] = [];
   showForm = false;
   showValidateModal = false;
+  showViewModal = false;
   selectedFile: File | null = null;
   selectedDocumento: Documento | null = null;
   formData: any = { tipo: 1, candidatoId: null };
   validateData: any = { validado: false, motivoRejeicao: '' };
+  viewUrl: SafeResourceUrl | null = null;
 
-  constructor(private service: DocumentoService) {}
+  constructor(
+    private service: DocumentoService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit() {
     this.load();
@@ -161,6 +181,41 @@ export class DocumentoListComponent implements OnInit {
     this.selectedDocumento = doc;
     this.validateData = { validado: doc.validado, motivoRejeicao: doc.motivoRejeicao || '' };
     this.showValidateModal = true;
+  }
+
+  viewDocument(doc: Documento) {
+    this.selectedDocumento = doc;
+    const url = this.service.getViewUrl(doc.id);
+    console.log('Visualizando documento:', doc.id, url);
+    
+    // Adicionar headers para evitar cache
+    this.service.viewDocument(doc.id).subscribe({
+      next: (blob) => {
+        const blobUrl = URL.createObjectURL(blob);
+        this.viewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+        this.showViewModal = true;
+        console.log('PDF carregado com sucesso');
+      },
+      error: (err) => {
+        console.error('Erro ao carregar PDF:', err);
+        alert('Erro ao carregar documento: ' + err.message);
+      }
+    });
+  }
+
+  closeViewModal() {
+    if (this.viewUrl) {
+      // Liberar o blob URL para evitar memory leak
+      try {
+        const url = this.viewUrl.toString();
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      } catch (e) {}
+    }
+    this.showViewModal = false;
+    this.selectedDocumento = null;
+    this.viewUrl = null;
   }
 
   validate() {

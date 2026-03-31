@@ -11,6 +11,10 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
   get<T>(endpoint: string): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${endpoint}`);
   }
@@ -29,5 +33,9 @@ export class ApiService {
 
   uploadFile<T>(endpoint: string, formData: FormData): Observable<T> {
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, formData);
+  }
+
+  getBlob(endpoint: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}${endpoint}`, { responseType: 'blob' });
   }
 }

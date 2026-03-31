@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { Documento, CreateDocumento, ValidateDocumento } from '../models';
 
@@ -37,5 +38,17 @@ export class DocumentoService {
 
   delete(id: number) {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  getDownloadUrl(id: number): string {
+    return `${this.api.getBaseUrl()}${this.endpoint}/download/${id}`;
+  }
+
+  getViewUrl(id: number): string {
+    return this.api.getBaseUrl() + '/documentos/' + id + '/view';
+  }
+
+  viewDocument(id: number): Observable<Blob> {
+    return this.api.getBlob('/documentos/' + id + '/view');
   }
 }
