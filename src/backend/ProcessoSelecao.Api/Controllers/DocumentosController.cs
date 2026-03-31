@@ -54,7 +54,25 @@ public class DocumentosController : ControllerBase
             var filePath = await _service.GetFilePathAsync(id);
             var fileName = Path.GetFileName(filePath);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, "application/octet-stream", fileName);
+            return File(fileBytes, "application/pdf", fileName, enableRangeProcessing: true);
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    /// <summary>Visualizar documento PDF no navegador</summary>
+    [HttpGet("{id}/view")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> View(long id)
+    {
+        try
+        {
+            var filePath = await _service.GetFilePathAsync(id);
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var fileName = Path.GetFileName(filePath);
+            return File(fileBytes, "application/pdf", fileName, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
