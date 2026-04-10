@@ -49,6 +49,11 @@ export class DocumentoService {
   }
 
   viewDocument(id: number): Observable<Blob> {
-    return this.api.getBlob('/documentos/' + id + '/view');
+    return this.api.getBlob(`/documentos/${id}/view`);
   }
+
+   downloadMultiple(ids: number[]): Observable<Blob> {
+     return this.api.postBlob(`/documentos/download-multiple`, ids);
+   }
 }
+

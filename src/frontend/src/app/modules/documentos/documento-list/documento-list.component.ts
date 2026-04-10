@@ -12,7 +12,12 @@ import { Documento, TipoDocumento } from '../../../core/models';
   template: `
     <div class="page-header">
       <h1>Documentos</h1>
-      <button class="btn btn-primary" (click)="showValidateModal = false; showForm = true">Upload Documento</button>
+      <div class="header-actions">
+        <button class="btn btn-secondary" *ngIf="hasSelectedDocuments()" (click)="downloadSelected()">
+          Baixar Selecionados ({{ getSelectedCount() }})
+        </button>
+        <button class="btn btn-primary" (click)="showValidateModal = false; showForm = true">Upload Documento</button>
+      </div>
     </div>
 
     <div class="card" *ngIf="showForm">
@@ -84,6 +89,9 @@ import { Documento, TipoDocumento } from '../../../core/models';
         <table>
           <thead>
             <tr>
+              <th>
+                <input type="checkbox" (change)="toggleSelectAll($event)" />
+              </th>
               <th>ID</th>
               <th>Nome do Arquivo</th>
               <th>Tipo</th>
@@ -94,6 +102,9 @@ import { Documento, TipoDocumento } from '../../../core/models';
           </thead>
           <tbody>
             <tr *ngFor="let doc of grupo.documentos">
+              <td>
+                <input type="checkbox" [checked]="isSelected(doc.id)" (change)="toggleSelect(doc.id)" />
+              </td>
               <td>{{ doc.id }}</td>
               <td>{{ doc.nomeArquivo }}</td>
               <td>{{ getTipoLabel(doc.tipo) }}</td>
@@ -127,6 +138,7 @@ export class DocumentoListComponent implements OnInit {
   formData: any = { tipo: 1, candidatoId: null };
   validateData: any = { validado: false, motivoRejeicao: '' };
   viewUrl: SafeResourceUrl | null = null;
+  selectedIds: Set<number> = new Set();
 
   constructor(
     private service: DocumentoService,
@@ -234,6 +246,58 @@ export class DocumentoListComponent implements OnInit {
         error: (err) => console.error('Erro ao excluir', err)
       });
     }
+  }
+
+  toggleSelect(id: number) {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleSelectAll(event: any) {
+    const checked = event.target.checked;
+    this.documentosAgrupados.forEach(grupo => {
+      grupo.documentos.forEach(doc => {
+        if (checked) {
+          this.selectedIds.add(doc.id);
+        } else {
+          this.selectedIds.delete(doc.id);
+        }
+      });
+    });
+  }
+
+  getSelectedCount(): number {
+    return this.selectedIds.size;
+  }
+
+  hasSelectedDocuments(): boolean {
+    return this.selectedIds.size > 0;
+  }
+
+  downloadSelected() {
+    if (this.selectedIds.size === 0) return;
+    
+    const ids = Array.from(this.selectedIds);
+    this.service.downloadMultiple(ids).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'documentos_selecionados.zip';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      },
+      error: (err) => console.error('Erro ao baixar documentos', err)
+    });
   }
 
   getTipoLabel(tipo: TipoDocumento): string {
