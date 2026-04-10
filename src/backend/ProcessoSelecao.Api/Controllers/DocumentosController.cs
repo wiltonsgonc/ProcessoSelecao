@@ -116,4 +116,40 @@ public class DocumentosController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>Download múltiplos documentos em ZIP</summary>
+    [HttpPost("download-multiple")]
+    public async Task<ActionResult> DownloadMultiple([FromBody] List<long> ids)
+    {
+        if (ids == null || ids.Count == 0)
+            return BadRequest("Nenhum documento selecionado");
+
+        var zipBytes = await CreateZipAsync(ids);
+        return File(zipBytes, "application/octet-stream", "documentos_selecionados.zip");
+    }
+
+    private async Task<byte[]> CreateZipAsync(List<long> ids)
+    {
+        using var memoryStream = new MemoryStream();
+        using (var archive = new System.IO.Compression.ZipArchive(memoryStream, System.IO.Compression.ZipArchiveMode.Create, false))
+        {
+            foreach (var id in ids)
+            {
+                try
+                {
+                    var filePath = await _service.GetFilePathAsync(id);
+                    var fileName = Path.GetFileName(filePath);
+                    var entry = archive.CreateEntry(fileName, System.IO.Compression.CompressionLevel.Optimal);
+                    using var entryStream = entry.Open();
+                    using var fileStream = System.IO.File.OpenRead(filePath);
+                    await fileStream.CopyToAsync(entryStream);
+                }
+                catch
+                {
+                    // Ignora documentos não encontrados
+                }
+            }
+        }
+        return memoryStream.ToArray();
+    }
 }
