@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CandidatoService } from '../../../core/services/candidato.service';
-import { Candidato, StatusValidacao } from '../../../core/models';
+import { DocumentoService } from '../../../core/services/documento.service';
+import { Candidato, StatusValidacao, Documento } from '../../../core/models';
 
 @Component({
   selector: 'app-candidato-list',
@@ -71,12 +72,47 @@ import { Candidato, StatusValidacao } from '../../../core/models';
               <td>{{ candidato.pontuacaoMedia.toFixed(2) }}</td>
               <td>{{ candidato.documentosValidados }}/{{ candidato.totalDocumentos }}</td>
               <td>
+                <button class="btn btn-sm btn-info" (click)="showDetail(candidato)">Detalhe</button>
                 <button class="btn btn-sm btn-primary" (click)="edit(candidato)">Editar</button>
                 <button class="btn btn-sm btn-danger" (click)="remove(candidato.id)">Excluir</button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="modal" *ngIf="showModalDetail">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Validação - {{ selectedCandidato?.nome }}</h3>
+          <button class="close" (click)="showModalDetail = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <table *ngIf="documentos.length > 0">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Arquivo</th>
+                <th>Status</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of documentos">
+                <td>{{ getTipoDocumentoLabel(doc.tipo) }}</td>
+                <td>{{ doc.nomeArquivo }}</td>
+                <td>
+                  <span [class]="'badge badge-' + (doc.validado ? 'success' : 'danger')">
+                    {{ doc.validado ? 'Validado' : 'Rejeitado' }}
+                  </span>
+                </td>
+                <td>{{ doc.motivoRejeicao || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="documentos.length === 0">Nenhum documento encontrado.</p>
+        </div>
       </div>
     </div>
   `
@@ -86,8 +122,14 @@ export class CandidatoListComponent implements OnInit {
   showForm = false;
   editingId: number | null = null;
   formData: any = { nome: '', cpf: '', email: '', areaPesquisa: '', processoSelecaoId: null };
+  showModalDetail = false;
+  selectedCandidato: Candidato | null = null;
+  documentos: Documento[] = [];
 
-  constructor(private service: CandidatoService) {}
+  constructor(
+    private service: CandidatoService,
+    private documentoService: DocumentoService
+  ) {}
 
   ngOnInit() {
     this.load();
@@ -136,6 +178,20 @@ export class CandidatoListComponent implements OnInit {
         error: (err) => console.error('Erro ao excluir', err)
       });
     }
+  }
+
+  showDetail(candidato: Candidato) {
+    this.selectedCandidato = candidato;
+    this.showModalDetail = true;
+    this.documentoService.getByCandidatoId(candidato.id).subscribe({
+      next: (docs) => this.documentos = docs,
+      error: (err) => console.error('Erro ao carregar documentos', err)
+    });
+  }
+
+  getTipoDocumentoLabel(tipo: number): string {
+    const labels = ['', 'Histórico Escolar', 'Comprovante de Matrícula', 'Carta de Intenção', 'Currículo Lattes', 'Carta de Recomendação'];
+    return labels[tipo] || 'Desconhecido';
   }
 
   getStatusLabel(status: StatusValidacao): string {

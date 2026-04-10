@@ -97,6 +97,7 @@ import { Documento, TipoDocumento } from '../../../core/models';
               <th>Tipo</th>
               <th>Data Upload</th>
               <th>Status</th>
+              <th>Motivo</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -114,6 +115,7 @@ import { Documento, TipoDocumento } from '../../../core/models';
                   {{ doc.validado ? 'Validado' : 'Pendente' }}
                 </span>
               </td>
+              <td>{{ doc.motivoRejeicao || '-' }}</td>
               <td>
                 <button class="btn btn-sm btn-info" (click)="viewDocument(doc)">Visualizar</button>
                 <button class="btn btn-sm btn-primary" (click)="openValidate(doc)">Validar</button>
