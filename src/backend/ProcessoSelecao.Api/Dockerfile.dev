@@ -11,6 +11,10 @@ RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
 COPY . .
 
 WORKDIR "/src/ProcessoSelecao.Api"
+RUN dotnet tool install --global dotnet-ef
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 EXPOSE 5002
 
-CMD ["dotnet", "run", "--project", "ProcessoSelecao.Api.csproj", "--urls", "http://0.0.0.0:5002"]
+CMD ["dotnet", "watch", "run", "--project", "ProcessoSelecao.Api.csproj", "--urls", "http://0.0.0.0:5002"]

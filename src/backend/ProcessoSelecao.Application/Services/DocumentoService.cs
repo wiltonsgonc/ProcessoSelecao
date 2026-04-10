@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using ProcessoSelecao.Application.DTOs;
 using ProcessoSelecao.Domain.Entities;
 using ProcessoSelecao.Domain.Interfaces;
@@ -39,18 +40,26 @@ public class DocumentoService : IDocumentoService
 {
     private readonly IDocumentoRepository _repository;
     private readonly IMapper _mapper;
+    private readonly string _caminhoBase;
 
-    public DocumentoService(IDocumentoRepository repository, IMapper mapper)
+    public DocumentoService(IDocumentoRepository repository, IMapper mapper, IConfiguration configuration)
     {
         _repository = repository;
         _mapper = mapper;
+        _caminhoBase = configuration["Storage:CaminhoBase"] ?? "/app/documentos";
     }
 
     /// <summary>Retorna todos os documentos</summary>
     public async Task<IEnumerable<DocumentoDto>> GetAllAsync()
     {
         var documentos = await _repository.GetAllAsync();
-        return _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
+        var dtos = _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
+        foreach (var dto in dtos)
+        {
+            var doc = documentos.FirstOrDefault(d => d.Id == dto.Id);
+            dto.CandidatoNome = doc?.Candidato?.Nome;
+        }
+        return dtos;
     }
 
     /// <summary>Retorna um documento pelo ID</summary>
@@ -121,11 +130,41 @@ public class DocumentoService : IDocumentoService
     public async Task<string> GetFilePathAsync(long id)
     {
         var documento = await _repository.GetByIdAsync(id) ?? throw new Exception("Documento não encontrado");
-        if (!File.Exists(documento.CaminhoLocal))
+        
+        var caminhoArquivo = documento.CaminhoLocal;
+        
+        // Se o caminho já for um caminho absoluto válido dentro do container, usa diretamente
+        if (caminhoArquivo.StartsWith("/app/") || caminhoArquivo.StartsWith("/"))
         {
-            throw new FileNotFoundException("Arquivo não encontrado");
+            if (File.Exists(caminhoArquivo))
+            {
+                return caminhoArquivo;
+            }
+            // Tenta mapear para o caminho base
+            var nomeArquivo = Path.GetFileName(caminhoArquivo);
+            caminhoArquivo = Path.Combine(_caminhoBase, nomeArquivo);
         }
-        return documento.CaminhoLocal;
+        // Se o caminho for relativo (começa com ./ ou não for um caminho absoluto), combina com o caminho base
+        else if (!Path.IsPathRooted(caminhoArquivo) || caminhoArquivo.StartsWith("."))
+        {
+            // Remove o prefixo ./ se existir
+            if (caminhoArquivo.StartsWith("./"))
+            {
+                caminhoArquivo = caminhoArquivo.Substring(2);
+            }
+            // Se o caminho já contém "documentos/", não adiciona novamente
+            if (!caminhoArquivo.StartsWith("documentos/"))
+            {
+                caminhoArquivo = Path.Combine("documentos", caminhoArquivo);
+            }
+            caminhoArquivo = Path.Combine(_caminhoBase, caminhoArquivo);
+        }
+        
+        if (!File.Exists(caminhoArquivo))
+        {
+            throw new FileNotFoundException($"Arquivo não encontrado: {caminhoArquivo}");
+        }
+        return caminhoArquivo;
     }
 
     private static async Task<string> CalculateHashAsync(string filePath)

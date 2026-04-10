@@ -84,9 +84,9 @@ public class CandidatoRepository : ICandidatoRepository
     }
 
     /// <summary>Busca candidato por matrícula</summary>
-    public async Task<Candidato?> GetByMatriculaAsync(string matricula)
+    public async Task<Candidato?> GetByCpfAsync(string cpf)
     {
-        return await _context.Candidatos.FirstOrDefaultAsync(c => c.Matricula == matricula);
+        return await _context.Candidatos.FirstOrDefaultAsync(c => c.Cpf == cpf);
     }
 
     /// <summary>Retorna candidatos por status de validação</summary>

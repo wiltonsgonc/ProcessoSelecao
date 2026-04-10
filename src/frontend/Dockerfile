@@ -7,7 +7,7 @@ RUN npm install
 COPY . .
 
 EXPOSE 4200
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run start -- --poll 2000"]
 
 FROM node:24-alpine AS build
 WORKDIR /app

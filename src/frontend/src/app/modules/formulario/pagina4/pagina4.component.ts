@@ -20,13 +20,15 @@ export class Pagina4Component implements OnInit {
     private fb: FormBuilder, 
     private formularioService: FormularioService
   ) {
+    const hoje = new Date();
+    const dataFormatada = hoje.toLocaleDateString('en-CA');
     this.form = this.fb.group({
       processoSeletivo: [''],
       areaOfertada: ['', Validators.required],
       formaInscricao: ['', Validators.required],
       localProva: ['', Validators.required],
       campusProva: ['', Validators.required],
-      dataInscricao: [''],
+      dataInscricao: [dataFormatada],
       valorInscricao: [''],
       deficienciaFisica: [false],
       deficienciaAuditiva: [false],

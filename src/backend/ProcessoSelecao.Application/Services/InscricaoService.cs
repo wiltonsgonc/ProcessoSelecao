@@ -55,7 +55,7 @@ public class InscricaoService : IInscricaoService
             {
                 Nome = dto.Pagina1?.Nome ?? "Nome não informado",
                 Email = email,
-                Matricula = cpf,
+                Cpf = cpf,
                 AreaPesquisa = dto.Pagina1?.AreaOfertada ?? string.Empty,
                 ProcessoSelecaoId = dto.ProcessoSelecaoId,
                 DataCadastro = DateTime.UtcNow,

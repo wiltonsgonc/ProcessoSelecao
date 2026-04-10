@@ -25,15 +25,15 @@ import { MatIconModule } from '@angular/material/icon';
           </a>
         </li>
         <li>
-          <a routerLink="/admin/avaliadores" routerLinkActive="active">
-            <mat-icon>rate_review</mat-icon>
-            Avaliadores
-          </a>
-        </li>
-        <li>
           <a routerLink="/admin/documentos" routerLinkActive="active">
             <mat-icon>folder</mat-icon>
             Documentos
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/avaliadores" routerLinkActive="active">
+            <mat-icon>rate_review</mat-icon>
+            Avaliadores
           </a>
         </li>
         <li>

@@ -25,7 +25,9 @@ public class DocumentoRepository : IDocumentoRepository
     /// <summary>Retorna todos os documentos</summary>
     public async Task<IEnumerable<Documento>> GetAllAsync()
     {
-        return await _context.Documentos.ToListAsync();
+        return await _context.Documentos
+            .Include(d => d.Candidato)
+            .ToListAsync();
     }
 
     /// <summary>Adiciona um novo documento</summary>

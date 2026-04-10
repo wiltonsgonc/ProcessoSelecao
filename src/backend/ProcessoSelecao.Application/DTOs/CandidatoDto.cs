@@ -9,7 +9,7 @@ public class CandidatoDto
 {
     public long Id { get; set; }
     public string Nome { get; set; } = string.Empty;
-    public string Matricula { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
     public StatusValidacao StatusValidacao { get; set; }
@@ -26,7 +26,7 @@ public class CandidatoDto
 public class CreateCandidatoDto
 {
     public string Nome { get; set; } = string.Empty;
-    public string Matricula { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
     public long ProcessoSelecaoId { get; set; }

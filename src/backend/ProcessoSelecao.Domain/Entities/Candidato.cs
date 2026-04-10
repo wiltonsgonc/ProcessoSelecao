@@ -11,7 +11,7 @@ public class Candidato : BaseEntity
     public string Nome { get; set; } = string.Empty;
     
     /// <summary>Matrícula do candidato na instituição</summary>
-    public string Matricula { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     
     /// <summary>E-mail do candidato</summary>
     public string Email { get; set; } = string.Empty;
