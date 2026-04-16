@@ -13,6 +13,12 @@ public class Candidato : BaseEntity
     /// <summary>Matrícula do candidato na instituição</summary>
     public string Cpf { get; set; } = string.Empty;
     
+    /// <summary>RG do candidato</summary>
+    public string? RG { get; set; }
+    
+    /// <summary>Telefone do candidato</summary>
+    public string? Telefone { get; set; }
+    
     /// <summary>E-mail do candidato</summary>
     public string Email { get; set; } = string.Empty;
     

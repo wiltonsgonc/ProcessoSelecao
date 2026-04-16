@@ -65,6 +65,8 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Cpf = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    RG = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Telefone = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     AreaPesquisa = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     StatusValidacao = table.Column<int>(type: "int", nullable: false),

@@ -37,6 +37,8 @@ export interface Candidato {
   id: number;
   nome: string;
   cpf: string;
+  rg?: string;
+  telefone?: string;
   email: string;
   areaPesquisa?: string;
   statusValidacao: StatusValidacao;
@@ -50,6 +52,8 @@ export interface Candidato {
 export interface CreateCandidato {
   nome: string;
   cpf: string;
+  rg?: string;
+  telefone?: string;
   email: string;
   areaPesquisa?: string;
   processoSelecaoId: number;
