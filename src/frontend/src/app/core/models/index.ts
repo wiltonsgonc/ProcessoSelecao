@@ -68,6 +68,7 @@ export interface Documento {
   id: number;
   tipo: TipoDocumento;
   nomeArquivo: string;
+  linkUrl?: string;
   dataUpload: string;
   validado: boolean;
   motivoRejeicao?: string;
@@ -78,6 +79,12 @@ export interface Documento {
 export interface CreateDocumento {
   tipo: TipoDocumento;
   nomeArquivo: string;
+  candidatoId: number;
+}
+
+export interface CreateDocumentoWithUrl {
+  tipo: TipoDocumento;
+  linkUrl: string;
   candidatoId: number;
 }
 

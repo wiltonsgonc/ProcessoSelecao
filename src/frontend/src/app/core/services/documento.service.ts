@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Documento, CreateDocumento, ValidateDocumento } from '../models';
+import { Documento, CreateDocumento, CreateDocumentoWithUrl, ValidateDocumento } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +30,10 @@ export class DocumentoService {
     formData.append('nomeArquivo', data.nomeArquivo);
     formData.append('candidatoId', data.candidatoId.toString());
     return this.api.uploadFile<Documento>(this.endpoint, formData);
+  }
+
+  createWithUrl(data: CreateDocumentoWithUrl): Observable<Documento> {
+    return this.api.post<Documento>(`${this.endpoint}/with-url`, data);
   }
 
   validate(id: number, data: ValidateDocumento) {

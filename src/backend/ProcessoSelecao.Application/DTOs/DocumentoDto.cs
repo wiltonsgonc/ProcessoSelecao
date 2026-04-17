@@ -10,6 +10,7 @@ public class DocumentoDto
     public long Id { get; set; }
     public TipoDocumento Tipo { get; set; }
     public string NomeArquivo { get; set; } = string.Empty;
+    public string? LinkUrl { get; set; }
     public DateTime DataUpload { get; set; }
     public bool Validado { get; set; }
     public string? MotivoRejeicao { get; set; }
@@ -24,6 +25,17 @@ public class CreateDocumentoDto
 {
     public TipoDocumento Tipo { get; set; }
     public string NomeArquivo { get; set; } = string.Empty;
+    public string? LinkUrl { get; set; }
+    public long CandidatoId { get; set; }
+}
+
+/// <summary>
+/// DTO para criação de Documento via URL (Currículo Lattes)
+/// </summary>
+public class CreateDocumentoWithUrlDto
+{
+    public TipoDocumento Tipo { get; set; }
+    public string LinkUrl { get; set; } = string.Empty;
     public long CandidatoId { get; set; }
 }
 

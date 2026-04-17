@@ -101,7 +101,12 @@ import { Candidato, StatusValidacao, Documento } from '../../../core/models';
             <tbody>
               <tr *ngFor="let doc of documentos">
                 <td>{{ getTipoDocumentoLabel(doc.tipo) }}</td>
-                <td>{{ doc.nomeArquivo }}</td>
+                <td>
+                  <span *ngIf="doc.linkUrl" title="Link Lattes">🔗</span>
+                  <span *ngIf="!doc.linkUrl" title="Arquivo PDF">📄</span>
+                  {{ doc.nomeArquivo }}
+                  <a *ngIf="doc.linkUrl" [href]="doc.linkUrl" target="_blank" title="Abrir Lattes" style="margin-left: 5px;">🔍</a>
+                </td>
                 <td>
                   <span [class]="'badge badge-' + (doc.validado ? 'success' : 'danger')">
                     {{ doc.validado ? 'Validado' : 'Rejeitado' }}

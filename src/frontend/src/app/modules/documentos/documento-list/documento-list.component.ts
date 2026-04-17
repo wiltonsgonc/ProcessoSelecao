@@ -107,7 +107,12 @@ import { Documento, TipoDocumento } from '../../../core/models';
                 <input type="checkbox" [checked]="isSelected(doc.id)" (change)="toggleSelect(doc.id)" />
               </td>
               <td>{{ doc.id }}</td>
-              <td>{{ doc.nomeArquivo }}</td>
+              <td>
+                <span *ngIf="doc.linkUrl" title="Link Lattes">🔗</span>
+                <span *ngIf="!doc.linkUrl" title="Arquivo PDF">📄</span>
+                {{ doc.nomeArquivo }}
+              </td>
+              <td>{{ doc.linkUrl || '-' }}</td>
               <td>{{ getTipoLabel(doc.tipo) }}</td>
               <td>{{ doc.dataUpload | date:'dd/MM/yyyy HH:mm' }}</td>
               <td>
@@ -199,10 +204,17 @@ export class DocumentoListComponent implements OnInit {
 
   viewDocument(doc: Documento) {
     this.selectedDocumento = doc;
+    
+    // Se tiver LinkUrl, abrir em nova aba (Currículo Lattes ou outros)
+    if (doc.linkUrl) {
+      window.open(doc.linkUrl, '_blank');
+      return;
+    }
+    
+    // Para documentos sem linkUrl (PDF), abrir no modal
     const url = this.service.getViewUrl(doc.id);
     console.log('Visualizando documento:', doc.id, url);
     
-    // Adicionar headers para evitar cache
     this.service.viewDocument(doc.id).subscribe({
       next: (blob) => {
         const blobUrl = URL.createObjectURL(blob);

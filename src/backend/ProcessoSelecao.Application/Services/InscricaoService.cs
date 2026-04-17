@@ -77,6 +77,17 @@ public class InscricaoService : IInscricaoService
                 }
             }
 
+            if (dto.DocumentosLink != null)
+            {
+                foreach (var doc in dto.DocumentosLink)
+                {
+                    if (!string.IsNullOrWhiteSpace(doc.LinkUrl))
+                    {
+                        await SalvarDocumentoLinkAsync(candidatoCriado.Id, doc.Tipo, doc.LinkUrl, doc.Descricao);
+                    }
+                }
+            }
+
             return new InscricaoResultDto
             {
                 CandidatoId = candidatoCriado.Id,
@@ -117,6 +128,22 @@ public class InscricaoService : IInscricaoService
         await _documentoRepository.AddAsync(documento);
     }
 
+    private async Task SalvarDocumentoLinkAsync(long candidatoId, TipoDocumento tipo, string linkUrl, string? descricao)
+    {
+        var documento = new Documento
+        {
+            Tipo = tipo,
+            NomeArquivo = descricao ?? "Currículo Lattes",
+            LinkUrl = linkUrl,
+            CaminhoLocal = string.Empty,
+            CandidatoId = candidatoId,
+            DataUpload = DateTime.UtcNow,
+            Validado = false
+        };
+
+        await _documentoRepository.AddAsync(documento);
+    }
+
     private static async Task<string> CalcularHashAsync(string filePath)
     {
         using var sha256 = SHA256.Create();
@@ -140,6 +167,7 @@ public class CreateInscricaoCompletaDto
     public Pagina1Dto? Pagina1 { get; set; }
     public Pagina2Dto? Pagina2 { get; set; }
     public List<DocumentoUploadDto>? Documentos { get; set; }
+    public List<DocumentoLinkDto>? DocumentosLink { get; set; }
 }
 
 public class DocumentoUploadDto
@@ -147,4 +175,11 @@ public class DocumentoUploadDto
     public TipoDocumento Tipo { get; set; }
     public string NomeArquivo { get; set; } = string.Empty;
     public byte[]? Arquivo { get; set; }
+}
+
+public class DocumentoLinkDto
+{
+    public TipoDocumento Tipo { get; set; }
+    public string LinkUrl { get; set; } = string.Empty;
+    public string? Descricao { get; set; }
 }

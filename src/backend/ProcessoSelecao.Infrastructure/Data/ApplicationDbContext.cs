@@ -53,6 +53,7 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.NomeArquivo).IsRequired().HasMaxLength(300);
             entity.Property(e => e.CaminhoLocal).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.LinkUrl).HasMaxLength(500);
             entity.Property(e => e.HashValidacao).HasMaxLength(100);
             entity.Property(e => e.MotivoRejeicao).HasMaxLength(500);
             entity.HasOne(e => e.Candidato).WithMany(c => c.Documentos).HasForeignKey(e => e.CandidatoId);

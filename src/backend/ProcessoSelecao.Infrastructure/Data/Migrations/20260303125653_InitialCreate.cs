@@ -128,6 +128,7 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     Tipo = table.Column<int>(type: "int", nullable: false),
                     NomeArquivo = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
                     CaminhoLocal = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    LinkUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     HashValidacao = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     DataUpload = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Validado = table.Column<bool>(type: "bit", nullable: false),

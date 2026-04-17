@@ -210,6 +210,10 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("LinkUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("MotivoRejeicao")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");

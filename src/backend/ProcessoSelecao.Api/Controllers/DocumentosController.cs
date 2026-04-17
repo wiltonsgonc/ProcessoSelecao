@@ -94,6 +94,17 @@ public class DocumentosController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = documento.Id }, documento);
     }
 
+    /// <summary>Cria novo documento com URL (Currículo Lattes)</summary>
+    [HttpPost("with-url")]
+    public async Task<ActionResult<DocumentoDto>> CreateWithUrl([FromBody] CreateDocumentoWithUrlDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.LinkUrl))
+            return BadRequest("LinkUrl é obrigatório");
+
+        var documento = await _service.CreateWithUrlAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = documento.Id }, documento);
+    }
+
     /// <summary>Valida um documento</summary>
     [HttpPut("{id}/validar")]
     public async Task<ActionResult<DocumentoDto>> Validate(long id, [FromBody] ValidateDocumentoDto dto)
