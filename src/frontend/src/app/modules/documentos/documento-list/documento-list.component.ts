@@ -107,17 +107,15 @@ import { Documento, TipoDocumento } from '../../../core/models';
                 <input type="checkbox" [checked]="isSelected(doc.id)" (change)="toggleSelect(doc.id)" />
               </td>
               <td>{{ doc.id }}</td>
+              <td>{{ doc.nomeArquivo }}</td>
               <td>
-                <span *ngIf="doc.linkUrl" title="Link Lattes">🔗</span>
-                <span *ngIf="!doc.linkUrl" title="Arquivo PDF">📄</span>
-                {{ doc.nomeArquivo }}
+                <a *ngIf="doc.linkUrl" [href]="doc.linkUrl" target="_blank" title="Abrir link">{{ doc.linkUrl }}</a>
+                <span *ngIf="!doc.linkUrl">Documento</span>
               </td>
-              <td>{{ doc.linkUrl || '-' }}</td>
-              <td>{{ getTipoLabel(doc.tipo) }}</td>
               <td>{{ doc.dataUpload | date:'dd/MM/yyyy HH:mm' }}</td>
               <td>
-                <span [class]="'badge badge-' + (doc.validado ? 'success' : 'warning')">
-                  {{ doc.validado ? 'Validado' : 'Pendente' }}
+                <span [class]="getDocStatusClass(doc)">
+                  {{ getDocStatusLabel(doc) }}
                 </span>
               </td>
               <td>{{ doc.motivoRejeicao || '-' }}</td>
@@ -317,5 +315,17 @@ export class DocumentoListComponent implements OnInit {
   getTipoLabel(tipo: TipoDocumento): string {
     const labels = ['', 'Histórico Escolar', 'Comprovante Matrícula', 'Carta Intenção', 'Curriculum Lattes', 'Carta Recomendação'];
     return labels[tipo] || 'Desconhecido';
+  }
+
+  getDocStatusLabel(doc: Documento): string {
+    if (doc.validado) return 'Validado';
+    if (doc.motivoRejeicao) return 'Rejeitado';
+    return 'Pendente';
+  }
+
+  getDocStatusClass(doc: Documento): string {
+    if (doc.validado) return 'badge badge-success';
+    if (doc.motivoRejeicao) return 'badge badge-danger';
+    return 'badge badge-warning';
   }
 }

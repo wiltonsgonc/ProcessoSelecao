@@ -52,6 +52,7 @@ import { Candidato, StatusValidacao, Documento } from '../../../core/models';
               <th>Nome</th>
               <th>CPF</th>
               <th>Email</th>
+              <th>Telefone</th>
               <th>Status</th>
               <th>Pontuação</th>
               <th>Docs</th>
@@ -64,6 +65,7 @@ import { Candidato, StatusValidacao, Documento } from '../../../core/models';
               <td>{{ candidato.nome }}</td>
               <td>{{ candidato.cpf }}</td>
               <td>{{ candidato.email }}</td>
+              <td>{{ candidato.telefone }}</td>
               <td>
                 <span [class]="'badge badge-' + getStatusClass(candidato.statusValidacao)">
                   {{ getStatusLabel(candidato.statusValidacao) }}
@@ -102,14 +104,12 @@ import { Candidato, StatusValidacao, Documento } from '../../../core/models';
               <tr *ngFor="let doc of documentos">
                 <td>{{ getTipoDocumentoLabel(doc.tipo) }}</td>
                 <td>
-                  <span *ngIf="doc.linkUrl" title="Link Lattes">🔗</span>
-                  <span *ngIf="!doc.linkUrl" title="Arquivo PDF">📄</span>
                   {{ doc.nomeArquivo }}
-                  <a *ngIf="doc.linkUrl" [href]="doc.linkUrl" target="_blank" title="Abrir Lattes" style="margin-left: 5px;">🔍</a>
+                  <a *ngIf="doc.linkUrl" [href]="doc.linkUrl" target="_blank" title="Abrir link" style="margin-left: 5px;">(Link)</a>
                 </td>
                 <td>
-                  <span [class]="'badge badge-' + (doc.validado ? 'success' : 'danger')">
-                    {{ doc.validado ? 'Validado' : 'Rejeitado' }}
+                  <span [class]="getDocStatusClass(doc)">
+                    {{ getDocStatusLabel(doc) }}
                   </span>
                 </td>
                 <td>{{ doc.motivoRejeicao || '-' }}</td>
@@ -207,5 +207,17 @@ export class CandidatoListComponent implements OnInit {
   getStatusClass(status: StatusValidacao): string {
     const classes = ['warning', 'success', 'danger', 'info'];
     return classes[status] || 'default';
+  }
+
+  getDocStatusLabel(doc: Documento): string {
+    if (doc.validado) return 'Validado';
+    if (doc.motivoRejeicao) return 'Rejeitado';
+    return 'Pendente';
+  }
+
+  getDocStatusClass(doc: Documento): string {
+    if (doc.validado) return 'badge badge-success';
+    if (doc.motivoRejeicao) return 'badge badge-danger';
+    return 'badge badge-warning';
   }
 }
