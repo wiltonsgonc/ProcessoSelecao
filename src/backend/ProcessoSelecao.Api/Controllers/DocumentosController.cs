@@ -51,10 +51,12 @@ public class DocumentosController : ControllerBase
     {
         try
         {
+            var documento = await _service.GetByIdAsync(id);
+            if (documento == null) return NotFound("Documento não encontrado");
+            
             var filePath = await _service.GetFilePathAsync(id);
-            var fileName = Path.GetFileName(filePath);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, "application/pdf", fileName, enableRangeProcessing: true);
+            return File(fileBytes, "application/pdf", documento.NomeArquivo, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
@@ -69,10 +71,12 @@ public class DocumentosController : ControllerBase
     {
         try
         {
+            var documento = await _service.GetByIdAsync(id);
+            if (documento == null) return NotFound("Documento não encontrado");
+            
             var filePath = await _service.GetFilePathAsync(id);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            var fileName = Path.GetFileName(filePath);
-            return File(fileBytes, "application/pdf", fileName, enableRangeProcessing: true);
+            return File(fileBytes, "application/pdf", documento.NomeArquivo, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
@@ -148,9 +152,11 @@ public class DocumentosController : ControllerBase
             {
                 try
                 {
+                    var documento = await _service.GetByIdAsync(id);
+                    if (documento == null) continue;
+                    
                     var filePath = await _service.GetFilePathAsync(id);
-                    var fileName = Path.GetFileName(filePath);
-                    var entry = archive.CreateEntry(fileName, System.IO.Compression.CompressionLevel.Optimal);
+                    var entry = archive.CreateEntry(documento.NomeArquivo, System.IO.Compression.CompressionLevel.Optimal);
                     using var entryStream = entry.Open();
                     using var fileStream = System.IO.File.OpenRead(filePath);
                     await fileStream.CopyToAsync(entryStream);
