@@ -130,6 +130,14 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("CampusProva")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CorRaca")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Cpf")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -144,15 +152,86 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DataNascimento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataVencimentoRG")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("DeficienciaAuditiva")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaFala")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaFisica")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaIntelectual")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaMental")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaMultipla")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaReabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DeficienciaVisual")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("EstadoCivil")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("EstadoNatal")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FormaInscricao")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LocalProva")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("MotivoOutrasNecessidades")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Nacionalidade")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Naturalidade")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NomeSocial")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NumeroInscricao")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PaisNatal")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("ProcessoSelecaoId")
                         .HasColumnType("bigint");
@@ -161,12 +240,27 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("Sexo")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int>("StatusValidacao")
                         .HasColumnType("int");
 
                     b.Property<string>("Telefone")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Telefone2")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TipoVisto")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("ValorInscricao")
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -72,6 +72,32 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     StatusValidacao = table.Column<int>(type: "int", nullable: false),
                     DataCadastro = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProcessoSelecaoId = table.Column<long>(type: "bigint", nullable: false),
+                    NumeroInscricao = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: ""),
+                    DataNascimento = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PaisNatal = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    EstadoNatal = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Naturalidade = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    NomeSocial = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    EstadoCivil = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Nacionalidade = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Sexo = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Telefone2 = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
+                    CorRaca = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    DataVencimentoRG = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TipoVisto = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    FormaInscricao = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    LocalProva = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    CampusProva = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ValorInscricao = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
+                    DeficienciaFisica = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaAuditiva = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaFala = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaVisual = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaMental = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaIntelectual = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaReabilitado = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaMultipla = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    MotivoOutrasNecessidades = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },

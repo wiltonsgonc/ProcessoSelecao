@@ -42,6 +42,25 @@
       </div>
     </div>
   </div>
+
+  <div class="modal-confirmacao" *ngIf="mostrarModalSucesso">
+    <div class="modal-conteudo">
+      <h2>Inscrição Realizada com Sucesso!</h2>
+      <p>Seu número de inscrição é:</p>
+      
+      <div class="numero-inscricao">
+        {{ numeroInscricao }}
+      </div>
+      
+      <p class="aviso">Guarde este número para acompanhamento da sua inscrição.</p>
+
+      <div class="modal-botoes">
+        <button type="button" class="btn-confirmar" (click)="fecharModalSucesso()">
+          Ok
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div *ngIf="carregando" class="carregando">

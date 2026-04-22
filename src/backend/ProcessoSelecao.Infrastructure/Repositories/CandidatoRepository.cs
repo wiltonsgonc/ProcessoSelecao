@@ -96,4 +96,13 @@ public class CandidatoRepository : ICandidatoRepository
             .Where(c => c.StatusValidacao == status)
             .ToListAsync();
     }
+
+    /// <summary>Retorna o último candidato cadastrado em um processo</summary>
+    public async Task<Candidato?> GetLastByProcessoIdAsync(long processoId)
+    {
+        return await _context.Candidatos
+            .Where(c => c.ProcessoSelecaoId == processoId)
+            .OrderByDescending(c => c.Id)
+            .FirstOrDefaultAsync();
+    }
 }

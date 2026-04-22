@@ -18,4 +18,7 @@ public interface ICandidatoRepository : IRepository<Candidato>
     
     /// <summary>Retorna candidatos por status de validação</summary>
     Task<IEnumerable<Candidato>> GetByStatusValidacaoAsync(Domain.Enums.StatusValidacao status);
+    
+    /// <summary>Retorna o último candidato cadastrado em um processo</summary>
+    Task<Candidato?> GetLastByProcessoIdAsync(long processoId);
 }

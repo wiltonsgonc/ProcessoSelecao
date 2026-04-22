@@ -34,6 +34,84 @@ public class Candidato : BaseEntity
     /// <summary>ID do processo de seleção</summary>
     public long ProcessoSelecaoId { get; set; }
     
+    /// <summary>Número de inscrição gerado automaticamente</summary>
+    public string NumeroInscricao { get; set; } = string.Empty;
+    
+    /// <summary>Data de nascimento do candidato</summary>
+    public DateTime? DataNascimento { get; set; }
+    
+    /// <summary>País de nascimento</summary>
+    public string? PaisNatal { get; set; }
+    
+    /// <summary>Estado de nascimento</summary>
+    public string? EstadoNatal { get; set; }
+    
+    /// <summary>Naturalidade/Cidade de nascimento</summary>
+    public string? Naturalidade { get; set; }
+    
+    /// <summary>Nome social (se houver)</summary>
+    public string? NomeSocial { get; set; }
+    
+    /// <summary>Estado civil</summary>
+    public string? EstadoCivil { get; set; }
+    
+    /// <summary>Nacionalidade</summary>
+    public string? Nacionalidade { get; set; }
+    
+    /// <summary>Sexo</summary>
+    public string? Sexo { get; set; }
+    
+    /// <summary>Segundo telefone</summary>
+    public string? Telefone2 { get; set; }
+    
+    /// <summary>Cor/Raça</summary>
+    public string? CorRaca { get; set; }
+    
+    /// <summary>Data de vencimento do RG</summary>
+    public DateTime? DataVencimentoRG { get; set; }
+    
+    /// <summary>Tipo de visto</summary>
+    public string? TipoVisto { get; set; }
+    
+    /// <summary>Forma de inscrição</summary>
+    public string? FormaInscricao { get; set; }
+    
+    /// <summary>Local da prova</summary>
+    public string? LocalProva { get; set; }
+    
+    /// <summary>Campus da prova</summary>
+    public string? CampusProva { get; set; }
+    
+    /// <summary>Valor da inscrição</summary>
+    public decimal? ValorInscricao { get; set; }
+    
+    /// <summary>Deficiência física</summary>
+    public bool DeficienciaFisica { get; set; }
+    
+    /// <summary>Deficiência auditiva</summary>
+    public bool DeficienciaAuditiva { get; set; }
+    
+    /// <summary>Deficiência de fala</summary>
+    public bool DeficienciaFala { get; set; }
+    
+    /// <summary>Deficiência visual</summary>
+    public bool DeficienciaVisual { get; set; }
+    
+    /// <summary>Deficiência mental</summary>
+    public bool DeficienciaMental { get; set; }
+    
+    /// <summary>Deficiência intelectual</summary>
+    public bool DeficienciaIntelectual { get; set; }
+    
+    /// <summary>Pessoa reabilitada</summary>
+    public bool DeficienciaReabilitado { get; set; }
+    
+    /// <summary>Deficiência múltipla</summary>
+    public bool DeficienciaMultipla { get; set; }
+    
+    /// <summary>Motivo/descrição outras necessidades</summary>
+    public string? MotivoOutrasNecessidades { get; set; }
+    
     /// <summary>Processo de seleção relacionado</summary>
     public virtual ProcessoSelecao? ProcessoSelecao { get; set; }
     

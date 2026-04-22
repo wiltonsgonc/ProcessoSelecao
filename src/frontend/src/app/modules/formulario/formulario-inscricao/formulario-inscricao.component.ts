@@ -29,10 +29,12 @@ export class FormularioInscricaoComponent implements OnInit {
   paginaAtual = 1;
   totalPaginas = 4;
   mostrarModalConfirmacao = false;
+  mostrarModalSucesso = false;
   termoAceito = false;
   processoEncontrado = true;
   carregando = true;
   processoSelecaoId: number | null = null;
+  numeroInscricao: string = '';
 
   constructor(
     public formularioService: FormularioService,
@@ -87,6 +89,12 @@ export class FormularioInscricaoComponent implements OnInit {
     this.mostrarModalConfirmacao = false;
   }
 
+  fecharModalSucesso() {
+    this.mostrarModalSucesso = false;
+    this.formularioService.limparDados();
+    this.router.navigate(['/']);
+  }
+
   confirmarInscricao() {
     if (!this.termoAceito) {
       alert('Você precisa aceitar os termos e condições para confirmar a inscrição.');
@@ -101,9 +109,8 @@ export class FormularioInscricaoComponent implements OnInit {
     this.formularioService.enviarInscricaoCompleta(this.processoSelecaoId).subscribe({
       next: (response) => {
         this.fecharModalConfirmacao();
-        alert('Inscrição realizada com sucesso!');
-        this.formularioService.limparDados();
-        this.router.navigate(['/']);
+        this.numeroInscricao = response.numeroInscricao || '';
+        this.mostrarModalSucesso = true;
       },
       error: (error) => {
         console.error('Erro ao enviar inscrição:', error);
