@@ -106,3 +106,5 @@ backend.bat
 frontend.bat
 full.bat
 reset-db.bat
+
+core.*
