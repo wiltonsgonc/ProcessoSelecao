@@ -16,6 +16,9 @@ public class Documento : BaseEntity
     /// <summary>Caminho local onde o arquivo está存储ado</summary>
     public string CaminhoLocal { get; set; } = string.Empty;
     
+    /// <summary>URL do link (para Currículo Lattes)</summary>
+    public string? LinkUrl { get; set; }
+    
     /// <summary>Hash SHA-256 para validação de integridade</summary>
     public string? HashValidacao { get; set; }
     

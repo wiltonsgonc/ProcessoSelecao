@@ -19,17 +19,21 @@
   
   <div class="campo-obrigatorio">
     <label for="curriculoLattesCandidato">Currículo Lattes do candidato atualizado: <span class="asterisco">*</span></label>
-    <input id="curriculoLattesCandidato" type="file" (change)="onFileChange($event, 'curriculoLattesCandidato')" accept=".pdf" [class.invalid]="form.get('curriculoLattesCandidato')?.invalid && form.get('curriculoLattesCandidato')?.touched" />
+    <input id="curriculoLattesCandidato" type="url" formControlName="curriculoLattesCandidato" 
+           placeholder="https://lattes.cnpq.br/1234567890123456" 
+           [class.invalid]="form.get('curriculoLattesCandidato')?.invalid && form.get('curriculoLattesCandidato')?.touched" />
     <div class="erro" *ngIf="form.get('curriculoLattesCandidato')?.invalid && form.get('curriculoLattesCandidato')?.touched">
-      <span>Arquivo obrigatório</span>
+      <span>Link do Currículo Lattes é obrigatório</span>
     </div>
   </div>
   
   <div class="campo-obrigatorio">
     <label for="curriculoLattesOrientador">Currículo Lattes do orientador atualizado: <span class="asterisco">*</span></label>
-    <input id="curriculoLattesOrientador" type="file" (change)="onFileChange($event, 'curriculoLattesOrientador')" accept=".pdf" [class.invalid]="form.get('curriculoLattesOrientador')?.invalid && form.get('curriculoLattesOrientador')?.touched" />
+    <input id="curriculoLattesOrientador" type="url" formControlName="curriculoLattesOrientador" 
+           placeholder="https://lattes.cnpq.br/1234567890123456" 
+           [class.invalid]="form.get('curriculoLattesOrientador')?.invalid && form.get('curriculoLattesOrientador')?.touched" />
     <div class="erro" *ngIf="form.get('curriculoLattesOrientador')?.invalid && form.get('curriculoLattesOrientador')?.touched">
-      <span>Arquivo obrigatório</span>
+      <span>Link do Currículo Lattes é obrigatório</span>
     </div>
   </div>
   

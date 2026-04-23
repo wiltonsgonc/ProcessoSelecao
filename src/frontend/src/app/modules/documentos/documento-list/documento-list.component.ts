@@ -108,11 +108,14 @@ import { Documento, TipoDocumento } from '../../../core/models';
               </td>
               <td>{{ doc.id }}</td>
               <td>{{ doc.nomeArquivo }}</td>
-              <td>{{ getTipoLabel(doc.tipo) }}</td>
+              <td>
+                <a *ngIf="doc.linkUrl" [href]="doc.linkUrl" target="_blank" title="Abrir link">{{ doc.linkUrl }}</a>
+                <span *ngIf="!doc.linkUrl">Documento</span>
+              </td>
               <td>{{ doc.dataUpload | date:'dd/MM/yyyy HH:mm' }}</td>
               <td>
-                <span [class]="'badge badge-' + (doc.validado ? 'success' : 'warning')">
-                  {{ doc.validado ? 'Validado' : 'Pendente' }}
+                <span [class]="getDocStatusClass(doc)">
+                  {{ getDocStatusLabel(doc) }}
                 </span>
               </td>
               <td>{{ doc.motivoRejeicao || '-' }}</td>
@@ -199,10 +202,17 @@ export class DocumentoListComponent implements OnInit {
 
   viewDocument(doc: Documento) {
     this.selectedDocumento = doc;
+    
+    // Se tiver LinkUrl, abrir em nova aba (Currículo Lattes ou outros)
+    if (doc.linkUrl) {
+      window.open(doc.linkUrl, '_blank');
+      return;
+    }
+    
+    // Para documentos sem linkUrl (PDF), abrir no modal
     const url = this.service.getViewUrl(doc.id);
     console.log('Visualizando documento:', doc.id, url);
     
-    // Adicionar headers para evitar cache
     this.service.viewDocument(doc.id).subscribe({
       next: (blob) => {
         const blobUrl = URL.createObjectURL(blob);
@@ -305,5 +315,17 @@ export class DocumentoListComponent implements OnInit {
   getTipoLabel(tipo: TipoDocumento): string {
     const labels = ['', 'Histórico Escolar', 'Comprovante Matrícula', 'Carta Intenção', 'Curriculum Lattes', 'Carta Recomendação'];
     return labels[tipo] || 'Desconhecido';
+  }
+
+  getDocStatusLabel(doc: Documento): string {
+    if (doc.validado) return 'Validado';
+    if (doc.motivoRejeicao) return 'Rejeitado';
+    return 'Pendente';
+  }
+
+  getDocStatusClass(doc: Documento): string {
+    if (doc.validado) return 'badge badge-success';
+    if (doc.motivoRejeicao) return 'badge badge-danger';
+    return 'badge badge-warning';
   }
 }

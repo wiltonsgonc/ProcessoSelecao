@@ -7,31 +7,34 @@ using ProcessoSelecao.Domain.Interfaces;
 namespace ProcessoSelecao.Application.Services;
 
 /// <summary>
-/// Interface do serviço de Documentos
-/// </summary>
-public interface IDocumentoService
-{
-    /// <summary>Retorna todos os documentos</summary>
-    Task<IEnumerable<DocumentoDto>> GetAllAsync();
-    
-    /// <summary>Retorna um documento pelo ID</summary>
-    Task<DocumentoDto?> GetByIdAsync(long id);
-    
-    /// <summary>Cria um novo documento com upload de arquivo</summary>
-    Task<DocumentoDto> CreateAsync(CreateDocumentoDto dto, Stream fileStream, string caminhoBase);
-    
-    /// <summary>Valida um documento</summary>
-    Task<DocumentoDto> ValidateAsync(long id, ValidateDocumentoDto dto);
-    
-    /// <summary>Remove um documento</summary>
-    Task DeleteAsync(long id);
-    
-    /// <summary>Retorna documentos de um candidato</summary>
-    Task<IEnumerable<DocumentoDto>> GetByCandidatoIdAsync(long candidatoId);
-    
-    /// <summary>Retorna o caminho do arquivo</summary>
-    Task<string> GetFilePathAsync(long id);
-}
+    /// Interface do serviço de Documentos
+    /// </summary>
+    public interface IDocumentoService
+    {
+        /// <summary>Retorna todos os documentos</summary>
+        Task<IEnumerable<DocumentoDto>> GetAllAsync();
+        
+        /// <summary>Retorna um documento pelo ID</summary>
+        Task<DocumentoDto?> GetByIdAsync(long id);
+        
+        /// <summary>Cria um novo documento com upload de arquivo</summary>
+        Task<DocumentoDto> CreateAsync(CreateDocumentoDto dto, Stream fileStream, string caminhoBase);
+        
+        /// <summary>Cria um novo documento com URL (Currículo Lattes)</summary>
+        Task<DocumentoDto> CreateWithUrlAsync(CreateDocumentoWithUrlDto dto);
+        
+        /// <summary>Valida um documento</summary>
+        Task<DocumentoDto> ValidateAsync(long id, ValidateDocumentoDto dto);
+        
+        /// <summary>Remove um documento</summary>
+        Task DeleteAsync(long id);
+        
+        /// <summary>Retorna documentos de um candidato</summary>
+        Task<IEnumerable<DocumentoDto>> GetByCandidatoIdAsync(long candidatoId);
+        
+        /// <summary>Retorna o caminho do arquivo</summary>
+        Task<string> GetFilePathAsync(long id);
+    }
 
 /// <summary>
 /// Serviço para manipulação de Documentos
@@ -98,6 +101,24 @@ public class DocumentoService : IDocumentoService
         return _mapper.Map<DocumentoDto>(created);
     }
 
+    /// <summary>Cria um novo documento com URL (Currículo Lattes)</summary>
+    public async Task<DocumentoDto> CreateWithUrlAsync(CreateDocumentoWithUrlDto dto)
+    {
+        var entity = new Documento
+        {
+            Tipo = dto.Tipo,
+            NomeArquivo = "Currículo Lattes",
+            LinkUrl = dto.LinkUrl,
+            CaminhoLocal = string.Empty,
+            CandidatoId = dto.CandidatoId,
+            DataUpload = DateTime.UtcNow,
+            Validado = false
+        };
+
+        var created = await _repository.AddAsync(entity);
+        return _mapper.Map<DocumentoDto>(created);
+    }
+
     /// <summary>Valida um documento</summary>
     public async Task<DocumentoDto> ValidateAsync(long id, ValidateDocumentoDto dto)
     {
@@ -130,6 +151,11 @@ public class DocumentoService : IDocumentoService
     public async Task<string> GetFilePathAsync(long id)
     {
         var documento = await _repository.GetByIdAsync(id) ?? throw new Exception("Documento não encontrado");
+        
+        if (!string.IsNullOrEmpty(documento.LinkUrl))
+        {
+            throw new InvalidOperationException("Este documento é um link URL e não possui arquivo local");
+        }
         
         var caminhoArquivo = documento.CaminhoLocal;
         

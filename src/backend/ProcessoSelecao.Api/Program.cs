@@ -87,6 +87,15 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ============================================
+// Aplicar migrations automaticamente
+// ============================================
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
+// ============================================
 // Configuração do Pipeline de Requisições
 // ============================================
 

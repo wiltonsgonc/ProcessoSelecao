@@ -23,8 +23,8 @@ export class Pagina3Component implements OnInit {
     this.form = this.fb.group({
       rgCpfCandidato: [null, Validators.required],
       anexoI: [null, Validators.required],
-      curriculoLattesCandidato: [null, Validators.required],
-      curriculoLattesOrientador: [null, Validators.required],
+      curriculoLattesCandidato: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
+      curriculoLattesOrientador: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
       anexoII: [null, Validators.required],
       comprovanteMatricula: [null, Validators.required],
       historicoEscolar: [null, Validators.required]
@@ -66,14 +66,14 @@ export class Pagina3Component implements OnInit {
       const invalidFields: string[] = [];
       if (this.form.get('rgCpfCandidato')?.invalid) invalidFields.push('RG e CPF Candidato (PDF)');
       if (this.form.get('anexoI')?.invalid) invalidFields.push('Anexo I do edital');
-      if (this.form.get('curriculoLattesCandidato')?.invalid) invalidFields.push('Currículo Lattes do candidato atualizado');
-      if (this.form.get('curriculoLattesOrientador')?.invalid) invalidFields.push('Currículo Lattes do orientador atualizado');
+      if (this.form.get('curriculoLattesCandidato')?.invalid) invalidFields.push('Link do Currículo Lattes do candidato');
+      if (this.form.get('curriculoLattesOrientador')?.invalid) invalidFields.push('Link do Currículo Lattes do orientador');
       if (this.form.get('anexoII')?.invalid) invalidFields.push('Anexo II (ver edital)');
       if (this.form.get('comprovanteMatricula')?.invalid) invalidFields.push('Comprovante de Matrícula Assinado Instituição de Ensino');
       if (this.form.get('historicoEscolar')?.invalid) invalidFields.push('Histórico Escolar graduação');
       
       if (invalidFields.length > 0) {
-        alert(`Por favor, envie os seguintes arquivos obrigatórios:\n\n${invalidFields.join('\n')}`);
+        alert(`Por favor, preencha/envie os seguintes campos obrigatórios:\n\n${invalidFields.join('\n')}`);
       }
     }
   }

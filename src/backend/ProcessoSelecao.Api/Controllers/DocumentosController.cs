@@ -51,10 +51,12 @@ public class DocumentosController : ControllerBase
     {
         try
         {
+            var documento = await _service.GetByIdAsync(id);
+            if (documento == null) return NotFound("Documento não encontrado");
+            
             var filePath = await _service.GetFilePathAsync(id);
-            var fileName = Path.GetFileName(filePath);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, "application/pdf", fileName, enableRangeProcessing: true);
+            return File(fileBytes, "application/pdf", documento.NomeArquivo, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
@@ -69,10 +71,12 @@ public class DocumentosController : ControllerBase
     {
         try
         {
+            var documento = await _service.GetByIdAsync(id);
+            if (documento == null) return NotFound("Documento não encontrado");
+            
             var filePath = await _service.GetFilePathAsync(id);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            var fileName = Path.GetFileName(filePath);
-            return File(fileBytes, "application/pdf", fileName, enableRangeProcessing: true);
+            return File(fileBytes, "application/pdf", documento.NomeArquivo, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
@@ -91,6 +95,17 @@ public class DocumentosController : ControllerBase
         
         using var stream = arquivo.OpenReadStream();
         var documento = await _service.CreateAsync(dto, stream, caminhoBase);
+        return CreatedAtAction(nameof(GetById), new { id = documento.Id }, documento);
+    }
+
+    /// <summary>Cria novo documento com URL (Currículo Lattes)</summary>
+    [HttpPost("with-url")]
+    public async Task<ActionResult<DocumentoDto>> CreateWithUrl([FromBody] CreateDocumentoWithUrlDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.LinkUrl))
+            return BadRequest("LinkUrl é obrigatório");
+
+        var documento = await _service.CreateWithUrlAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = documento.Id }, documento);
     }
 
@@ -137,9 +152,11 @@ public class DocumentosController : ControllerBase
             {
                 try
                 {
+                    var documento = await _service.GetByIdAsync(id);
+                    if (documento == null) continue;
+                    
                     var filePath = await _service.GetFilePathAsync(id);
-                    var fileName = Path.GetFileName(filePath);
-                    var entry = archive.CreateEntry(fileName, System.IO.Compression.CompressionLevel.Optimal);
+                    var entry = archive.CreateEntry(documento.NomeArquivo, System.IO.Compression.CompressionLevel.Optimal);
                     using var entryStream = entry.Open();
                     using var fileStream = System.IO.File.OpenRead(filePath);
                     await fileStream.CopyToAsync(entryStream);

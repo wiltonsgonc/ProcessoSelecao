@@ -37,8 +37,8 @@ export interface DadosPagina2 {
 export interface DadosPagina3 {
   rgCpfCandidato?: File | null;
   anexoI?: File | null;
-  curriculoLattesCandidato?: File | null;
-  curriculoLattesOrientador?: File | null;
+  curriculoLattesCandidato?: string | null;
+  curriculoLattesOrientador?: string | null;
   anexoII?: File | null;
   comprovanteMatricula?: File | null;
   historicoEscolar?: File | null;

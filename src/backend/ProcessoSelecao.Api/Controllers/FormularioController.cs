@@ -11,11 +11,13 @@ public class FormularioController : ControllerBase
 {
     private readonly IInscricaoService _inscricaoService;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<FormularioController> _logger;
 
-    public FormularioController(IInscricaoService inscricaoService, IConfiguration configuration)
+    public FormularioController(IInscricaoService inscricaoService, IConfiguration configuration, ILogger<FormularioController> logger)
     {
         _inscricaoService = inscricaoService;
         _configuration = configuration;
+        _logger = logger;
     }
 
     [HttpPost("pagina1")]
@@ -57,6 +59,7 @@ public class FormularioController : ControllerBase
         try
         {
             var form = await Request.ReadFormAsync();
+            _logger.LogInformation("Recebida requisição de inscrição completa. Processo: {ProcessoId}", form["processoSelecaoId"].FirstOrDefault());
             
             var processoSelecaoIdStr = form["processoSelecaoId"].FirstOrDefault();
             if (!long.TryParse(processoSelecaoIdStr, out var processoSelecaoId))
@@ -77,6 +80,8 @@ public class FormularioController : ControllerBase
             dados.ProcessoSelecaoId = processoSelecaoId;
 
             var documentos = new List<DocumentoUploadDto>();
+            var documentosLink = new List<DocumentoLinkDto>();
+            
             foreach (var file in form.Files)
             {
                 using var ms = new MemoryStream();
@@ -90,7 +95,31 @@ public class FormularioController : ControllerBase
                 });
             }
 
+            var curriculoLattesCandidato = form["curriculoLattesCandidato"].FirstOrDefault();
+            var curriculoLattesOrientador = form["curriculoLattesOrientador"].FirstOrDefault();
+            
+            if (!string.IsNullOrWhiteSpace(curriculoLattesCandidato))
+            {
+                documentosLink.Add(new DocumentoLinkDto
+                {
+                    Tipo = Domain.Enums.TipoDocumento.CurriculumLatte,
+                    LinkUrl = curriculoLattesCandidato,
+                    Descricao = "Currículo Lattes Candidato"
+                });
+            }
+            
+            if (!string.IsNullOrWhiteSpace(curriculoLattesOrientador))
+            {
+                documentosLink.Add(new DocumentoLinkDto
+                {
+                    Tipo = Domain.Enums.TipoDocumento.CartaRecomendacao,
+                    LinkUrl = curriculoLattesOrientador,
+                    Descricao = "Currículo Lattes Orientador"
+                });
+            }
+
             dados.Documentos = documentos;
+            dados.DocumentosLink = documentosLink;
 
             var caminhoBase = _configuration["Storage:CaminhoBase"] ?? "/app/documentos";
             var resultado = await _inscricaoService.CriarInscricaoCompletaAsync(dados, caminhoBase);
@@ -99,6 +128,7 @@ public class FormularioController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Erro ao processar inscrição completa");
             return StatusCode(500, new { message = "Erro ao processar inscrição", erro = ex.Message });
         }
     }
