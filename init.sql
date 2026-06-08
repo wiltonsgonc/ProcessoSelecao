@@ -1,69 +1,65 @@
--- Criar um usuário dedicado para acesso externo (ex: DBeaver)
 USE master;
 GO
 
--- Criar um usuário de banco de dados com senha
-IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'db_user')
+DECLARE @loginName NVARCHAR(100) = '$(DB_EXTERNAL_USER)';
+DECLARE @loginPassword NVARCHAR(100) = '$(DB_EXTERNAL_PASSWORD)';
+DECLARE @dbName NVARCHAR(100) = '$(DB_NAME)';
+
+IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = @loginName)
 BEGIN
-    CREATE LOGIN db_user WITH PASSWORD = 'DbUser@123';
-    PRINT 'Database user db_user created';
+    DECLARE @sql NVARCHAR(MAX) = 'CREATE LOGIN ' + QUOTENAME(@loginName) + ' WITH PASSWORD = ''' + @loginPassword + '''';
+    EXEC sp_executesql @sql;
+    PRINT 'Login created: ' + @loginName;
 END
 ELSE
-BEGIN
-    PRINT 'Database user db_user already exists';
-END
+    PRINT 'Login already exists: ' + @loginName;
 GO
 
--- Criar o banco de dados ProcessoSelecaoDb se não existir
-IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'ProcessoSelecaoDb')
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '$(DB_NAME)')
 BEGIN
-    CREATE DATABASE ProcessoSelecaoDb;
-    PRINT 'Database ProcessoSelecaoDb created';
+    CREATE DATABASE [$(DB_NAME)];
+    PRINT 'Database $(DB_NAME) created';
 END
 ELSE
-BEGIN
-    PRINT 'Database ProcessoSelecaoDb already exists';
-END
+    PRINT 'Database $(DB_NAME) already exists';
 GO
 
--- Conceder acesso ao banco de dados ProcessoSelecaoDb
-USE ProcessoSelecaoDb;
+USE [$(DB_NAME)];
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'db_user')
+DECLARE @loginName NVARCHAR(100) = '$(DB_EXTERNAL_USER)';
+
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = @loginName)
 BEGIN
-    CREATE USER db_user FOR LOGIN db_user;
-    PRINT 'Database user db_user added to ProcessoSelecaoDb';
+    DECLARE @sql NVARCHAR(MAX) = 'CREATE USER ' + QUOTENAME(@loginName) + ' FOR LOGIN ' + QUOTENAME(@loginName);
+    EXEC sp_executesql @sql;
+    PRINT 'User created: ' + @loginName;
 END
 ELSE
-BEGIN
-    PRINT 'Database user db_user already exists in ProcessoSelecaoDb';
-END
+    PRINT 'User already exists: ' + @loginName;
 GO
 
--- Conceder permissões necessárias
-IF NOT EXISTS (SELECT * FROM sys.database_role_members WHERE member_principal_id = USER_ID('db_user') AND role_principal_id = USER_ID('db_datareader'))
-BEGIN
-    EXEC sp_addrolemember 'db_datareader', 'db_user';
-    PRINT 'db_datareader role granted to db_user';
-END
-ELSE
-BEGIN
-    PRINT 'db_datareader role already granted to db_user';
-END
+DECLARE @loginName NVARCHAR(100) = '$(DB_EXTERNAL_USER)';
 
-IF NOT EXISTS (SELECT * FROM sys.database_role_members WHERE member_principal_id = USER_ID('db_user') AND role_principal_id = USER_ID('db_datawriter'))
+IF NOT EXISTS (SELECT * FROM sys.database_role_members WHERE member_principal_id = USER_ID(@loginName) AND role_principal_id = USER_ID('db_datareader'))
 BEGIN
-    EXEC sp_addrolemember 'db_datawriter', 'db_user';
-    PRINT 'db_datawriter role granted to db_user';
+    DECLARE @sql NVARCHAR(MAX) = 'EXEC sp_addrolemember ''db_datareader'', ' + QUOTENAME(@loginName);
+    EXEC sp_executesql @sql;
+    PRINT 'db_datareader role granted';
 END
 ELSE
+    PRINT 'db_datareader already granted';
+
+IF NOT EXISTS (SELECT * FROM sys.database_role_members WHERE member_principal_id = USER_ID(@loginName) AND role_principal_id = USER_ID('db_datawriter'))
 BEGIN
-    PRINT 'db_datawriter role already granted to db_user';
+    DECLARE @sql2 NVARCHAR(MAX) = 'EXEC sp_addrolemember ''db_datawriter'', ' + QUOTENAME(@loginName);
+    EXEC sp_executesql @sql2;
+    PRINT 'db_datawriter role granted';
 END
+ELSE
+    PRINT 'db_datawriter already granted';
 GO
 
--- Criar uma tabela de teste simples para verificação
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID('dbo.DatabaseInfo') AND type in ('U'))
 BEGIN
     CREATE TABLE dbo.DatabaseInfo (
@@ -74,24 +70,18 @@ BEGIN
     PRINT 'Table DatabaseInfo created';
 END
 ELSE
-BEGIN
     PRINT 'Table DatabaseInfo already exists';
-END
 GO
 
--- Inserir dados de teste
 IF NOT EXISTS (SELECT * FROM dbo.DatabaseInfo)
 BEGIN
-    INSERT INTO dbo.DatabaseInfo (DatabaseName) VALUES ('ProcessoSelecaoDb');
+    INSERT INTO dbo.DatabaseInfo (DatabaseName) VALUES ('$(DB_NAME)');
     PRINT 'Test data inserted';
 END
 ELSE
-BEGIN
     PRINT 'Test data already exists';
-END
 GO
 
--- Habilitar modo de autenticação do SQL Server
 USE master;
 GO
 
