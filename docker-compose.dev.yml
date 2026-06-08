@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: ProcessoSelecao.Api/Dockerfile.dev
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./src/backend:/src
+      - backend_cache:/src/.dotnet
+      - ./documentos:/app/documentos
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      NG_HMR: 1
+      NG_CLI_ANALYTICS: false
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+    command: ["sh", "-c", "npm run start -- --port 80 --poll 2000"]
