@@ -70,8 +70,9 @@ builder.Services.AddSingleton<EmailSettings>(sp =>
     };
 });
 
-// Configuração do AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+// Configuração do AutoMapper (chave vazia = OSS license, sem bloqueio)
+builder.Services.AddAutoMapper(cfg => cfg.LicenseKey = "", typeof(MappingProfile));
+builder.Logging.AddFilter("LuckyPennySoftware.AutoMapper.License", LogLevel.None);
 
 // Configuração de CORS
 builder.Services.AddCors(options =>
