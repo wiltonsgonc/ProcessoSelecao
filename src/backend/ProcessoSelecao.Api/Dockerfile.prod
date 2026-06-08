@@ -10,13 +10,21 @@ RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
 
 COPY . .
 WORKDIR "/src/ProcessoSelecao.Api"
-RUN dotnet build "ProcessoSelecao.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "ProcessoSelecao.Api.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
 EXPOSE 5002
-ENTRYPOINT ["dotnet", "ProcessoSelecao.Api.dll", "--urls", "http://0.0.0.0:5002"]
+
+RUN groupadd --system --gid 1000 appuser && \
+    useradd --system --uid 1000 --gid 1000 appuser && \
+    mkdir -p /app/documentos && \
+    chown -R appuser:appuser /app
+
+COPY --from=publish /app/publish .
+
+USER appuser
+
+ENTRYPOINT ["dotnet", "ProcessoSelecao.Api.dll"]
