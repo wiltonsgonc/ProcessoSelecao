@@ -39,6 +39,11 @@ public class InscricaoService : IInscricaoService
             if (processo == null)
                 throw new Exception("Processo de seleção não encontrado");
 
+            processo.AbrirAutomaticamente();
+
+            if (processo.Status != StatusProcesso.Aberto)
+                throw new Exception("Este processo de seleção não está aberto para inscrições");
+
             if (!processo.EstaDentroDoPrazo())
                 throw new Exception("O prazo para este processo de seleção expirou");
 

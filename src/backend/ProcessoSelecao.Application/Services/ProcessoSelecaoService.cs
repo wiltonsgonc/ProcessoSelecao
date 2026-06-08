@@ -55,6 +55,7 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
         foreach (var processo in processos)
         {
             var statusAnterior = processo.Status;
+            processo.AbrirAutomaticamente();
             processo.VerificarPrazoExpirado();
             processo.ReverterSePrazoValido();
             if (processo.Status != statusAnterior)
@@ -74,6 +75,7 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
         if (processo != null)
         {
             var statusAnterior = processo.Status;
+            processo.AbrirAutomaticamente();
             processo.VerificarPrazoExpirado();
             processo.ReverterSePrazoValido();
             if (processo.Status != statusAnterior)
@@ -81,7 +83,7 @@ public class ProcessoSelecaoService : IProcessoSelecaoService
                 await _repository.UpdateAsync(processo);
             }
         }
-        
+
         return processo != null ? MapToDto(processo) : null;
     }
 
