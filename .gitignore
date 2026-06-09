@@ -98,11 +98,6 @@ documentos/
 /documentos/
 *.pdf
 
-# Documentos/Uploads
-documentos/
-/documentos/
-*.pdf
-
 # Saida de teste vulnerabilidade
 back.txt
 front.txt
