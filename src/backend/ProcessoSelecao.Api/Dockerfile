@@ -18,11 +18,13 @@ EXPOSE 5002
 
 RUN groupadd --system --gid 1000 appuser && \
     useradd --system --uid 1000 --gid 1000 appuser && \
-    mkdir -p /app/documentos && \
+    mkdir -p /app/documentos /app/logs && \
     chown -R appuser:appuser /app
 
 COPY --from=build /app/publish .
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 USER appuser
 
-ENTRYPOINT ["dotnet", "ProcessoSelecao.Api.dll"]
+ENTRYPOINT ["/entrypoint.sh"]
