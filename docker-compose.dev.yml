@@ -6,9 +6,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
     volumes:
-      - ./src/backend:/src
+      - ./src/backend:/src:Z
       - backend_cache:/src/.dotnet
-      - ./documentos:/app/documentos
+      - ./documentos:/app/documentos:Z
 
   frontend:
     build:
@@ -19,6 +19,6 @@ services:
       NG_HMR: 1
       NG_CLI_ANALYTICS: false
     volumes:
-      - ./src/frontend:/app
+      - ./src/frontend:/app:Z
       - /app/node_modules
-    command: ["sh", "-c", "npm run start -- --port 80 --poll 2000"]
+    command: ["sh", "-c", "if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then echo '>>> Instalando dependencias...' && npm install; fi && npm run start -- --port 80 --poll 2000"]
