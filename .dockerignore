@@ -1,0 +1,51 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+.gitlab-ci.yml
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE and editor files
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile
+Dockerfile.*
+.dockerignore
+
+# Build output
+/bin
+/obj
+/dist
+/node_modules
+/.angular
+/.dotnet
+
+# Documentation and diagrams
+docs/
+diagramas/
+documentos/
+*.md
+*.puml
+*.png
+*.svg
+
+# Scripts
+scripts/
+verify_database_config.sh
+back.txt
+front.txt
+init.sql
