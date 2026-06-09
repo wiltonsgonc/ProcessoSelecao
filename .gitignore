@@ -103,10 +103,8 @@ documentos/
 /documentos/
 *.pdf
 
-# Build Scripts (Windows)
-backend.bat
-frontend.bat
-full.bat
-reset-db.bat
+# Saida de teste vulnerabilidade
+back.txt
+front.txt
 
 core.*
