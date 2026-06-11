@@ -1,31 +1,52 @@
+# ==============================================
+# Backend - ASP.NET Core 10
+# Dockerfile.prod — build otimizado para producao
+# Usado por: docker-compose.prod.yml
+# ==============================================
+
+# ----------------------------------------------
+# Stage 1: build + publish
+# ----------------------------------------------
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY ["ProcessoSelecao.Api/ProcessoSelecao.Api.csproj", "ProcessoSelecao.Api/"]
-COPY ["ProcessoSelecao.Application/ProcessoSelecao.Application.csproj", "ProcessoSelecao.Application/"]
-COPY ["ProcessoSelecao.Infrastructure/ProcessoSelecao.Infrastructure.csproj", "ProcessoSelecao.Infrastructure/"]
-COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj", "ProcessoSelecao.Domain/"]
+COPY ["ProcessoSelecao.Api/ProcessoSelecao.Api.csproj",                      "ProcessoSelecao.Api/"]
+COPY ["ProcessoSelecao.Application/ProcessoSelecao.Application.csproj",      "ProcessoSelecao.Application/"]
+COPY ["ProcessoSelecao.Infrastructure/ProcessoSelecao.Infrastructure.csproj","ProcessoSelecao.Infrastructure/"]
+COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj",                "ProcessoSelecao.Domain/"]
 
 RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
 
 COPY . .
+
 WORKDIR "/src/ProcessoSelecao.Api"
 
-FROM build AS publish
-RUN dotnet publish "ProcessoSelecao.Api.csproj" -c Release -o /app/publish
+# CORRECAO: publish consolidado no stage build (sem stage intermediario).
+# --no-restore: restore ja executado acima.
+# /p:UseAppHost=false: nao gera executavel nativo (desnecessario em container).
+RUN dotnet publish "ProcessoSelecao.Api.csproj" \
+      -c Release \
+      -o /app/publish \
+      --no-restore \
+      /p:UseAppHost=false
 
+# ----------------------------------------------
+# Stage 2: runtime final (imagem minima)
+# ----------------------------------------------
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 EXPOSE 5002
 
 RUN groupadd --system --gid 1000 appuser && \
-    useradd --system --uid 1000 --gid 1000 appuser && \
-    mkdir -p /app/documentos /app/logs && \
-    chown -R appuser:appuser /app
+    useradd  --system --uid 1000 --gid 1000 appuser && \
+    mkdir -p /app/documentos /app/logs
 
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+
+# CORRECAO: chown feito APOS todos os COPYs para garantir ownership correto
+RUN chmod +x /entrypoint.sh && \
+    chown -R appuser:appuser /app /entrypoint.sh
 
 USER appuser
 
