@@ -64,10 +64,13 @@ yarn-error.log
 dist/
 .angular/
 
-# Environment files
+# Environment files (contem credenciais - NUNCA versionar)
 .env
 .env.local
 .env.*.local
+.env.dev
+.env.prod
+.env.staging
 
 # IDE
 *.swp
