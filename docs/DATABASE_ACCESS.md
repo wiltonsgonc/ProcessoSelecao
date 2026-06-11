@@ -17,7 +17,7 @@ Server: localhost,1433
 Database: ProcessoSelecaoDb
 Authentication: SQL Server Authentication
 Username: db_user
-Password: DbUser@123
+Password: definido em DB_EXTERNAL_PASSWORD no .env
 ```
 
 #### For SQL Server Management Studio (SSMS):
@@ -25,7 +25,7 @@ Password: DbUser@123
 Server name: localhost,1433
 Authentication: SQL Server Authentication
 Login: db_user
-Password: DbUser@123
+Password: definido em DB_EXTERNAL_PASSWORD no .env
 ```
 
 #### For Command Line (sqlcmd):
@@ -35,13 +35,13 @@ You can use any SQL Server client tool. The database is accessible at:
 - **Port**: `1433`
 - **Database**: `ProcessoSelecaoDb`
 - **Username**: `db_user`
-- **Password**: `DbUser@123`
+- **Password**: definido em `DB_EXTERNAL_PASSWORD` no `.env`
 
 If you have SQL Server command line tools installed on your host machine:
 
 ```bash
 # Connect using sqlcmd
-sqlcmd -S localhost,1433 -U db_user -P "DbUser@123" -d ProcessoSelecaoDb
+sqlcmd -S localhost,1433 -U db_user -P "SUA_SENHA" -d ProcessoSelecaoDb
 
 # Run queries
 SELECT TOP 10 * FROM Candidatos;
@@ -52,12 +52,12 @@ GO
 
 ### Administrative User (SA)
 - **Username**: `sa`
-- **Password**: `Processo@123`
+- **Password**: definido em `SA_PASSWORD` no `.env`
 - **Purpose**: Full administrative access, use only for maintenance
 
 ### Application User
 - **Username**: `db_user`
-- **Password**: `DbUser@123`
+- **Password**: definido em `DB_EXTERNAL_PASSWORD` no `.env`
 - **Purpose**: Read/write access for application operations
 - **Permissions**: `db_datareader`, `db_datawriter`
 
@@ -76,7 +76,7 @@ These volumes ensure that your database persists even when containers are restar
 
 ```bash
 # Access the SQL Server container
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Processo@123"
+docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SUA_SA_PASSWORD"
 
 # Run SQL commands
 SELECT name FROM sys.databases;
@@ -105,7 +105,7 @@ SELECT * FROM Candidatos;
 ```bash
 # From your host machine
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-  -S localhost -U sa -P "Processo@123" \
+  -S localhost -U sa -P "SUA_SA_PASSWORD" \
   -Q "BACKUP DATABASE [ProcessoSelecaoDb] TO DISK = '/var/opt/mssql/backup/ProcessoSelecaoDb.bak' WITH COMPRESSION, STATS = 5"
 ```
 
@@ -114,7 +114,7 @@ docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
 ```bash
 # From your host machine
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-  -S localhost -U sa -P "Processo@123" \
+  -S localhost -U sa -P "SUA_SA_PASSWORD" \
   -Q "RESTORE DATABASE [ProcessoSelecaoDb] FROM DISK = '/var/opt/mssql/backup/ProcessoSelecaoDb.bak' WITH REPLACE, STATS = 5"
 ```
 
@@ -157,9 +157,9 @@ dotnet ef database update
 
 4. **Reset SA password** (if needed):
    ```bash
-   docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-     -S localhost -U sa -P "oldpassword" \
-     -Q "ALTER LOGIN sa WITH PASSWORD = 'Processo@123'"
+    docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
+      -S localhost -U sa -P "senha_antiga" \
+      -Q "ALTER LOGIN sa WITH PASSWORD = 'nova_senha_forte'"
    ```
 
 ### Permission Issues
@@ -169,7 +169,7 @@ If you encounter permission errors with the `db_user`:
 ```bash
 # Grant additional permissions
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-  -S localhost -U sa -P "Processo@123" \
+  -S localhost -U sa -P "SUA_SA_PASSWORD" \
   -d ProcessoSelecaoDb \
   -Q "EXEC sp_addrolemember 'db_owner', 'db_user'"
 ```
