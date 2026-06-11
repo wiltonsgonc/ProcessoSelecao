@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0
 WORKDIR /src
 
+# Copia apenas os .csproj primeiro (cache do restore)
 COPY ["ProcessoSelecao.Api/ProcessoSelecao.Api.csproj", "ProcessoSelecao.Api/"]
 COPY ["ProcessoSelecao.Application/ProcessoSelecao.Application.csproj", "ProcessoSelecao.Application/"]
 COPY ["ProcessoSelecao.Infrastructure/ProcessoSelecao.Infrastructure.csproj", "ProcessoSelecao.Infrastructure/"]
@@ -8,12 +9,16 @@ COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj", "ProcessoSelecao.D
 
 RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
 
+# CORRECAO: dotnet-ef instalado ANTES do COPY . . para aproveitar cache.
+# --tool-path instala em diretorio fixo no PATH, funciona para qualquer usuario.
+RUN dotnet tool install dotnet-ef --tool-path /usr/local/bin
+
 COPY . .
 
 WORKDIR /src/ProcessoSelecao.Api
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="${PATH}:/root/.dotnet/tools"
 
 EXPOSE 5002
 
-CMD ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:5002"]
+# CORRECAO: --no-restore evita que o watch refaca o restore a cada restart.
+# O volume montado no compose (./src/backend:/src) garante o hot-reload real.
+CMD ["dotnet", "watch", "run", "--no-restore", "--urls", "http://0.0.0.0:5002"]
