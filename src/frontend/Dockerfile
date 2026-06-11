@@ -11,10 +11,9 @@ COPY . .
 # CORRECAO: porta 80 para bater com o mapeamento 4200:80 do docker-compose.dev.yml
 EXPOSE 80
 
-# CORRECAO: --host 0.0.0.0 e obrigatorio para o ng serve ser acessivel fora do container
-# --port 80 bate com o EXPOSE acima e com o compose (4200:80)
-# --poll 2000 necessario em volumes montados (WSL2, VMs) para hot-reload funcionar
-CMD ["sh", "-c", "npm run start -- --host 0.0.0.0 --port 80 --poll 2000 --disable-host-check"]
+# CORRECAO: --host e --poll ja estao no script "start" do package.json
+# Apenas --port e necessario para bater com mapeamento 4200:80 do compose
+CMD ["sh", "-c", "npm run start -- --port 80 --disable-host-check"]
 
 FROM node:24-alpine AS build
 WORKDIR /app
