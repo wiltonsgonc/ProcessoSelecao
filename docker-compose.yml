@@ -23,6 +23,10 @@ services:
       MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-2048}
       # Desabilitar Agent para economizar memoria
       MSSQL_AGENT_ENABLED: "false"
+      # Variaveis usadas pelo init.sql via sqlcmd -v
+      DB_NAME: ${DB_NAME:-ProcessoSelecaoDb}
+      DB_EXTERNAL_USER: ${DB_EXTERNAL_USER:-db_user}
+      DB_EXTERNAL_PASSWORD: ${DB_EXTERNAL_PASSWORD}
     ports:
       - "1433:1433"
     volumes:
