@@ -12,24 +12,26 @@ ERRORS=0
 # Auto-detectar runtime de container
 # ==============================================
 detect_runtime() {
-  if command -v docker &>/dev/null && docker compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="docker compose"
-    return
+  if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
+    if docker compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker compose"
+      return
+    fi
+    if command -v docker-compose &>/dev/null && docker-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker-compose"
+      return
+    fi
   fi
 
-  if command -v docker-compose &>/dev/null && docker-compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="docker-compose"
-    return
-  fi
-
-  if command -v podman &>/dev/null && podman compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="podman compose"
-    return
-  fi
-
-  if command -v podman-compose &>/dev/null && podman-compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="podman-compose"
-    return
+  if command -v podman &>/dev/null && podman info &>/dev/null 2>&1; then
+    if podman compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman compose"
+      return
+    fi
+    if command -v podman-compose &>/dev/null && podman-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman-compose"
+      return
+    fi
   fi
 
   echo "ERRO: Nenhum runtime de container encontrado"

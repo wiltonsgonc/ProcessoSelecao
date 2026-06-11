@@ -10,32 +10,34 @@ COMPOSE_FILE_ARGS=()
 # Suporta: docker compose, docker-compose, podman compose, podman-compose
 # ==============================================
 detect_runtime() {
-  if command -v docker &>/dev/null && docker compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="docker compose"
-    RUNTIME="docker"
-    echo "Runtime detectado: Docker (compose plugin)"
-    return
+  if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
+    if docker compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker compose"
+      RUNTIME="docker"
+      echo "Runtime detectado: Docker (compose plugin)"
+      return
+    fi
+    if command -v docker-compose &>/dev/null && docker-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker-compose"
+      RUNTIME="docker"
+      echo "Runtime detectado: Docker (docker-compose standalone)"
+      return
+    fi
   fi
 
-  if command -v docker-compose &>/dev/null && docker-compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="docker-compose"
-    RUNTIME="docker"
-    echo "Runtime detectado: Docker (docker-compose standalone)"
-    return
-  fi
-
-  if command -v podman &>/dev/null && podman compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="podman compose"
-    RUNTIME="podman"
-    echo "Runtime detectado: Podman (compose plugin)"
-    return
-  fi
-
-  if command -v podman-compose &>/dev/null && podman-compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="podman-compose"
-    RUNTIME="podman"
-    echo "Runtime detectado: Podman (podman-compose standalone)"
-    return
+  if command -v podman &>/dev/null && podman info &>/dev/null 2>&1; then
+    if podman compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman compose"
+      RUNTIME="podman"
+      echo "Runtime detectado: Podman (compose plugin)"
+      return
+    fi
+    if command -v podman-compose &>/dev/null && podman-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman-compose"
+      RUNTIME="podman"
+      echo "Runtime detectado: Podman (podman-compose standalone)"
+      return
+    fi
   fi
 
   echo "Erro: Nenhum runtime de container encontrado."
