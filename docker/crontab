@@ -1,0 +1,3 @@
+# Crontab for supercronic (Laravel scheduler equivalent not needed for .NET)
+# This file is kept for future use if a scheduler is implemented.
+# For now, the .NET backend does not use cron-based scheduling.
