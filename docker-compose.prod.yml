@@ -1,6 +1,6 @@
 # ==============================================
-# PRODUÇÃO - Docker Compose para Ubuntu + Docker
-# Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# PRODUCAO - Override para producao
+# Uso: compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 # ==============================================
 
 services:
@@ -8,8 +8,6 @@ services:
     build:
       context: ./src/backend
       dockerfile: ProcessoSelecao.Api/Dockerfile.prod
-    env_file:
-      - .env.prod
     environment:
       ASPNETCORE_ENVIRONMENT: Production
     volumes:
