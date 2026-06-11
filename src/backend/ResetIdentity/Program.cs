@@ -5,21 +5,23 @@ class Program
 {
     static void Main()
     {
-        var connectionString = "Server=127.0.0.1,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=Processo@123;TrustServerCertificate=True;";
-        
+        // Obter string de conexao de variavel de ambiente ou usar fallback para desenvolvimento local
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? "Server=127.0.0.1,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=CHANGE_ME;TrustServerCertificate=True;";
+
         try
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
             Console.WriteLine("Connected to database!");
-            
+
             // Reset identity seed for all tables
             var tables = new[] { "ProcessosSelecao", "Candidatos", "Avaliadores", "Baremas", "Documentos" };
-            
+
             foreach (var table in tables)
             {
                 Console.WriteLine($"\n--- Resetting {table} ---");
-                
+
                 // Delete all records
                 try
                 {
@@ -33,7 +35,7 @@ class Program
                 {
                     Console.WriteLine($"Could not delete records from {table}: {ex.Message}");
                 }
-                
+
                 // Reset identity seed
                 try
                 {
@@ -47,7 +49,7 @@ class Program
                 {
                     Console.WriteLine($"Could not reset identity seed for {table}: {ex.Message}");
                 }
-                
+
                 // Verify new seed
                 try
                 {
@@ -62,7 +64,7 @@ class Program
                     Console.WriteLine($"Could not verify identity seed for {table}: {ex.Message}");
                 }
             }
-            
+
             Console.WriteLine("\nIdentity reset completed successfully!");
             Console.WriteLine("All tables are now empty and ready to start from ID 1.");
         }
