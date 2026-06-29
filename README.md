@@ -28,6 +28,7 @@ ProcessoSelecao/
 │   ├── build-full.sh                      # Build completo (backend + frontend)
 │   ├── build-backend.sh                   # Build apenas do backend
 │   ├── build-frontend.sh                  # Build apenas do frontend
+│   ├── start-containers.sh               # Iniciar containers sem rebuild
 │   └── reset-db.sh                        # Reset do banco de dados
 ├── docker-compose.yml                     # Compose base
 ├── docker-compose.dev.yml                 # Override para desenvolvimento
@@ -179,6 +180,25 @@ Neste modo:
 # Apenas frontend (desenvolvimento)
 ./scripts/build-frontend.sh --dev
 ```
+
+### Iniciar containers sem rebuild
+
+Caso as imagens ja tenham sido buildadas anteriormente, use este script para recriar
+os containers sem executar o build:
+
+```bash
+# Desenvolvimento
+./scripts/start-containers.sh --dev
+
+# Producao
+./scripts/start-containers.sh
+```
+
+O script:
+- Cria rede e volumes necessarios se nao existirem
+- Remove e recria os containers SQL Server, Backend e Frontend
+- Aguarda o SQL Server ficar pronto antes de iniciar o backend
+- Em `--dev`: monta o codigo fonte como volume (hot-reload ativo)
 
 ### Reset do banco de dados
 
