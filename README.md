@@ -29,6 +29,7 @@ ProcessoSelecao/
 │   ├── build-backend.sh                   # Build apenas do backend
 │   ├── build-frontend.sh                  # Build apenas do frontend
 │   ├── start-containers.sh               # Iniciar containers sem rebuild
+│   ├── down-containers.sh                # Parar e remover containers
 │   └── reset-db.sh                        # Reset do banco de dados
 ├── docker-compose.yml                     # Compose base
 ├── docker-compose.dev.yml                 # Override para desenvolvimento
@@ -199,6 +200,19 @@ O script:
 - Remove e recria os containers SQL Server, Backend e Frontend
 - Aguarda o SQL Server ficar pronto antes de iniciar o backend
 - Em `--dev`: monta o codigo fonte como volume (hot-reload ativo)
+
+### Parar e remover containers
+
+```bash
+# Para e remove apenas os containers
+./scripts/down-containers.sh
+
+# Remove tambem os volumes nomeados (dados do SQL Server)
+./scripts/down-containers.sh --volumes
+
+# Remove volumes e rede
+./scripts/down-containers.sh --all
+```
 
 ### Reset do banco de dados
 
