@@ -113,17 +113,25 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+BACKEND_IMAGE="localhost/processoselecao_backend:latest"
+FRONTEND_IMAGE="localhost/processoselecao_frontend:latest"
+
 if [ "$DEV_MODE" = true ]; then
   ENV_FILE=".env.dev"
-  BACKEND_IMAGE="localhost/processoselecao_backend:dev"
-  FRONTEND_IMAGE="localhost/processoselecao_frontend:dev"
   echo "Modo: DESENVOLVIMENTO"
 else
   ENV_FILE=".env.prod"
-  BACKEND_IMAGE="localhost/processoselecao_backend:prod"
-  FRONTEND_IMAGE="localhost/processoselecao_frontend:prod"
   echo "Modo: PRODUCAO"
 fi
+
+# Verificar se as imagens existem (evita pull de registry)
+for img in "$BACKEND_IMAGE" "$FRONTEND_IMAGE"; do
+  if ! ${RUNTIME} image exists "$img" 2>/dev/null; then
+    echo "ERRO: Imagem '$img' nao encontrada."
+    echo "Execute primeiro: ./scripts/build-full.sh --dev"
+    exit 1
+  fi
+done
 
 if [ ! -f "$ENV_FILE" ]; then
   echo "Erro: Arquivo $ENV_FILE nao encontrado."
@@ -214,7 +222,7 @@ echo "[4/5] (Re)criando Backend..."
 remove_container processo-selecao-backend
 
 if [ "$DEV_MODE" = true ]; then
-  ${RUNTIME} run -d \
+  ${RUNTIME} run -d --pull never \
     --name processo-selecao-backend \
     --network processo-selecao-network \
     --env-file "$ENV_FILE" \
@@ -226,7 +234,7 @@ if [ "$DEV_MODE" = true ]; then
     -v "$(pwd)/documentos:/app/documentos:Z" \
     "$BACKEND_IMAGE"
 else
-  ${RUNTIME} run -d \
+  ${RUNTIME} run -d --pull never \
     --name processo-selecao-backend \
     --network processo-selecao-network \
     --env-file "$ENV_FILE" \
@@ -246,7 +254,7 @@ echo "[5/5] (Re)criando Frontend..."
 remove_container processo-selecao-frontend
 
 if [ "$DEV_MODE" = true ]; then
-  ${RUNTIME} run -d \
+  ${RUNTIME} run -d --pull never \
     --name processo-selecao-frontend \
     --network processo-selecao-network \
     --env-file "$ENV_FILE" \
@@ -264,7 +272,7 @@ fi
 npm run start -- --port 80 --disable-host-check
 '
 else
-  ${RUNTIME} run -d \
+  ${RUNTIME} run -d --pull never \
     --name processo-selecao-frontend \
     --network processo-selecao-network \
     -p 4200:80 \
