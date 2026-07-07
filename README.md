@@ -151,6 +151,9 @@ dotnet restore
 
 # Executar com hot-reload
 dotnet watch run --project ProcessoSelecao.Api --urls http://localhost:5002
+
+# Executar sem hot-reload
+dotnet run --project ProcessoSelecao.Api --urls http://localhost:5002
 ```
 
 **4. Frontend (Angular):**
