@@ -186,15 +186,6 @@ Edite `src/backend/ProcessoSelecao.Api/appsettings.Development.json`:
 }
 ```
 
-**Resumo dos enderecos:**
-
-| Servico | URL |
-|---------|-----|
-| Frontend | http://localhost:4200 |
-| Backend API | http://localhost:5002 |
-| Swagger | http://localhost:5002/swagger |
-| SQL Server | localhost:1433 |
-
 ### Usando os scripts (recomendado)
 
 Os scripts detectam automaticamente se voce tem Docker ou Podman instalado.
@@ -246,15 +237,6 @@ podman-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.d
 # Producao
 podman-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
-
-### Portas de acesso
-
-| Componente | Porta |
-|------------|-------|
-| Frontend   | http://localhost:4200 |
-| Backend API | http://localhost:5002 |
-| Swagger    | http://localhost:5002/swagger |
-| SQL Server | localhost:1433 |
 
 ### Modo Desenvolvimento
 
