@@ -23,8 +23,7 @@ services:
   frontend:
     build:
       context: ./src/frontend
-      dockerfile: Dockerfile
-      target: development
+      dockerfile: Dockerfile.dev
     environment:
       NG_HMR: "1"
       NG_CLI_ANALYTICS: "false"

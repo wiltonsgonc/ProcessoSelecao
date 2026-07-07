@@ -20,7 +20,12 @@ ProcessoSelecao/
 │   │   ├── ProcessoSelecao.Infrastructure/ # DbContext e Repositorios
 │   │   ├── ProcessoSelecao.Application/   # DTOs e Services
 │   │   └── ProcessoSelecao.Api/           # Controllers e Configuracao
+│   │       ├── Dockerfile.dev             # Dev: dotnet watch (single-stage)
+│   │       └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
 │   └── frontend/                          # Angular App
+│       ├── Dockerfile.dev                 # Dev: ng serve (node)
+│       ├── Dockerfile.prod                # Prod: build + nginx
+│       └── nginx.conf                     # Configuracao nginx (producao)
 ├── docker/
 │   ├── nginx/conf.d/                      # Configuracoes Nginx (dev/prod)
 │   └── crontab                            # Cron para supercronic
@@ -31,12 +36,13 @@ ProcessoSelecao/
 │   ├── start-containers.sh               # Iniciar containers sem rebuild
 │   ├── down-containers.sh                # Parar e remover containers
 │   └── reset-db.sh                        # Reset do banco de dados
-├── docker-compose.yml                     # Compose base
+├── docker-compose.yml                     # Compose base (prod)
 ├── docker-compose.dev.yml                 # Override para desenvolvimento
 ├── docker-compose.prod.yml                # Override para producao
 ├── .env.dev                               # Variaveis de ambiente (dev)
 ├── .env.prod                              # Variaveis de ambiente (prod)
 ├── .env.example                           # Template de variaveis
+├── .tool-versions                         # Versoes das ferramentas (asdf)
 └── README.md
 ```
 
@@ -47,6 +53,17 @@ ProcessoSelecao/
 - .NET 10 SDK (para desenvolvimento local sem containers)
 - Node.js 24+ e npm (para desenvolvimento local sem containers)
 - Bash (Linux, macOS, ou WSL/Git Bash no Windows)
+
+### Gerenciamento de versoes com asdf
+
+O projeto utiliza `.tool-versions` para padronizar versoes das ferramentas.
+Instale o [asdf](https://asdf-vm.com) e execute:
+
+```bash
+asdf plugin add dotnet
+asdf plugin add nodejs
+asdf install
+```
 
 ### Instalacao rapida
 
@@ -96,6 +113,87 @@ Edite `.env.dev` (desenvolvimento) e `.env.prod` (producao) com seus valores.
 | `SMTP_PASSWORD` | Senha do servidor SMTP | Senha do servico de email |
 
 ## Executar o Ambiente
+
+### Desenvolvimento Local (sem containers - Bare Metal)
+
+Para desenvolver fora de containers, apenas o SQL Server roda em container.
+O backend e frontend rodam nativamente no sistema host.
+
+**1. SQL Server via Docker:**
+
+```bash
+docker run -d --name processo-selecao-sqlserver \
+  -e ACCEPT_EULA=Y \
+  -e "MSSQL_SA_PASSWORD=P@ssw0rd!Dev2026" \
+  -e MSSQL_PID=Developer \
+  -e MSSQL_MEMORY_LIMIT_MB=2048 \
+  -p 1433:1433 \
+  mcr.microsoft.com/mssql/server:2022-latest
+```
+
+Aguardar ~60 segundos para inicializacao. Verificar:
+
+```bash
+docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P "P@ssw0rd!Dev2026" -C -Q "SELECT 1"
+```
+
+**2. Inicializar banco de dados:**
+
+```bash
+sqlcmd -S localhost,1433 -U sa -P "P@ssw0rd!Dev2026" -i init.sql
+```
+
+**3. Backend (.NET):**
+
+```bash
+cd src/backend
+
+# Restaurar pacotes
+dotnet restore
+
+# Executar com hot-reload
+dotnet watch run --project ProcessoSelecao.Api --urls http://localhost:5002
+```
+
+**4. Frontend (Angular):**
+
+```bash
+cd src/frontend
+
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desenvolvimento
+npm start
+# Acessa: http://localhost:4200
+```
+
+**5. Variaveis de ambiente:**
+
+Edite `src/backend/ProcessoSelecao.Api/appsettings.Development.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=P@ssw0rd!Dev2026;TrustServerCertificate=True;"
+  },
+  "JwtSettings": {
+    "SecretKey": "SUA_CHAVE_SECRETA_MINIMO_32_CARACTERES",
+    "Issuer": "ProcessoSelecaoApi",
+    "Audience": "ProcessoSelecaoWeb"
+  }
+}
+```
+
+**Resumo dos enderecos:**
+
+| Servico | URL |
+|---------|-----|
+| Frontend | http://localhost:4200 |
+| Backend API | http://localhost:5002 |
+| Swagger | http://localhost:5002/swagger |
+| SQL Server | localhost:1433 |
 
 ### Usando os scripts (recomendado)
 

@@ -1,7 +1,7 @@
 # ==============================================
 # Backend - ASP.NET Core 10
 # Dockerfile.prod — build otimizado para producao
-# Usado por: docker-compose.prod.yml
+# Multi-stage: build publish + runtime minimo
 # ==============================================
 
 # ----------------------------------------------
@@ -21,9 +21,6 @@ COPY . .
 
 WORKDIR "/src/ProcessoSelecao.Api"
 
-# CORRECAO: publish consolidado no stage build (sem stage intermediario).
-# --no-restore: restore ja executado acima.
-# /p:UseAppHost=false: nao gera executavel nativo (desnecessario em container).
 RUN dotnet publish "ProcessoSelecao.Api.csproj" \
       -c Release \
       -o /app/publish \
@@ -44,7 +41,6 @@ RUN groupadd --system --gid 1000 appuser && \
 COPY --from=build /app/publish .
 COPY entrypoint.sh /entrypoint.sh
 
-# CORRECAO: chown feito APOS todos os COPYs para garantir ownership correto
 RUN chmod +x /entrypoint.sh && \
     chown -R appuser:appuser /app /entrypoint.sh
 

@@ -75,7 +75,7 @@ services:
   backend:
     build:
       context: ./src/backend
-      dockerfile: ProcessoSelecao.Api/Dockerfile
+      dockerfile: ProcessoSelecao.Api/Dockerfile.prod
     container_name: processo-selecao-backend
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
@@ -103,8 +103,7 @@ services:
   frontend:
     build:
       context: ./src/frontend
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.prod
     container_name: processo-selecao-frontend
     ports:
       - "4200:80"

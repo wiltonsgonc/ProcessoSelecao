@@ -59,6 +59,7 @@ ScaffoldingReadMe.txt
 node_modules/
 npm-debug.log
 yarn-error.log
+.tool-version
 
 # Angular
 dist/
