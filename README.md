@@ -42,7 +42,6 @@ ProcessoSelecao/
 ├── .env.dev                               # Variaveis de ambiente (dev)
 ├── .env.prod                              # Variaveis de ambiente (prod)
 ├── .env.example                           # Template de variaveis
-├── .tool-versions                         # Versoes das ferramentas (asdf)
 └── README.md
 ```
 
@@ -54,16 +53,6 @@ ProcessoSelecao/
 - Node.js 24+ e npm (para desenvolvimento local sem containers)
 - Bash (Linux, macOS, ou WSL/Git Bash no Windows)
 
-### Gerenciamento de versoes com asdf
-
-O projeto utiliza `.tool-versions` para padronizar versoes das ferramentas.
-Instale o [asdf](https://asdf-vm.com) e execute:
-
-```bash
-asdf plugin add dotnet
-asdf plugin add nodejs
-asdf install
-```
 
 ### Instalacao rapida
 
