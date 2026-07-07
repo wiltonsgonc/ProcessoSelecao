@@ -59,6 +59,7 @@ ScaffoldingReadMe.txt
 node_modules/
 npm-debug.log
 yarn-error.log
+.tool-version
 
 # Angular
 dist/
@@ -110,3 +111,6 @@ full.bat
 reset-db.bat
 
 core.*
+back.txt
+front.txt
+log.txt
