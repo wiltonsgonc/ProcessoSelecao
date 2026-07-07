@@ -65,10 +65,13 @@ yarn-error.log
 dist/
 .angular/
 
-# Environment files
+# Environment files (contem credenciais - NUNCA versionar)
 .env
 .env.local
 .env.*.local
+.env.dev
+.env.prod
+.env.staging
 
 # IDE
 *.swp
@@ -82,6 +85,7 @@ Thumbs.db
 # Logs
 logs/
 *.log
+log.txt
 
 # Docker/Podman
 .docker/
@@ -95,20 +99,12 @@ tmp/
 temp/
 
 # Documentos/Uploads
-documentos/
 /documentos/
 *.pdf
 
-# Documentos/Uploads
-documentos/
-/documentos/
-*.pdf
-
-# Build Scripts (Windows)
-backend.bat
-frontend.bat
-full.bat
-reset-db.bat
+# Saida de teste vulnerabilidade
+back.txt
+front.txt
 
 core.*
 back.txt

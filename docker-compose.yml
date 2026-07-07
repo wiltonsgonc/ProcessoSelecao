@@ -1,44 +1,73 @@
+# ==============================================
+# Base - Docker Compose para ProcessoSelecao
+# Uso com scripts:
+#   ./scripts/build-full.sh          (producao)
+#   ./scripts/build-full.sh --dev    (desenvolvimento)
+#
+# Ou manualmente:
+#   compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+#   compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
+# ==============================================
+
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: processo-selecao-sqlserver
-    env_file:
-      - .env
+    # Rodar como root para ter permissao de escrita nos volumes
+    user: root
     environment:
-      ACCEPT_EULA: ${ACCEPT_EULA}
+      ACCEPT_EULA: ${ACCEPT_EULA:-Y}
       MSSQL_SA_PASSWORD: ${SA_PASSWORD}
-      MSSQL_PID: ${MSSQL_PID}
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      # Limitar memoria para evitar crash no WSL/VM com pouca RAM
+      MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-2048}
+      # Desabilitar Agent para economizar memoria
+      MSSQL_AGENT_ENABLED: "false"
+      # Variaveis usadas pelo init.sql via sqlcmd -v
+      DB_NAME: ${DB_NAME:-ProcessoSelecaoDb}
+      DB_EXTERNAL_USER: ${DB_EXTERNAL_USER:-db_user}
+      DB_EXTERNAL_PASSWORD: ${DB_EXTERNAL_PASSWORD}
     ports:
       - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_backup:/var/opt/mssql/backup
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:Z
     healthcheck:
+      # CORRECAO: aumentado timeout e start_period para WSL2/Podman com pouca RAM
+      # -C flag ignora validacao de certificado (necessario no mssql-tools18)
       test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
-      interval: 10s
-      retries: 10
-      start_period: 30s
-      timeout: 5s
-    command: |
-      bash -c "
-      /opt/mssql/bin/sqlservr &
-      for i in {1..30}; do
-        if /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${SA_PASSWORD}' -C -Q 'SELECT 1' > /dev/null 2>&1; then
-          echo 'SQL Server is ready'
-          break
-        fi
-        echo 'Waiting for SQL Server...'
-        sleep 2
-      done
-      echo 'Running init.sql...'
-      /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${SA_PASSWORD}' -C -d master \
-        -v DB_EXTERNAL_USER='${DB_EXTERNAL_USER}' \
-        -v DB_EXTERNAL_PASSWORD='${DB_EXTERNAL_PASSWORD}' \
-        -v DB_NAME='${DB_NAME}' \
-        -i /docker-entrypoint-initdb.d/init.sql
-      wait"
+      interval: 15s
+      retries: 30
+      start_period: 120s
+      timeout: 15s
+    # CORRECAO: usa | (literal) em vez de > (folded) para preservar quebras de linha.
+    # > colapsa linhas em uma so, quebrando a sintaxe do bash (for, if, etc).
+    # $$ e necessario para escapar $ — o compose/Podman expande $ antes de entregar ao bash.
+    command:
+      - "bash"
+      - "-c"
+      - |
+        /opt/mssql/bin/sqlservr &
+        SQLSERVER_PID=$$!
+        echo 'Aguardando SQL Server iniciar...'
+        for i in $$(seq 1 90); do
+          if /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q 'SELECT 1' > /dev/null 2>&1; then
+            echo "SQL Server pronto apos $${i} tentativas"
+            break
+          fi
+          echo "Tentativa $${i}/90 - aguardando 5s..."
+          sleep 5
+        done
+        echo 'Executando init.sql...'
+        /opt/mssql-tools18/bin/sqlcmd \
+          -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -d master \
+          -v DB_EXTERNAL_USER="$${DB_EXTERNAL_USER:-db_user}" \
+          -v DB_EXTERNAL_PASSWORD="$${DB_EXTERNAL_PASSWORD}" \
+          -v DB_NAME="$${DB_NAME:-ProcessoSelecaoDb}" \
+          -i /docker-entrypoint-initdb.d/init.sql && echo 'init.sql executado com sucesso'
+        wait $$SQLSERVER_PID
     restart: unless-stopped
     networks:
       - processo-selecao-network
@@ -46,10 +75,8 @@ services:
   backend:
     build:
       context: ./src/backend
-      dockerfile: ProcessoSelecao.Api/Dockerfile
+      dockerfile: ProcessoSelecao.Api/Dockerfile.prod
     container_name: processo-selecao-backend
-    env_file:
-      - .env
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://0.0.0.0:5002
@@ -68,7 +95,7 @@ services:
       sqlserver:
         condition: service_healthy
     volumes:
-      - ./documentos:/app/documentos
+      - ./documentos:/app/documentos:Z
     restart: unless-stopped
     networks:
       - processo-selecao-network
@@ -76,8 +103,7 @@ services:
   frontend:
     build:
       context: ./src/frontend
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.prod
     container_name: processo-selecao-frontend
     ports:
       - "4200:80"

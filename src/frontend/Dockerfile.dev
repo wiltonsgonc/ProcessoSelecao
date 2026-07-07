@@ -1,0 +1,18 @@
+# ==============================================
+# Frontend - Angular 19
+# Dockerfile.dev — ambiente de desenvolvimento
+# Executa ng serve com hot-reload
+# ==============================================
+
+FROM node:24-alpine
+WORKDIR /app
+
+COPY package*.json ./
+# Fallback: npm ci primeiro; se falhar (memoria, cache), usa npm install
+RUN npm ci || npm install
+
+COPY . .
+
+EXPOSE 80
+
+CMD ["sh", "-c", "npm run start -- --port 80 --disable-host-check"]

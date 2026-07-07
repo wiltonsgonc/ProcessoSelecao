@@ -1,26 +1,40 @@
-**/.classpath
-**/.dockerignore
-**/.env
-**/.git
-**/.gitignore
-**/.project
-**/.settings
-**/.toolstarget
-**/.vs
-**/.vscode
-**/*.*proj.user
-**/*.dbmdl
-**/*.jfm
-**/bin
-**/charts
-**/docker-compose*
-**/compose*
-**/Dockerfile*
-**/node_modules
-**/npm-debug.log
-**/obj
-**/secrets.dev.yaml
-**/values.dev.yaml
-/bin
-/obj
-/.dotnet
+# ==============================================
+# .dockerignore - Backend ASP.NET Core
+# Coloque este arquivo em src/backend/
+# O context do compose e "./src/backend", entao este arquivo
+# e utilizado pelo Docker/Podman para excluir arquivos do build context.
+# ==============================================
+
+# Artefatos de build local (corrompem o restore dentro do container)
+**/bin/
+**/obj/
+
+# Git
+.git/
+.gitignore
+
+# Editor / IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Env files (secrets NUNCA devem ir para a imagem)
+.env
+.env.*
+
+# Testes
+**/*.Tests/
+**/*.Test/
+
+# CI
+.github/
+.gitlab-ci.yml
+
+# Docs
+README.md
+CHANGELOG.md

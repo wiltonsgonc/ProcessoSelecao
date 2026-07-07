@@ -1,0 +1,26 @@
+# ==============================================
+# PRODUCAO - Override para producao
+# Uso: compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+# ==============================================
+
+services:
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: ProcessoSelecao.Api/Dockerfile.prod
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    volumes:
+      - documentos_data:/app/documentos:Z
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+
+volumes:
+  documentos_data:
+    driver: local
+    name: processo_selecao_documentos

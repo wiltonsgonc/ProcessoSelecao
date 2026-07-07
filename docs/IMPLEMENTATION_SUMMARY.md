@@ -23,7 +23,7 @@ This implementation adds comprehensive database persistence and external access 
 
 **Solution**: Created a dedicated database user with appropriate permissions:
 - **Username**: `db_user`
-- **Password**: `DbUser@123`
+- **Password**: definido em `DB_EXTERNAL_PASSWORD` no `.env`
 - **Permissions**: `db_datareader`, `db_datawriter`
 
 **Location**: 
@@ -128,24 +128,24 @@ docker-compose up -d
 2. Server: `localhost,1433`
 3. Database: `ProcessoSelecaoDb`
 4. Username: `db_user`
-5. Password: `DbUser@123`
+5. Password: definido em `DB_EXTERNAL_PASSWORD` no `.env`
 
 ### Access via Command Line
 ```bash
-sqlcmd -S localhost,1433 -U db_user -P "DbUser@123" -d ProcessoSelecaoDb
+sqlcmd -S localhost,1433 -U db_user -P "SUA_SENHA" -d ProcessoSelecaoDb
 ```
 
 ### Create Backup
 ```bash
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-  -S localhost -U sa -P "Processo@123" \
+  -S localhost -U sa -P "SUA_SA_PASSWORD" \
   -Q "BACKUP DATABASE [ProcessoSelecaoDb] TO DISK = '/var/opt/mssql/backup/backup.bak' WITH COMPRESSION"
 ```
 
 ### Restore Backup
 ```bash
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-  -S localhost -U sa -P "Processo@123" \
+  -S localhost -U sa -P "SUA_SA_PASSWORD" \
   -Q "RESTORE DATABASE [ProcessoSelecaoDb] FROM DISK = '/var/opt/mssql/backup/backup.bak' WITH REPLACE"
 ```
 
@@ -180,8 +180,8 @@ docker ps | grep sqlserver
 ### Authentication failed
 ```bash
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools/bin/sqlcmd \
-  -S localhost -U sa -P "oldpassword" \
-  -Q "ALTER LOGIN sa WITH PASSWORD = 'Processo@123'"
+  -S localhost -U sa -P "senha_antiga" \
+  -Q "ALTER LOGIN sa WITH PASSWORD = 'nova_senha_forte'"
 ```
 
 ## Summary

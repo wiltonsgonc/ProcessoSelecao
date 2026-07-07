@@ -2,20 +2,82 @@
 set -euo pipefail
 
 DEV_MODE=false
+ENV_FILE=""
 COMPOSE_FILE_ARGS=()
+
+# ==============================================
+# Auto-detectar runtime de container
+# Suporta: docker compose, docker-compose, podman compose, podman-compose
+# ==============================================
+detect_runtime() {
+  if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
+    if docker compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker compose"
+      RUNTIME="docker"
+      echo "Runtime detectado: Docker (compose plugin)"
+      return
+    fi
+    if command -v docker-compose &>/dev/null && docker-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker-compose"
+      RUNTIME="docker"
+      echo "Runtime detectado: Docker (docker-compose standalone)"
+      return
+    fi
+  fi
+
+  if command -v podman &>/dev/null && podman info &>/dev/null 2>&1; then
+    if podman compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman compose"
+      RUNTIME="podman"
+      echo "Runtime detectado: Podman (compose plugin)"
+      return
+    fi
+    if command -v podman-compose &>/dev/null && podman-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman-compose"
+      RUNTIME="podman"
+      echo "Runtime detectado: Podman (podman-compose standalone)"
+      return
+    fi
+  fi
+
+  echo "Erro: Nenhum runtime de container encontrado."
+  echo "Instale um dos seguintes:"
+  echo "  - Docker Desktop + Docker Compose plugin"
+  echo "  - Docker + docker-compose standalone"
+  echo "  - Podman + podman-compose"
+  exit 1
+}
+
+detect_runtime
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -d|--dev) DEV_MODE=true; shift ;;
-    *) echo "Uso: $0 [-d|--dev]"; exit 1 ;;
+    -d|--dev)
+      DEV_MODE=true
+      shift
+      ;;
+    *)
+      echo "Uso: $0 [-d|--dev]"
+      exit 1
+      ;;
   esac
 done
 
 if [ "$DEV_MODE" = true ]; then
   COMPOSE_FILE_ARGS+=("-f" "docker-compose.yml" "-f" "docker-compose.dev.yml")
+  ENV_FILE=".env.dev"
   echo "Modo: DESENVOLVIMENTO"
 else
-  echo "Modo: PRODUÇÃO"
+  COMPOSE_FILE_ARGS+=("-f" "docker-compose.yml" "-f" "docker-compose.prod.yml")
+  ENV_FILE=".env.prod"
+  echo "Modo: PRODUCAO"
+fi
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "Erro: Arquivo $ENV_FILE nao encontrado."
+  echo "Copie o .env.example para $ENV_FILE e preencha os valores."
+  echo "  cp .env.example $ENV_FILE"
+  exit 1
 fi
 
 echo "========================================"
@@ -24,17 +86,17 @@ echo "========================================"
 echo ""
 
 echo "[1/3] Parando containers existentes..."
-podman compose "${COMPOSE_FILE_ARGS[@]}" down backend
+$COMPOSE_CMD "${COMPOSE_FILE_ARGS[@]}" --env-file "$ENV_FILE" down backend 2>/dev/null || true
 
 echo ""
 echo "[2/3] Building backend sem cache..."
-podman compose "${COMPOSE_FILE_ARGS[@]}" build --no-cache backend
+$COMPOSE_CMD "${COMPOSE_FILE_ARGS[@]}" --env-file "$ENV_FILE" build --no-cache backend
 
 echo ""
-echo "[3/3] Iniciando containers..."
-podman compose "${COMPOSE_FILE_ARGS[@]}" up -d backend
+echo "[3/3] Iniciando container backend..."
+$COMPOSE_CMD "${COMPOSE_FILE_ARGS[@]}" --env-file "$ENV_FILE" up -d backend
 
 echo ""
 echo "========================================"
-echo "  Build concluido"
+echo "  Build backend concluido"
 echo "========================================"

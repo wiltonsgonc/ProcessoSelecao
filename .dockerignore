@@ -1,0 +1,61 @@
+# ==============================================
+# .dockerignore
+# Exclui arquivos ANTES do COPY chegar ao daemon do Docker/Podman.
+# Isso evita que dados sensiveis ou desnecessarios aparecam em qualquer layer.
+# ==============================================
+
+# Controle de versao
+.git
+.gitignore
+.gitattributes
+.gitlab-ci.yml
+.github
+
+# Ambiente e secrets (NUNCA incluir em imagens)
+.env
+.env.*
+!.env.example
+
+# IDE e editores
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker (nao precisa de si mesmo dentro do container)
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile
+Dockerfile.*
+.dockerignore
+docker/
+
+# Build output
+/bin
+/obj
+/dist
+/node_modules
+/.angular
+/.dotnet
+
+# Documentacao
+docs/
+diagramas/
+*.md
+*.puml
+*.png
+*.svg
+
+# Scripts
+scripts/
+verify_database_config.sh
+back.txt
+front.txt
+init.sql
+
+# Arquivos de upload/documentos
+documentos/

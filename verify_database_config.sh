@@ -1,68 +1,131 @@
 #!/bin/bash
+set -euo pipefail
 
 echo "=========================================="
-echo "Database Configuration Verification"
+echo "  Database Configuration Verification"
 echo "=========================================="
 echo ""
 
+ERRORS=0
+
+# ==============================================
+# Auto-detectar runtime de container
+# ==============================================
+detect_runtime() {
+  if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
+    if docker compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker compose"
+      return
+    fi
+    if command -v docker-compose &>/dev/null && docker-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="docker-compose"
+      return
+    fi
+  fi
+
+  if command -v podman &>/dev/null && podman info &>/dev/null 2>&1; then
+    if podman compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman compose"
+      return
+    fi
+    if command -v podman-compose &>/dev/null && podman-compose version &>/dev/null 2>&1; then
+      COMPOSE_CMD="podman-compose"
+      return
+    fi
+  fi
+
+  echo "ERRO: Nenhum runtime de container encontrado"
+  exit 1
+}
+
+detect_runtime
+
 # Check if docker-compose.yml exists
 if [ -f "docker-compose.yml" ]; then
-    echo "✓ docker-compose.yml found"
+    echo "OK: docker-compose.yml encontrado"
 else
-    echo "✗ docker-compose.yml not found"
-    exit 1
+    echo "ERRO: docker-compose.yml nao encontrado"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Check if docker-compose.dev.yml exists
+if [ -f "docker-compose.dev.yml" ]; then
+    echo "OK: docker-compose.dev.yml encontrado"
+else
+    echo "ERRO: docker-compose.dev.yml nao encontrado"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Check if docker-compose.prod.yml exists
+if [ -f "docker-compose.prod.yml" ]; then
+    echo "OK: docker-compose.prod.yml encontrado"
+else
+    echo "ERRO: docker-compose.prod.yml nao encontrado"
+    ERRORS=$((ERRORS + 1))
 fi
 
 # Check if init.sql exists
 if [ -f "init.sql" ]; then
-    echo "✓ init.sql found"
+    echo "OK: init.sql encontrado"
 else
-    echo "✗ init.sql not found"
-    exit 1
+    echo "ERRO: init.sql nao encontrado"
+    ERRORS=$((ERRORS + 1))
 fi
 
 # Check if entrypoint.sh exists
-if [ -f "entrypoint.sh" ]; then
-    echo "✓ entrypoint.sh found"
+if [ -f "src/backend/entrypoint.sh" ]; then
+    echo "OK: entrypoint.sh encontrado"
 else
-    echo "✗ entrypoint.sh not found"
-    exit 1
+    echo "ERRO: entrypoint.sh nao encontrado"
+    ERRORS=$((ERRORS + 1))
 fi
 
-# Check if .env exists
-if [ -f ".env" ]; then
-    echo "✓ .env found"
-else
-    echo "✗ .env not found"
-    exit 1
-fi
+# Check if .env files exist
+for env_file in .env.dev .env.prod .env.example; do
+  if [ -f "$env_file" ]; then
+    echo "OK: $env_file encontrado"
+  else
+    echo "ERRO: $env_file nao encontrado"
+    ERRORS=$((ERRORS + 1))
+  fi
+done
 
-# Check if Dockerfile exists
-if [ -f "src/backend/ProcessoSelecao.Api/Dockerfile" ]; then
-    echo "✓ Dockerfile found"
-else
-    echo "✗ Dockerfile not found"
-    exit 1
-fi
+# Check Dockerfiles
+for dockerfile in \
+  "src/backend/ProcessoSelecao.Api/Dockerfile" \
+  "src/backend/ProcessoSelecao.Api/Dockerfile.dev" \
+  "src/backend/ProcessoSelecao.Api/Dockerfile.prod" \
+  "src/frontend/Dockerfile"; do
+  if [ -f "$dockerfile" ]; then
+    echo "OK: $dockerfile encontrado"
+  else
+    echo "ERRO: $dockerfile nao encontrado"
+    ERRORS=$((ERRORS + 1))
+  fi
+done
 
 echo ""
 echo "=========================================="
-echo "Verifying docker-compose configuration"
+echo "  Validando docker-compose configuration"
 echo "=========================================="
 echo ""
 
-# Validate docker-compose configuration
-if docker-compose config > /dev/null 2>&1; then
-    echo "✓ docker-compose.yml is valid"
-else
-    echo "✗ docker-compose.yml has errors"
-    docker-compose config
-    exit 1
-fi
+# Validate docker-compose configuration for each environment
+for compose_args in \
+  "-f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev" \
+  "-f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod"; do
+  if $COMPOSE_CMD $compose_args config > /dev/null 2>&1; then
+    echo "OK: Compose config valido: $compose_args"
+  else
+    echo "ERRO: Compose config invalido: $compose_args"
+    $COMPOSE_CMD $compose_args config 2>&1 || true
+    ERRORS=$((ERRORS + 1))
+  fi
+done
 
 echo ""
 echo "=========================================="
-echo "Checking database volumes"
+echo "  Verificando database volumes"
 echo "=========================================="
 echo ""
 
@@ -70,86 +133,82 @@ echo ""
 if grep -q "sqlserver_data:" docker-compose.yml && \
    grep -q "sqlserver_log:" docker-compose.yml && \
    grep -q "sqlserver_backup:" docker-compose.yml; then
-    echo "✓ All database volumes are defined"
+    echo "OK: Todos os volumes do banco estao definidos"
 else
-    echo "✗ Some database volumes are missing"
-    exit 1
+    echo "ERRO: Alguns volumes do banco estao faltando"
+    ERRORS=$((ERRORS + 1))
 fi
 
 echo ""
 echo "=========================================="
-echo "Checking database user configuration"
+echo "  Verificando database user configuration"
 echo "=========================================="
 echo ""
 
-# Check if external user is configured
-if grep -q "DB_EXTERNAL_USER" .env && grep -q "DB_EXTERNAL_PASSWORD" .env; then
-    echo "✓ External database user is configured"
-else
-    echo "✗ External database user is not configured"
-    exit 1
-fi
+# Check if external user is configured in .env files
+for env_file in .env.dev .env.prod; do
+  if [ -f "$env_file" ]; then
+    if grep -q "DB_EXTERNAL_USER" "$env_file" && grep -q "DB_EXTERNAL_PASSWORD" "$env_file"; then
+      echo "OK: Usuario externo configurado em $env_file"
+    else
+      echo "ERRO: Usuario externo nao configurado em $env_file"
+      ERRORS=$((ERRORS + 1))
+    fi
+  fi
+done
 
 echo ""
 echo "=========================================="
-echo "Checking init.sql content"
+echo "  Verificando init.sql content"
 echo "=========================================="
 echo ""
 
 # Check if init.sql has required content
-if grep -q "CREATE LOGIN db_user" init.sql && \
-   grep -q "CREATE USER db_user" init.sql && \
+if grep -q "CREATE LOGIN" init.sql && \
+   grep -q "CREATE USER" init.sql && \
    grep -q "sp_addrolemember" init.sql; then
-    echo "✓ init.sql has required database user setup"
+    echo "OK: init.sql contem configuracao de usuario"
 else
-    echo "✗ init.sql is missing required content"
-    exit 1
+    echo "ERRO: init.sql esta faltando configuracao de usuario"
+    ERRORS=$((ERRORS + 1))
 fi
 
 echo ""
 echo "=========================================="
-echo "Checking entrypoint.sh content"
+echo "  Verificando entrypoint.sh content"
 echo "=========================================="
 echo ""
 
 # Check if entrypoint.sh has required content
-if grep -q "nc -z" entrypoint.sh && \
-   grep -q "dotnet ef database update" entrypoint.sh; then
-    echo "✓ entrypoint.sh has required database initialization"
+if grep -q "sqlcmd" src/backend/entrypoint.sh; then
+    echo "OK: entrypoint.sh contem aguarda SQL Server"
 else
-    echo "✗ entrypoint.sh is missing required content"
-    exit 1
+    echo "ERRO: entrypoint.sh esta faltando aguarda SQL Server"
+    ERRORS=$((ERRORS + 1))
 fi
 
 echo ""
 echo "=========================================="
-echo "Checking Dockerfile content"
+echo "  Resultado"
 echo "=========================================="
 echo ""
 
-# Check if Dockerfile has required content
-if grep -q "dotnet-ef" src/backend/ProcessoSelecao.Api/Dockerfile && \
-   grep -q "entrypoint.sh" src/backend/ProcessoSelecao.Api/Dockerfile; then
-    echo "✓ Dockerfile has required database tools and entrypoint"
+if [ $ERRORS -eq 0 ]; then
+  echo "Todas as verificacoes passaram!"
+  echo ""
+  echo "Resumo:"
+  echo "- Database persistence: Configurado com 3 volumes"
+  echo "- Usuario externo: Configurado (db_user)"
+  echo "- Script de inicializacao: Pronto (init.sql)"
+  echo "- Script de entrada: Pronto (entrypoint.sh)"
+  echo "- Configuracao Docker: Validos para dev e producao"
+  echo ""
+  echo "Proximos passos:"
+  echo "1. Copie .env.example para .env.dev e .env.prod"
+  echo "2. Preencha as credenciais em cada arquivo .env"
+  echo "3. Execute: ./scripts/build-full.sh --dev (desenvolvimento)"
+  echo "4. Ou: ./scripts/build-full.sh (producao)"
 else
-    echo "✗ Dockerfile is missing required content"
-    exit 1
+  echo " $ERRORS erro(s) encontrado(s)"
+  exit 1
 fi
-
-echo ""
-echo "=========================================="
-echo "All checks passed! ✓"
-echo "=========================================="
-echo ""
-echo "Summary:"
-echo "- Database persistence: Configured with 3 volumes"
-echo "- External database user: Created (db_user/DbUser@123)"
-echo "- Initialization script: Ready (init.sql)"
-echo "- Entry point script: Ready (entrypoint.sh)"
-echo "- Docker configuration: Valid"
-echo ""
-echo "You can now:"
-echo "1. Start the services: docker-compose up -d"
-echo "2. Connect with DBeaver using db_user/DbUser@123"
-echo "3. Access via command line: sqlcmd -S localhost,1433 -U db_user -P \"DbUser@123\" -d ProcessoSelecaoDb"
-echo ""

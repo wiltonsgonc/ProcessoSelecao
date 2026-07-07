@@ -47,6 +47,19 @@ public class ProcessoSelecao : BaseEntity
     }
 
     /// <summary>
+    /// Abre automaticamente se a data de início já chegou
+    /// </summary>
+    public bool AbrirAutomaticamente()
+    {
+        if (Status == StatusProcesso.Rascunho && DataInicio != default && DataInicio <= DateTime.UtcNow)
+        {
+            Status = StatusProcesso.Aberto;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Finaliza o processo de seleção (altera status para Finalizado)
     /// </summary>
     public void FinalizarProcesso()
