@@ -113,9 +113,8 @@ O backend e frontend rodam nativamente no sistema host.
 ```bash
 docker run -d --name processo-selecao-sqlserver \
   -e ACCEPT_EULA=Y \
-  -e "MSSQL_SA_PASSWORD=P@ssw0rd!Dev2026" \
+  -e 'MSSQL_SA_PASSWORD=Str0ng!Pass2026' \
   -e MSSQL_PID=Developer \
-  -e MSSQL_MEMORY_LIMIT_MB=2048 \
   -p 1433:1433 \
   mcr.microsoft.com/mssql/server:2022-latest
 ```
@@ -124,13 +123,22 @@ Aguardar ~60 segundos para inicializacao. Verificar:
 
 ```bash
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P "P@ssw0rd!Dev2026" -C -Q "SELECT 1"
+  -S localhost -U sa -P 'Str0ng!Pass2026' -C -Q "SELECT 1"
 ```
 
 **2. Inicializar banco de dados:**
 
 ```bash
-sqlcmd -S localhost,1433 -U sa -P "P@ssw0rd!Dev2026" -i init.sql
+# Copiar init.sql para dentro do container
+docker cp init.sql processo-selecao-sqlserver:/tmp/init.sql
+
+# Executar o script
+docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'Str0ng!Pass2026' -C \
+  -d master -i /tmp/init.sql \
+  -v DB_EXTERNAL_USER='db_user' \
+  -v DB_EXTERNAL_PASSWORD='ExtP@ssw0rd2026' \
+  -v DB_NAME='ProcessoSelecaoDb'
 ```
 
 **3. Backend (.NET):**
@@ -165,7 +173,7 @@ Edite `src/backend/ProcessoSelecao.Api/appsettings.Development.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=P@ssw0rd!Dev2026;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=Str0ng!Pass2026;TrustServerCertificate=True;"
   },
   "JwtSettings": {
     "SecretKey": "SUA_CHAVE_SECRETA_MINIMO_32_CARACTERES",
