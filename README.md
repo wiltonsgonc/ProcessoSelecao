@@ -22,7 +22,10 @@ ProcessoSelecao/
 │   │   └── ProcessoSelecao.Api/           # Controllers e Configuracao
 │   │       ├── Dockerfile.dev             # Dev: dotnet watch (single-stage)
 │   │       └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
+│   ├── Directory.Build.props              # NuGetAudit habilitado
+│   └── ProcessoSelecao.sln               # Solucao .NET
 │   └── frontend/                          # Angular App
+│       ├── .npmrc                         # Configuracao npm (audit habilitado)
 │       ├── Dockerfile.dev                 # Dev: ng serve (node)
 │       ├── Dockerfile.prod                # Prod: build + nginx
 │       └── nginx.conf                     # Configuracao nginx (producao)
@@ -150,11 +153,25 @@ cd src/backend
 dotnet restore
 
 # Executar com hot-reload
-dotnet watch run --project ProcessoSelecao.Api --urls http://localhost:5002
+dotnet watch run --project ProcessoSelecao.Api
 
 # Executar sem hot-reload
-dotnet run --project ProcessoSelecao.Api --urls http://localhost:5002
+dotnet run --project ProcessoSelecao.Api
+
+# Para testar a API
+curl http://localhost:5002/api/health → OK
 ```
+
+> **Nota:** O `Properties/launchSettings.json` define automaticamente `ASPNETCORE_ENVIRONMENT=Development` e a porta 5002. O `ConfigureKestrel` no `Program.cs` tambem escuta na porta 5000.
+
+# Para
+curl http://localhost:5002/api/health → OK
+
+Se tudo estiver correto deve aparecer no termninal:
+Now listening on: http://[::]:5002
+Now listening on: http://[::]:5000
+Application started.
+Hosting environment: Development
 
 **4. Frontend (Angular):**
 
@@ -472,6 +489,42 @@ Este projeto foi testado e funciona com:
 - Nomes de imagens usam FQIN (`docker.io/library/...`) para compatibilidade com Podman
 - User no container usa `appuser` (UID 1000) para compatibilidade com Podman rootless
 
+## Auditoria de Seguranca
+
+### Backend (.NET)
+
+O arquivo `Directory.Build.props` habilita `dotnet nuget audit` automaticamente em todo o solution.
+
+```bash
+cd src/backend
+
+# Auditoria de pacotes NuGet (vulnerabilidades conhecidas)
+dotnet list package --vulnerable --include-transitive
+
+# Build com auditoria (reporta warnings NU1903)
+dotnet build
+
+# Corrigir pacote vulneravel (exemplo: atualizar Swashbuckle)
+dotnet add ProcessoSelecao.Api/ProcessoSelecao.Api.csproj package <nome-do-pacote>
+```
+
+### Frontend (Angular)
+
+O arquivo `.npmrc` habilita auditoria automatica a cada `npm install`.
+
+```bash
+cd src/frontend
+
+# Listar vulnerabilidades
+npm audit
+
+# Corrigir automaticamente (sem breaking changes)
+npm audit fix
+
+# Corrigir incluindo breaking changes (cuidado)
+npm audit fix --force
+```
+
 ## Troubleshooting
 
 ### Alma Linux 9 no WSL: "sd-bus call: Permission denied" + "aardvark-dns failed to start"
@@ -533,8 +586,6 @@ podman-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.d
 ```
 
 Ou instale o Docker no WSL Ubuntu e use-o no lugar do Podman no Alma.
-
-
 
 ### Erro: "No space left on device" (Nao ha espaco em disco)
 
