@@ -1,0 +1,170 @@
+@inject FormularioService FormularioService
+
+<form @onsubmit="OnSubmit">
+    <h2>Dados Básicos</h2>
+    <div class="campo-obrigatorio">
+        <label for="nome">Nome: <span class="asterisco">*</span></label>
+        <input id="nome" @bind="dados.Nome" placeholder="Nome"
+               class="@(string.IsNullOrEmpty(dados.Nome) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.Nome) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="dataNascimento">Data de Nascimento: <span class="asterisco">*</span></label>
+        <input id="dataNascimento" type="date" placeholder="Data de Nascimento"
+               value="@(string.IsNullOrEmpty(dados.DataNascimento) ? "" : DateTime.Parse(dados.DataNascimento).ToString("yyyy-MM-dd"))"
+               @onchange="e => dados.DataNascimento = e.Value?.ToString()"
+               class="@(string.IsNullOrEmpty(dados.DataNascimento) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.DataNascimento) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <div>
+        <label for="paisNatal">País Natal:</label>
+        <input id="paisNatal" @bind="dados.PaisNatal" placeholder="País Natal" />
+    </div>
+
+    <div>
+        <label for="estadoNatal">Estado Natal:</label>
+        <input id="estadoNatal" @bind="dados.EstadoNatal" placeholder="Estado Natal" />
+    </div>
+
+    <div>
+        <label for="naturalidade">Naturalidade:</label>
+        <input id="naturalidade" @bind="dados.Naturalidade" placeholder="Naturalidade" />
+    </div>
+
+    <div>
+        <label for="nomeSocial">Nome Social:</label>
+        <input id="nomeSocial" @bind="dados.NomeSocial" placeholder="Nome Social" />
+    </div>
+
+    <div>
+        <label for="estadoCivil">Estado Civil:</label>
+        <input id="estadoCivil" @bind="dados.EstadoCivil" placeholder="Estado Civil" />
+    </div>
+
+    <div>
+        <label for="nacionalidade">Nacionalidade:</label>
+        <input id="nacionalidade" @bind="dados.Nacionalidade" placeholder="Nacionalidade" />
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="email">E-mail: <span class="asterisco">*</span></label>
+        <input id="email" @bind="dados.Email" type="email" placeholder="E-mail"
+               class="@(string.IsNullOrEmpty(dados.Email) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.Email) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="sexo">Sexo: <span class="asterisco">*</span></label>
+        <input id="sexo" @bind="dados.Sexo" placeholder="Sexo"
+               class="@(string.IsNullOrEmpty(dados.Sexo) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.Sexo) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <h2>Documentos</h2>
+    <div>
+        <label for="cpf">CPF:</label>
+        <input id="cpf" @bind="dados.Cpf" placeholder="Número" />
+    </div>
+
+    <h2>Endereço</h2>
+    <div class="campo-obrigatorio">
+        <label for="telefone1">Telefone I: <span class="asterisco">*</span></label>
+        <input id="telefone1" @bind="dados.Telefone1" placeholder="Telefone I"
+               class="@(string.IsNullOrEmpty(dados.Telefone1) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.Telefone1) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <div>
+        <label for="telefone2">Telefone II:</label>
+        <input id="telefone2" @bind="dados.Telefone2" placeholder="Telefone II" />
+    </div>
+
+    <h2>Informações Adicionais</h2>
+    <div>
+        <label for="corRaca">Cor/Raça:</label>
+        <input id="corRaca" @bind="dados.CorRaca" placeholder="Cor/Raça" />
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="autorizacaoDados">Autorizo a utilização de dados pessoais: <span class="asterisco">*</span></label>
+        <select id="autorizacaoDados" @bind="dados.AutorizacaoDados"
+                class="@(string.IsNullOrEmpty(dados.AutorizacaoDados) && submitted ? "invalid" : "")">
+            <option value="">Selecione</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+        </select>
+        @if (string.IsNullOrEmpty(dados.AutorizacaoDados) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <h2>Dados Gerais de Estrangeiros</h2>
+    <div>
+        <label for="tipoVisto">Tipo de Visto:</label>
+        <input id="tipoVisto" @bind="dados.TipoVisto" placeholder="Tipo de Visto" />
+    </div>
+
+    <div>
+        <label for="numeroRegistroGeral">Número registro geral:</label>
+        <input id="numeroRegistroGeral" @bind="dados.NumeroRegistroGeral" placeholder="Número registro geral" />
+    </div>
+
+    <div>
+        <label for="dataVencimentoRG">Data vencimento RG:</label>
+        <input id="dataVencimentoRG" type="date" placeholder="Data vencimento RG"
+               value="@(string.IsNullOrEmpty(dados.DataVencimentoRG) ? "" : DateTime.Parse(dados.DataVencimentoRG).ToString("yyyy-MM-dd"))"
+               @onchange="e => dados.DataVencimentoRG = e.Value?.ToString()" />
+    </div>
+
+    <div class="botoes">
+        <button type="button" @onclick="OnAnteriorHandler">Anterior</button>
+        <button type="submit">Próximo</button>
+    </div>
+</form>
+
+@code {
+    [Parameter] public EventCallback OnProxima { get; set; }
+    [Parameter] public EventCallback OnAnterior { get; set; }
+
+    private DadosPagina2 dados = new();
+    private bool submitted = false;
+
+    protected override void OnInitialized()
+    {
+        if (FormularioService.DadosPagina2 != null)
+            dados = FormularioService.DadosPagina2;
+    }
+
+    private async Task OnSubmit()
+    {
+        submitted = true;
+
+        if (string.IsNullOrEmpty(dados.Nome) || string.IsNullOrEmpty(dados.DataNascimento) ||
+            string.IsNullOrEmpty(dados.Email) || string.IsNullOrEmpty(dados.Sexo) ||
+            string.IsNullOrEmpty(dados.Telefone1) || string.IsNullOrEmpty(dados.AutorizacaoDados))
+            return;
+
+        FormularioService.SalvarPagina2(dados);
+        await OnProxima.InvokeAsync();
+    }
+
+    private async Task OnAnteriorHandler() => await OnAnterior.InvokeAsync();
+}

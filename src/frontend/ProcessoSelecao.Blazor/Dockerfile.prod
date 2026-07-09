@@ -1,0 +1,30 @@
+# ==============================================
+# Frontend - Blazor Web App (Server-Side)
+# Dockerfile.prod — build + runtime .NET
+# ==============================================
+
+# ----------------------------------------------
+# Stage 1: build e publish
+# ----------------------------------------------
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ProcessoSelecao.Blazor.csproj .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# ----------------------------------------------
+# Stage 2: runtime
+# ----------------------------------------------
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+ENTRYPOINT ["dotnet", "ProcessoSelecao.Blazor.dll"]

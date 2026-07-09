@@ -77,9 +77,14 @@ builder.Logging.AddFilter("LuckyPennySoftware.AutoMapper.License", LogLevel.None
 // Configuração de CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://frontend:4200")
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "http://frontend:4200",
+                "http://localhost:5119",
+                "http://localhost:7209",
+                "http://10.255.255.254:5119")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -111,7 +116,7 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/api/health", () => "OK");
 
 // CORS
-app.UseCors("AllowAngular");
+app.UseCors("AllowFrontend");
 
 // Autorização
 app.UseAuthorization();

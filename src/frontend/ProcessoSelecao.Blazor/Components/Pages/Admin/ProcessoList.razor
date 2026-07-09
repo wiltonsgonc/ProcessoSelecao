@@ -1,0 +1,172 @@
+@page "/admin/processos"
+@using ProcessoSelecao.Blazor.Models
+@layout Layouts.AdminLayout
+@inject ProcessoSelecaoService Service
+@inject IJSRuntime JS
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Processos de Seleção</h1>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="ShowForm">Novo Processo</button>
+</div>
+
+@if (showForm)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <h2 class="text-lg font-semibold mb-4">@(editingId.HasValue ? "Editar" : "Novo") Processo</h2>
+        <form @onsubmit="Save" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Nome</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.Nome" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Descrição</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 min-h-[80px]" @bind="formData.Descricao"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Vagas Disponíveis</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.VagasDisponiveis" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Data de Início</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                       value="@(string.IsNullOrEmpty(formData.DataInicio) ? "" : DateTime.Parse(formData.DataInicio).ToString("yyyy-MM-dd"))"
+                       @onchange="e => formData.DataInicio = e.Value?.ToString()" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Data de Término</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                       value="@(string.IsNullOrEmpty(formData.DataFim) ? "" : DateTime.Parse(formData.DataFim).ToString("yyyy-MM-dd"))"
+                       @onchange="e => formData.DataFim = e.Value?.ToString()" />
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">Salvar</button>
+                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" @onclick="CancelForm">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+<div class="bg-white border border-gray-200 rounded-lg p-5">
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nome</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Vagas</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Início</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Término</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidatos</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in processos)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2.5 border-b border-gray-200">@p.Id</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@p.Nome</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@p.VagasDisponiveis</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@FormatDate(p.DataInicio)</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@FormatDate(p.DataFim)</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @GetStatusClass(p.Status)">@GetStatusLabel(p.Status)</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@p.TotalCandidatos</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <div class="flex gap-1 flex-wrap">
+                                <button class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700" @onclick="() => Edit(p)">Editar</button>
+                                <button class="bg-cyan-600 text-white px-2.5 py-1 rounded text-xs hover:bg-cyan-700" @onclick="() => CopiarLink(p.Id)">Copiar Link</button>
+                                @if (p.Status == StatusProcesso.Rascunho)
+                                {
+                                    <button class="bg-gray-500 text-white px-2.5 py-1 rounded text-xs hover:bg-gray-600" @onclick="() => Iniciar(p.Id)">Iniciar</button>
+                                }
+                                @if (p.Status == StatusProcesso.Aberto || p.Status == StatusProcesso.EmAndamento)
+                                {
+                                    <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Finalizar(p.Id)">Finalizar</button>
+                                }
+                                <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Remove(p.Id)">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<Models.ProcessoSelecao> processos = new();
+    private bool showForm = false;
+    private int? editingId = null;
+    private CreateProcessoSelecao formData = new() { VagasDisponiveis = 1 };
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load() => processos = await Service.GetAllAsync();
+
+    private void ShowForm()
+    {
+        showForm = true;
+        editingId = null;
+        formData = new() { VagasDisponiveis = 1 };
+    }
+
+    private void Edit(Models.ProcessoSelecao p)
+    {
+        editingId = p.Id;
+        formData = new CreateProcessoSelecao
+        {
+            Nome = p.Nome, Descricao = p.Descricao, VagasDisponiveis = p.VagasDisponiveis,
+            DataInicio = p.DataInicio, DataFim = p.DataFim
+        };
+        showForm = true;
+    }
+
+    private async Task Save()
+    {
+        if (editingId.HasValue)
+            await Service.UpdateAsync(editingId.Value, new UpdateProcessoSelecao
+            {
+                Nome = formData.Nome, Descricao = formData.Descricao,
+                VagasDisponiveis = formData.VagasDisponiveis,
+                DataInicio = formData.DataInicio, DataFim = formData.DataFim
+            });
+        else
+            await Service.CreateAsync(formData);
+        CancelForm();
+        await Load();
+    }
+
+    private void CancelForm() { showForm = false; editingId = null; formData = new() { VagasDisponiveis = 1 }; }
+    private async Task Iniciar(int id) { await Service.IniciarAsync(id); await Load(); }
+    private async Task Finalizar(int id) { await Service.FinalizarAsync(id); await Load(); }
+
+    private async Task Remove(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este processo?"))
+        { await Service.DeleteAsync(id); await Load(); }
+    }
+
+    private async Task CopiarLink(int id)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"/inscricao/{id}");
+    }
+
+    private string FormatDate(string? date) => DateTime.TryParse(date, out var d) ? d.ToString("dd/MM/yyyy") : "-";
+
+    private string GetStatusLabel(StatusProcesso s) => s switch
+    {
+        StatusProcesso.Rascunho => "Rascunho", StatusProcesso.Aberto => "Aberto",
+        StatusProcesso.EmAndamento => "Em Andamento", StatusProcesso.Finalizado => "Finalizado",
+        StatusProcesso.Cancelado => "Cancelado", _ => "Desconhecido"
+    };
+
+    private string GetStatusClass(StatusProcesso s) => s switch
+    {
+        StatusProcesso.Rascunho => "bg-gray-500", StatusProcesso.Aberto => "bg-cyan-600",
+        StatusProcesso.EmAndamento => "bg-yellow-500", StatusProcesso.Finalizado => "bg-green-600",
+        StatusProcesso.Cancelado => "bg-red-600", _ => "bg-gray-500"
+    };
+}

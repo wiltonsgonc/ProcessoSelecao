@@ -258,23 +258,18 @@ if [ "$DEV_MODE" = true ]; then
     --name processo-selecao-frontend \
     --network processo-selecao-network \
     --env-file "$ENV_FILE" \
-    -e NG_HMR=1 \
-    -e NG_CLI_ANALYTICS=false \
+    -e Backend__BaseUrl=http://backend:5002/api \
+    -e ASPNETCORE_ENVIRONMENT=Development \
     -p 4200:80 \
-    -v "$(pwd)/src/frontend:/app:Z" \
-    -v /app/node_modules \
-    "$FRONTEND_IMAGE" \
-    sh -c '
-if [ ! -d node_modules ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
-  echo ">>> Instalando dependencias..."
-  npm install
-fi
-npm run start -- --port 80 --disable-host-check
-'
+    -v "$(pwd)/src/frontend/ProcessoSelecao.Blazor:/app:Z" \
+    "$FRONTEND_IMAGE"
 else
   ${RUNTIME} run -d --pull never \
     --name processo-selecao-frontend \
     --network processo-selecao-network \
+    --env-file "$ENV_FILE" \
+    -e Backend__BaseUrl=http://backend:5002/api \
+    -e ASPNETCORE_ENVIRONMENT=Production \
     -p 4200:80 \
     "$FRONTEND_IMAGE"
 fi

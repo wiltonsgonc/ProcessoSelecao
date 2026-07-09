@@ -1,0 +1,102 @@
+@inject FormularioService FormularioService
+
+<form @onsubmit="OnSubmit">
+    <div>
+        <label for="nome">Nome:</label>
+        <input id="nome" @bind="dados.Nome" placeholder="Nome" />
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="dataNascimento">Data de Nascimento: <span class="asterisco">*</span></label>
+        <input id="dataNascimento" type="date" placeholder="Data de Nascimento"
+               value="@(string.IsNullOrEmpty(dados.DataNascimento) ? "" : DateTime.Parse(dados.DataNascimento).ToString("yyyy-MM-dd"))"
+               @onchange="e => dados.DataNascimento = e.Value?.ToString()"
+               class="@(string.IsNullOrEmpty(dados.DataNascimento) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.DataNascimento) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <div>
+        <label for="tipoDocumento">Tipo de Documento:</label>
+        <select id="tipoDocumento" @bind="dados.TipoDocumento">
+            <option value="">Selecione</option>
+            <option value="CPF">CPF</option>
+            <option value="RG">RG</option>
+            <option value="E-mail">E-mail</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="numeroDocumento">Número do Documento:</label>
+        <input id="numeroDocumento" @bind="dados.NumeroDocumento" placeholder="Número do Documento" />
+    </div>
+
+    <div>
+        <label for="email">E-mail:</label>
+        <input id="email" @bind="dados.Email" type="email" placeholder="E-mail" />
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="telefone">Telefone I: <span class="asterisco">*</span></label>
+        <input id="telefone" @bind="dados.Telefone" placeholder="Telefone"
+               class="@(string.IsNullOrEmpty(dados.Telefone) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.Telefone) && submitted)
+        {
+            <div class="erro"><span>Campo obrigatório</span></div>
+        }
+    </div>
+
+    <div>
+        <label for="areaOfertada">Área Ofertada - 1ª opção de curso:</label>
+        <select id="areaOfertada" @bind="dados.AreaOfertada">
+            <option value="">Selecione</option>
+            <option value="area1">Área 1</option>
+            <option value="area2">Área 2</option>
+        </select>
+    </div>
+
+    <div class="info-cookies">
+        <p>Nós utilizamos cookies para personalizar anúncios, gerar dados estatístico e garantir que você tenha a melhor experiência no SENAI!</p>
+        <p>Conheça a Política de Privacidade SENAI.</p>
+    </div>
+
+    <div class="campo-checkbox">
+        <input type="checkbox" id="politicaPrivacidade" @bind="dados.PoliticaPrivacidade"
+               class="@(submitted && !dados.PoliticaPrivacidade ? "invalid" : "")" />
+        <label for="politicaPrivacidade">Concordo com a Política de Privacidade SENAI.</label>
+        @if (submitted && !dados.PoliticaPrivacidade)
+        {
+            <div class="erro"><span>Você precisa aceitar a Política de Privacidade para continuar</span></div>
+        }
+    </div>
+
+    <div class="botoes">
+        <button type="submit">Continuar</button>
+    </div>
+</form>
+
+@code {
+    [Parameter] public EventCallback OnProxima { get; set; }
+
+    private DadosPagina1 dados = new();
+    private bool submitted = false;
+
+    protected override void OnInitialized()
+    {
+        if (FormularioService.DadosPagina1 != null)
+            dados = FormularioService.DadosPagina1;
+    }
+
+    private async Task OnSubmit()
+    {
+        submitted = true;
+
+        if (string.IsNullOrEmpty(dados.DataNascimento) || string.IsNullOrEmpty(dados.Telefone) || !dados.PoliticaPrivacidade)
+            return;
+
+        FormularioService.SalvarPagina1(dados);
+        await OnProxima.InvokeAsync();
+    }
+}

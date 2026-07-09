@@ -5,7 +5,7 @@ Sistema para gerenciamento de processos de selecao de Iniciacao Cientifica e Pes
 ## Arquitetura
 
 - **Backend**: .NET 10 Web API com Entity Framework Core
-- **Frontend**: Angular 19 com Angular Material
+- **Frontend**: Blazor Web App (Server-Side) com Tailwind CSS
 - **Banco de Dados**: SQL Server 2022
 - **Container**: Docker ou Podman (compativel com ambos)
 - **Autenticacao**: JWT
@@ -20,18 +20,24 @@ ProcessoSelecao/
 │   │   ├── ProcessoSelecao.Infrastructure/ # DbContext e Repositorios
 │   │   ├── ProcessoSelecao.Application/   # DTOs e Services
 │   │   └── ProcessoSelecao.Api/           # Controllers e Configuracao
-│   │       ├── Dockerfile.dev             # Dev: dotnet watch (single-stage)
+│   │       ├── Dockerfile                 # Dev: dotnet watch (single-stage)
 │   │       └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
-│   ├── Directory.Build.props              # NuGetAudit habilitado
-│   └── ProcessoSelecao.sln               # Solucao .NET
-│   └── frontend/                          # Angular App
-│       ├── .npmrc                         # Configuracao npm (audit habilitado)
-│       ├── Dockerfile.dev                 # Dev: ng serve (node)
-│       ├── Dockerfile.prod                # Prod: build + nginx
-│       └── nginx.conf                     # Configuracao nginx (producao)
-├── docker/
-│   ├── nginx/conf.d/                      # Configuracoes Nginx (dev/prod)
-│   └── crontab                            # Cron para supercronic
+│   ├── frontend/
+│   │   └── ProcessoSelecao.Blazor/        # Frontend Blazor
+│   │       ├── Components/
+│   │       │   ├── App.razor              # Shell HTML
+│   │       │   ├── Routes.razor           # Router
+│   │       │   ├── Layouts/               # AdminLayout e PublicLayout
+│   │       │   └── Pages/
+│   │       │       ├── Public/            # Home, ProcessoPublicList
+│   │       │       ├── Formulario/        # Wizard de inscricao (4 paginas)
+│   │       │       └── Admin/             # CRUD: Processos, Candidatos, etc.
+│   │       ├── Models/                    # DTOs C# (ProcessoSelecao, Candidato, etc.)
+│   │       ├── Services/                  # HTTP clients para a API
+│   │       ├── wwwroot/css/app.css        # Estilos
+│   │       ├── Dockerfile                 # Dev: dotnet watch
+│   │       └── Dockerfile.prod            # Prod: build + runtime
+│   └── Directory.Build.props              # NuGetAudit habilitado
 ├── scripts/
 │   ├── build-full.sh                      # Build completo (backend + frontend)
 │   ├── build-backend.sh                   # Build apenas do backend
@@ -39,8 +45,7 @@ ProcessoSelecao/
 │   ├── start-containers.sh               # Iniciar containers sem rebuild
 │   ├── down-containers.sh                # Parar e remover containers
 │   └── reset-db.sh                        # Reset do banco de dados
-├── docker-compose.yml                     # Compose base (prod)
-├── docker-compose.dev.yml                 # Override para desenvolvimento
+├── docker-compose.yml                     # Compose base (dev padrao)
 ├── docker-compose.prod.yml                # Override para producao
 ├── .env.dev                               # Variaveis de ambiente (dev)
 ├── .env.prod                              # Variaveis de ambiente (prod)
@@ -53,7 +58,6 @@ ProcessoSelecao/
 - **Docker** (Docker Desktop ou Docker Engine + Docker Compose) **OU**
 - **Podman** (Podman + podman-compose)
 - .NET 10 SDK (para desenvolvimento local sem containers)
-- Node.js 24+ e npm (para desenvolvimento local sem containers)
 - Bash (Linux, macOS, ou WSL/Git Bash no Windows)
 
 
@@ -164,27 +168,20 @@ curl http://localhost:5002/api/health → OK
 
 > **Nota:** O `Properties/launchSettings.json` define automaticamente `ASPNETCORE_ENVIRONMENT=Development` e a porta 5002. O `ConfigureKestrel` no `Program.cs` tambem escuta na porta 5000.
 
-# Para
-curl http://localhost:5002/api/health → OK
-
-Se tudo estiver correto deve aparecer no termninal:
-Now listening on: http://[::]:5002
-Now listening on: http://[::]:5000
-Application started.
-Hosting environment: Development
-
-**4. Frontend (Angular):**
+**4. Frontend (Blazor):**
 
 ```bash
 cd src/frontend
 
-# Instalar dependencias
-npm install
+# Executar com hot-reload
+dotnet watch --project ProcessoSelecao.Blazor
+# Acessa: http://localhost:5119
 
-# Iniciar servidor de desenvolvimento
-npm start
-# Acessa: http://localhost:4200
+# Executar sem hot-reload
+dotnet run --project ProcessoSelecao.Blazor
 ```
+
+> **Nota:** O Blazor roda em http://localhost:5119 (HTTP) ou https://localhost:7209 (HTTPS).
 
 **5. Variaveis de ambiente:**
 
@@ -219,7 +216,7 @@ Os scripts detectam automaticamente se voce tem Docker ou Podman instalado.
 
 ```bash
 # Desenvolvimento
-docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+docker compose --env-file .env.dev up -d
 
 # Producao
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
@@ -229,7 +226,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 
 ```bash
 # Desenvolvimento
-podman compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+podman compose --env-file .env.dev up -d
 
 # Producao
 podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
@@ -239,7 +236,7 @@ podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 
 ```bash
 # Desenvolvimento
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+docker-compose --env-file .env.dev up -d
 
 # Producao
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
@@ -249,7 +246,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 
 ```bash
 # Desenvolvimento
-podman-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+podman-compose --env-file .env.dev up -d
 
 # Producao
 podman-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
@@ -258,8 +255,8 @@ podman-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 ### Modo Desenvolvimento
 
 Neste modo:
-- **Backend**: usa `Dockerfile.dev` com `dotnet watch run` -- alteracoes no codigo reiniciam o servidor automaticamente
-- **Frontend**: usa `target: development` com `ng serve --poll 2000` -- alteracoes refletem em tempo real (HMR)
+- **Backend**: usa `Dockerfile` com `dotnet watch run` -- alteracoes no codigo reiniciam o servidor automaticamente
+- **Frontend**: usa `Dockerfile` com `dotnet run` -- Blazor Server com SignalR
 - **Volumes**: montam o codigo fonte diretamente, sem necessidade de rebuild a cada alteracao
 - **SQL Server**: porta 1433 exposta externamente para acesso via DBeaver/SSMS
 
@@ -341,7 +338,8 @@ docker compose build --no-cache && docker compose up -d
 
 ## Acessos
 
-- **Frontend**: http://localhost:4200
+- **Frontend (local)**: http://localhost:5119
+- **Frontend (Docker)**: http://localhost:4200
 - **Backend API**: http://localhost:5002
 - **Swagger**: http://localhost:5002/swagger
 - **SQL Server**: localhost:1433
@@ -354,16 +352,18 @@ docker compose build --no-cache && docker compose up -d
 ### Modulo Processo de Selecao
 - Criar, editar, iniciar e finalizar processos
 - Definir numero de vagas disponiveis
+- Copiar link de inscricao
 
 ### Modulo Candidatos
 - Cadastrar candidatos com matricula e email
 - Associar candidatos a processos
-- Visualizar pontuacao media
+- Visualizar pontuacao media e detalhes
 
 ### Modulo Documentos
 - Upload de documentos (Historico, Comprovante, Cartas, etc.)
-- Validacao de documentos
-- Download de arquivos
+- Validacao de documentos (aprovar/rejeitar com motivo)
+- Visualizacao de PDF inline
+- Download multiplo (ZIP)
 
 ### Modulo Avaliadores
 - Cadastrar avaliadores internos e externos
@@ -371,8 +371,13 @@ docker compose build --no-cache && docker compose up -d
 
 ### Modulo Baremas
 - Criar baremas de avaliacao
-- Definir criterios e notas
+- Definir criterios (Originalidade, Relevancia, Metodologia, Apresentacao)
 - Calcular nota final
+
+### Modulo Inscricao (Publico)
+- Formulario multi-step (4 paginas)
+- Upload de documentos
+- Confirmacao e termos de uso
 
 ## Acesso ao Banco de Dados
 
@@ -422,6 +427,7 @@ docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 | GET/POST/PUT/DELETE /api/avaliadores | Gestao de avaliadores |
 | GET/POST/PUT/DELETE /api/baremas | Gestao de baremas |
 | GET/POST/PUT/DELETE /api/processosselecao | Gestao de processos |
+| POST /api/formulario/completa | Inscricao publica |
 
 ## Variaveis de Ambiente
 
@@ -487,7 +493,6 @@ Este projeto foi testado e funciona com:
 - Suporta `docker compose` (plugin), `docker-compose` (standalone), `podman compose` (plugin) e `podman-compose` (standalone)
 - Mounts usam `:Z` para compatibilidade com SELinux (Podman) -- Docker ignora silenciosamente
 - Nomes de imagens usam FQIN (`docker.io/library/...`) para compatibilidade com Podman
-- User no container usa `appuser` (UID 1000) para compatibilidade com Podman rootless
 
 ## Auditoria de Seguranca
 
@@ -506,23 +511,6 @@ dotnet build
 
 # Corrigir pacote vulneravel (exemplo: atualizar Swashbuckle)
 dotnet add ProcessoSelecao.Api/ProcessoSelecao.Api.csproj package <nome-do-pacote>
-```
-
-### Frontend (Angular)
-
-O arquivo `.npmrc` habilita auditoria automatica a cada `npm install`.
-
-```bash
-cd src/frontend
-
-# Listar vulnerabilidades
-npm audit
-
-# Corrigir automaticamente (sem breaking changes)
-npm audit fix
-
-# Corrigir incluindo breaking changes (cuidado)
-npm audit fix --force
 ```
 
 ## Troubleshooting
@@ -582,7 +570,7 @@ Se ainda falhar, use `podman-compose` (standalone Python) diretamente:
 
 ```bash
 # O standalone nao usa netavark/aardvark-dns
-podman-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+podman-compose --env-file .env.dev up -d
 ```
 
 Ou instale o Docker no WSL Ubuntu e use-o no lugar do Podman no Alma.
@@ -607,8 +595,8 @@ podman logs processo-selecao-backend
 podman logs processo-selecao-sqlserver
 
 # Limpar volumes e reconstruir
-podman compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev down -v
-podman compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d --build
+podman compose --env-file .env.dev down -v
+podman compose --env-file .env.dev up -d --build
 ```
 
 ### Erro: SQL Server nao fica pronto (healthcheck timeout)
@@ -642,3 +630,25 @@ healthcheck:
 ```env
 MSSQL_MEMORY_LIMIT_MB=1024
 ```
+
+### WSL2: "inotify" limit reached (hot reload nao funciona)
+
+O WSL2 tem limite padrao de 128 instancias inotify. Para aumentar:
+
+```bash
+# No terminal WSL:
+sudo sh -c 'echo "fs.inotify.max_user_watches=524288" > /etc/sysctl.d/60-inotify.conf'
+sudo sh -c 'echo "fs.inotify.max_user_instances=512" >> /etc/sysctl.d/60-inotify.conf'
+sudo sysctl -p /etc/sysctl.d/60-inotify.conf
+```
+
+## Tecnologias
+
+| Componente | Tecnologia |
+|------------|------------|
+| Backend | .NET 10, Entity Framework Core, ASP.NET Core Web API |
+| Frontend | Blazor Web App (Server-Side), .NET 10 |
+| CSS | Tailwind CSS (via CDN) |
+| Banco de Dados | SQL Server 2022 |
+| Containers | Docker / Podman |
+| CI/CD | GitHub Actions (opcional) |

@@ -48,14 +48,6 @@ else
     ERRORS=$((ERRORS + 1))
 fi
 
-# Check if docker-compose.dev.yml exists
-if [ -f "docker-compose.dev.yml" ]; then
-    echo "OK: docker-compose.dev.yml encontrado"
-else
-    echo "ERRO: docker-compose.dev.yml nao encontrado"
-    ERRORS=$((ERRORS + 1))
-fi
-
 # Check if docker-compose.prod.yml exists
 if [ -f "docker-compose.prod.yml" ]; then
     echo "OK: docker-compose.prod.yml encontrado"
@@ -93,9 +85,9 @@ done
 # Check Dockerfiles
 for dockerfile in \
   "src/backend/ProcessoSelecao.Api/Dockerfile" \
-  "src/backend/ProcessoSelecao.Api/Dockerfile.dev" \
   "src/backend/ProcessoSelecao.Api/Dockerfile.prod" \
-  "src/frontend/Dockerfile"; do
+  "src/frontend/ProcessoSelecao.Blazor/Dockerfile" \
+  "src/frontend/ProcessoSelecao.Blazor/Dockerfile.prod"; do
   if [ -f "$dockerfile" ]; then
     echo "OK: $dockerfile encontrado"
   else
@@ -112,7 +104,7 @@ echo ""
 
 # Validate docker-compose configuration for each environment
 for compose_args in \
-  "-f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev" \
+  "-f docker-compose.yml --env-file .env.dev" \
   "-f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod"; do
   if $COMPOSE_CMD $compose_args config > /dev/null 2>&1; then
     echo "OK: Compose config valido: $compose_args"

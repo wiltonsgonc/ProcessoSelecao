@@ -1,29 +1,29 @@
 # ==============================================
 # Base - Docker Compose para ProcessoSelecao
-# Uso com scripts:
+# Modo padrao: DESENVOLVIMENTO (hot-reload)
+#
+# Iniciar (desenvolvimento):
+#   docker compose --env-file .env.dev up -d
+#
+# Iniciar (producao - sobrepoe build e configs):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Scripts:
 #   ./scripts/build-full.sh          (producao)
 #   ./scripts/build-full.sh --dev    (desenvolvimento)
-#
-# Ou manualmente:
-#   compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
-#   compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
 # ==============================================
 
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: processo-selecao-sqlserver
-    # Rodar como root para ter permissao de escrita nos volumes
     user: root
     environment:
       ACCEPT_EULA: ${ACCEPT_EULA:-Y}
       MSSQL_SA_PASSWORD: ${SA_PASSWORD}
       MSSQL_PID: ${MSSQL_PID:-Developer}
-      # Limitar memoria para evitar crash no WSL/VM com pouca RAM
       MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-2048}
-      # Desabilitar Agent para economizar memoria
       MSSQL_AGENT_ENABLED: "false"
-      # Variaveis usadas pelo init.sql via sqlcmd -v
       DB_NAME: ${DB_NAME:-ProcessoSelecaoDb}
       DB_EXTERNAL_USER: ${DB_EXTERNAL_USER:-db_user}
       DB_EXTERNAL_PASSWORD: ${DB_EXTERNAL_PASSWORD}
@@ -35,16 +35,11 @@ services:
       - sqlserver_backup:/var/opt/mssql/backup
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:Z
     healthcheck:
-      # CORRECAO: aumentado timeout e start_period para WSL2/Podman com pouca RAM
-      # -C flag ignora validacao de certificado (necessario no mssql-tools18)
       test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
       interval: 15s
       retries: 30
       start_period: 120s
       timeout: 15s
-    # CORRECAO: usa | (literal) em vez de > (folded) para preservar quebras de linha.
-    # > colapsa linhas em uma so, quebrando a sintaxe do bash (for, if, etc).
-    # $$ e necessario para escapar $ — o compose/Podman expande $ antes de entregar ao bash.
     command:
       - "bash"
       - "-c"
@@ -75,11 +70,10 @@ services:
   backend:
     build:
       context: ./src/backend
-      dockerfile: ProcessoSelecao.Api/Dockerfile.prod
+      dockerfile: ProcessoSelecao.Api/Dockerfile
     container_name: processo-selecao-backend
     environment:
-      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
-      ASPNETCORE_URLS: http://0.0.0.0:5002
+      ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Server=${DB_HOST};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;
       JwtSettings__SecretKey: ${JWT_SECRETKEY}
       JwtSettings__Issuer: ${JWT_ISSUER}
@@ -95,6 +89,8 @@ services:
       sqlserver:
         condition: service_healthy
     volumes:
+      - ./src/backend:/src:Z
+      - backend_cache:/src/.dotnet
       - ./documentos:/app/documentos:Z
     restart: unless-stopped
     networks:
@@ -102,11 +98,16 @@ services:
 
   frontend:
     build:
-      context: ./src/frontend
-      dockerfile: Dockerfile.prod
+      context: ./src/frontend/ProcessoSelecao.Blazor
+      dockerfile: Dockerfile
     container_name: processo-selecao-frontend
+    environment:
+      - Backend__BaseUrl=http://backend:5002/api
+      - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "4200:80"
+    volumes:
+      - ./src/frontend/ProcessoSelecao.Blazor:/app:Z
     depends_on:
       - backend
     restart: unless-stopped

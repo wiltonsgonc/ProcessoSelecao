@@ -1,0 +1,116 @@
+@inject FormularioService FormularioService
+
+<form @onsubmit="OnSubmit">
+    <h2>Documentos</h2>
+
+    <div class="campo-obrigatorio">
+        <label>RG e CPF Candidato (PDF): <span class="asterisco">*</span></label>
+        <InputFile OnChange="e => OnFileChange(e, v => dados.RgCpfCandidato = v)"
+                   class="@(dados.RgCpfCandidato == null && submitted ? "invalid" : "")" />
+        @if (dados.RgCpfCandidato == null && submitted)
+        {
+            <div class="erro"><span>Arquivo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label>Anexo I do edital: <span class="asterisco">*</span></label>
+        <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoI = v)"
+                   class="@(dados.AnexoI == null && submitted ? "invalid" : "")" />
+        @if (dados.AnexoI == null && submitted)
+        {
+            <div class="erro"><span>Arquivo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="curriculoLattesCandidato">Currículo Lattes do candidato atualizado: <span class="asterisco">*</span></label>
+        <input id="curriculoLattesCandidato" type="url" @bind="dados.CurriculoLattesCandidato"
+               placeholder="https://lattes.cnpq.br/1234567890123456"
+               class="@(string.IsNullOrEmpty(dados.CurriculoLattesCandidato) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.CurriculoLattesCandidato) && submitted)
+        {
+            <div class="erro"><span>Link do Currículo Lattes é obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label for="curriculoLattesOrientador">Currículo Lattes do orientador atualizado: <span class="asterisco">*</span></label>
+        <input id="curriculoLattesOrientador" type="url" @bind="dados.CurriculoLattesOrientador"
+               placeholder="https://lattes.cnpq.br/1234567890123456"
+               class="@(string.IsNullOrEmpty(dados.CurriculoLattesOrientador) && submitted ? "invalid" : "")" />
+        @if (string.IsNullOrEmpty(dados.CurriculoLattesOrientador) && submitted)
+        {
+            <div class="erro"><span>Link do Currículo Lattes é obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label>Anexo II (ver edital): <span class="asterisco">*</span></label>
+        <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoII = v)"
+                   class="@(dados.AnexoII == null && submitted ? "invalid" : "")" />
+        @if (dados.AnexoII == null && submitted)
+        {
+            <div class="erro"><span>Arquivo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label>Comprovante de Matrícula Assinado Instituição de Ensino: <span class="asterisco">*</span></label>
+        <InputFile OnChange="e => OnFileChange(e, v => dados.ComprovanteMatricula = v)"
+                   class="@(dados.ComprovanteMatricula == null && submitted ? "invalid" : "")" />
+        @if (dados.ComprovanteMatricula == null && submitted)
+        {
+            <div class="erro"><span>Arquivo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="campo-obrigatorio">
+        <label>Histórico Escolar graduação (ver edital): <span class="asterisco">*</span></label>
+        <InputFile OnChange="e => OnFileChange(e, v => dados.HistoricoEscolar = v)"
+                   class="@(dados.HistoricoEscolar == null && submitted ? "invalid" : "")" />
+        @if (dados.HistoricoEscolar == null && submitted)
+        {
+            <div class="erro"><span>Arquivo obrigatório</span></div>
+        }
+    </div>
+
+    <div class="botoes">
+        <button type="button" @onclick="OnAnteriorHandler">Anterior</button>
+        <button type="submit">Próximo</button>
+    </div>
+</form>
+
+@code {
+    [Parameter] public EventCallback OnProxima { get; set; }
+    [Parameter] public EventCallback OnAnterior { get; set; }
+
+    private DadosPagina3 dados = new();
+    private bool submitted = false;
+
+    protected override void OnInitialized()
+    {
+        if (FormularioService.DadosPagina3 != null)
+            dados = FormularioService.DadosPagina3;
+    }
+
+    private void OnFileChange(InputFileChangeEventArgs e, Action<IBrowserFile> setter)
+    {
+        setter(e.File);
+    }
+
+    private async Task OnSubmit()
+    {
+        submitted = true;
+
+        if (dados.RgCpfCandidato == null || dados.AnexoI == null || dados.AnexoII == null ||
+            dados.ComprovanteMatricula == null || dados.HistoricoEscolar == null ||
+            string.IsNullOrEmpty(dados.CurriculoLattesCandidato) || string.IsNullOrEmpty(dados.CurriculoLattesOrientador))
+            return;
+
+        FormularioService.SalvarPagina3(dados);
+        await OnProxima.InvokeAsync();
+    }
+
+    private async Task OnAnteriorHandler() => await OnAnterior.InvokeAsync();
+}

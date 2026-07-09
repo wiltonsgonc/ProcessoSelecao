@@ -61,9 +61,8 @@ npm-debug.log
 yarn-error.log
 .tool-version
 
-# Angular
+# Blazor
 dist/
-.angular/
 
 # Environment files (contem credenciais - NUNCA versionar)
 .env

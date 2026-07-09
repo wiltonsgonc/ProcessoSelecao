@@ -193,7 +193,7 @@ done
 
 # Montar argumentos dos compose files
 if [ "$DEV_MODE" = true ]; then
-  COMPOSE_FILE_ARGS+=("-f" "docker-compose.yml" "-f" "docker-compose.dev.yml")
+  COMPOSE_FILE_ARGS+=("-f" "docker-compose.yml")
   ENV_FILE=".env.dev"
   echo "Modo: DESENVOLVIMENTO"
 else

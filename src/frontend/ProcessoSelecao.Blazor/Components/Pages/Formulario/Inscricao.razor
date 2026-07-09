@@ -1,0 +1,187 @@
+@page "/inscricao/{ProcessoId:int}"
+@layout Layouts.PublicLayout
+@inject ProcessoSelecaoService ProcessoSelecaoService
+@inject FormularioService FormularioService
+
+@if (carregando)
+{
+    <div class="carregando">
+        <p>Carregando...</p>
+    </div>
+}
+else if (!processoEncontrado)
+{
+    <div class="not-found">
+        <h1>404</h1>
+        <h2>Processo Não Encontrado</h2>
+        <p>O processo de seleção solicitado não foi encontrado.</p>
+        <a href="/">Voltar para a página inicial</a>
+    </div>
+}
+else
+{
+    <div class="formulario-container">
+        <div class="progresso">
+            <div class="barra-progresso" style="width: @((paginaAtual * 100 / 4))%"></div>
+        </div>
+
+        <div class="indicadores-pagina">
+            <span class="@(paginaAtual >= 1 ? "ativa" : "")">1</span>
+            <span class="@(paginaAtual >= 2 ? "ativa" : "")">2</span>
+            <span class="@(paginaAtual >= 3 ? "ativa" : "")">3</span>
+            <span class="@(paginaAtual >= 4 ? "ativa" : "")">4</span>
+        </div>
+
+        <div class="conteudo-pagina">
+            @if (paginaAtual == 1)
+            {
+                <Pagina1 OnProxima="ProximaPagina" />
+            }
+            else if (paginaAtual == 2)
+            {
+                <Pagina2 OnProxima="ProximaPagina" OnAnterior="PaginaAnterior" />
+            }
+            else if (paginaAtual == 3)
+            {
+                <Pagina3 OnProxima="ProximaPagina" OnAnterior="PaginaAnterior" />
+            }
+            else if (paginaAtual == 4)
+            {
+                <Pagina4 OnAnterior="PaginaAnterior" OnAbrirConfirmacao="AbrirModalConfirmacao" />
+            }
+        </div>
+
+        @if (mostrarModalConfirmacao)
+        {
+            <div class="modal-overlay">
+                <div class="modal-conteudo">
+                    <h2>Confirmação dos dados da inscrição</h2>
+                    <p>Verifique se todos os dados estão corretos antes de confirmar.</p>
+
+                    <div class="resumo-dados">
+                        <p>Clique em "Li e aceito os termos e condições" para confirmar sua inscrição.</p>
+
+                        <label class="termo-checkbox">
+                            <input type="checkbox" @bind="termoAceito" />
+                            <span>Li e aceito os termos e condições</span>
+                        </label>
+                    </div>
+
+                    <div class="modal-botoes">
+                        <button type="button" class="btn-voltar" @onclick="FecharModalConfirmacao">Retornar ao cadastro</button>
+                        <button type="button" class="btn-confirmar" @onclick="ConfirmarInscricao">
+                            Li e aceito os termos e condições
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (mostrarModalSucesso)
+        {
+            <div class="modal-overlay">
+                <div class="modal-conteudo">
+                    <h2>Inscrição Realizada com Sucesso!</h2>
+                    <p>Seu número de inscrição é:</p>
+
+                    <div class="numero-inscricao">
+                        @numeroInscricao
+                    </div>
+
+                    <p class="aviso">Guarde este número para acompanhamento da sua inscrição.</p>
+
+                    <div class="modal-botoes">
+                        <button type="button" class="btn-confirmar" @onclick="FecharModalSucesso">Ok</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int ProcessoId { get; set; }
+
+    private int paginaAtual = 1;
+    private bool mostrarModalConfirmacao = false;
+    private bool mostrarModalSucesso = false;
+    private bool termoAceito = false;
+    private bool processoEncontrado = false;
+    private bool carregando = true;
+    private string numeroInscricao = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var processo = await ProcessoSelecaoService.GetByIdAsync(ProcessoId);
+            if (processo != null)
+            {
+                processoEncontrado = true;
+                FormularioService.SalvarPagina4(new DadosPagina4 { ProcessoSeletivo = processo.Nome });
+            }
+        }
+        catch
+        {
+            processoEncontrado = false;
+        }
+        finally
+        {
+            carregando = false;
+        }
+
+        FormularioService.OnChange += StateHasChanged;
+    }
+
+    private void ProximaPagina()
+    {
+        if (paginaAtual < 4)
+        {
+            paginaAtual++;
+            FormularioService.PaginaAtual = paginaAtual;
+        }
+    }
+
+    private void PaginaAnterior()
+    {
+        if (paginaAtual > 1)
+        {
+            paginaAtual--;
+            FormularioService.PaginaAtual = paginaAtual;
+        }
+    }
+
+    private void AbrirModalConfirmacao() => mostrarModalConfirmacao = true;
+
+    private void FecharModalConfirmacao() => mostrarModalConfirmacao = false;
+
+    private async Task ConfirmarInscricao()
+    {
+        if (!termoAceito)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await FormularioService.EnviarInscricaoCompletaAsync(ProcessoId);
+            mostrarModalConfirmacao = false;
+            mostrarModalSucesso = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erro ao enviar inscrição: {ex.Message}");
+        }
+    }
+
+    private void FecharModalSucesso()
+    {
+        mostrarModalSucesso = false;
+        FormularioService.LimparDados();
+    }
+
+    public void Dispose()
+    {
+        FormularioService.OnChange -= StateHasChanged;
+    }
+}

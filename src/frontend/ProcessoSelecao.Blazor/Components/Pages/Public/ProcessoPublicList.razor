@@ -1,0 +1,112 @@
+@using ProcessoSelecao.Blazor.Models
+@inject ProcessoSelecaoService ProcessoService
+
+<div class="max-w-5xl mx-auto px-5">
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Processos Seletivos Abertos</h1>
+
+    @if (carregando)
+    {
+        <div class="text-center py-10 text-gray-500">
+            <span class="material-icons text-5xl animate-spin">refresh</span>
+            <p class="mt-2">Carregando processos...</p>
+        </div>
+    }
+    else if (!processos.Any())
+    {
+        <div class="text-center py-10 text-gray-500">
+            <span class="material-icons text-5xl">assignment_late</span>
+            <p class="mt-2">Nenhum processo seletivo aberto no momento.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            @foreach (var processo in processos)
+            {
+                <div class="bg-white border border-gray-200 rounded-lg flex flex-col">
+                    <div class="flex items-center gap-3 p-4">
+                        <span class="material-icons text-indigo-500 text-3xl">assignment</span>
+                        <div>
+                            <h3 class="font-semibold text-base m-0">@processo.Nome</h3>
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold @GetStatusClass(processo.Status) text-white">
+                                @GetStatusLabel(processo.Status)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex-1 px-4 pb-4">
+                        <p class="text-gray-500 mb-3">@processo.Descricao</p>
+                        <div class="flex items-center gap-2 text-gray-500 mt-2">
+                            <span class="material-icons text-base">people</span>
+                            <span>@processo.VagasDisponiveis vagas</span>
+                        </div>
+                        @if (processo.TotalCandidatos > 0)
+                        {
+                            <div class="flex items-center gap-2 text-gray-500 mt-2">
+                                <span class="material-icons text-base">how_to_reg</span>
+                                <span>@processo.TotalCandidatos candidatos inscritos</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="px-4 pb-4">
+                        @if (processo.Status == StatusProcesso.Aberto)
+                        {
+                            <a href="inscricao/@processo.Id" class="inline-flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors no-underline">
+                                <span class="material-icons text-base">how_to_reg</span>
+                                Inscrever-se
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="inline-flex items-center gap-1 bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>
+                                <span class="material-icons text-base">lock</span>
+                                Inscrições Encerradas
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Models.ProcessoSelecao> processos = new();
+    private bool carregando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var todos = await ProcessoService.GetAllAsync();
+            processos = todos.Where(p => p.Status == StatusProcesso.Aberto).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erro ao carregar processos: {ex.Message}");
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private string GetStatusLabel(StatusProcesso status) => status switch
+    {
+        StatusProcesso.Rascunho => "Rascunho",
+        StatusProcesso.Aberto => "Aberto",
+        StatusProcesso.EmAndamento => "Em Andamento",
+        StatusProcesso.Finalizado => "Finalizado",
+        StatusProcesso.Cancelado => "Cancelado",
+        _ => "Desconhecido"
+    };
+
+    private string GetStatusClass(StatusProcesso status) => status switch
+    {
+        StatusProcesso.Rascunho => "bg-gray-500",
+        StatusProcesso.Aberto => "bg-green-500",
+        StatusProcesso.EmAndamento => "bg-yellow-500",
+        StatusProcesso.Finalizado => "bg-red-500",
+        StatusProcesso.Cancelado => "bg-gray-500",
+        _ => "bg-gray-500"
+    };
+}

@@ -1,0 +1,140 @@
+@page "/admin/avaliadores"
+@using ProcessoSelecao.Blazor.Models
+@layout Layouts.AdminLayout
+@inject AvaliadorService Service
+@inject IJSRuntime JS
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Avaliadores</h1>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="ShowForm">Novo Avaliador</button>
+</div>
+
+@if (showForm)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <h2 class="text-lg font-semibold mb-4">@(editingId.HasValue ? "Editar" : "Novo") Avaliador</h2>
+        <form @onsubmit="Save" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Nome</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.Nome" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Email</label>
+                <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind="formData.Email" readonly="@(editingId.HasValue)" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Tipo</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind="formData.Tipo" disabled="@(editingId.HasValue)">
+                    <option value="1">Interno</option>
+                    <option value="2">Externo</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Área de Especialização</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.AreaEspecializacao" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Instituição</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.Instituicao" />
+            </div>
+            @if (!editingId.HasValue)
+            {
+                <div>
+                    <label class="block text-sm font-medium mb-1">ID do Processo (opcional)</label>
+                    <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.ProcessoSelecaoId" />
+                </div>
+            }
+            @if (editingId.HasValue)
+            {
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" @bind="editAtivo" class="w-4 h-4" />
+                    <label class="text-sm font-medium">Ativo</label>
+                </div>
+            }
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">Salvar</button>
+                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" @onclick="CancelForm">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+<div class="bg-white border border-gray-200 rounded-lg p-5">
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nome</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Email</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Tipo</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Instituição</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Pendentes</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in avaliadores)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Id</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Nome</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Email</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @(a.Tipo == TipoAvaliador.Interno ? "bg-cyan-600" : "bg-yellow-500")">@(a.Tipo == TipoAvaliador.Interno ? "Interno" : "Externo")</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@(a.Instituicao ?? "-")</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @(a.Ativo ? "bg-green-600" : "bg-red-600")">@(a.Ativo ? "Ativo" : "Inativo")</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.AvaliacoesPendentes</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <div class="flex gap-1">
+                                <button class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700" @onclick="() => Edit(a)">Editar</button>
+                                <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Remove(a.Id)">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<Avaliador> avaliadores = new();
+    private bool showForm = false;
+    private int? editingId = null;
+    private CreateAvaliador formData = new() { Tipo = TipoAvaliador.Interno };
+    private bool editAtivo = true;
+
+    protected override async Task OnInitializedAsync() => await Load();
+    private async Task Load() => avaliadores = await Service.GetAllAsync();
+
+    private void ShowForm() { showForm = true; editingId = null; formData = new() { Tipo = TipoAvaliador.Interno }; }
+
+    private void Edit(Avaliador a)
+    {
+        editingId = a.Id;
+        formData = new CreateAvaliador { Nome = a.Nome, Email = a.Email, Tipo = a.Tipo, AreaEspecializacao = a.AreaEspecializacao, Instituicao = a.Instituicao };
+        editAtivo = a.Ativo; showForm = true;
+    }
+
+    private async Task Save()
+    {
+        if (editingId.HasValue)
+            await Service.UpdateAsync(editingId.Value, new UpdateAvaliador { Nome = formData.Nome, AreaEspecializacao = formData.AreaEspecializacao, Instituicao = formData.Instituicao, Ativo = editAtivo });
+        else
+            await Service.CreateAsync(formData);
+        CancelForm(); await Load();
+    }
+
+    private void CancelForm() { showForm = false; editingId = null; formData = new() { Tipo = TipoAvaliador.Interno }; }
+
+    private async Task Remove(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este avaliador?"))
+        { await Service.DeleteAsync(id); await Load(); }
+    }
+}

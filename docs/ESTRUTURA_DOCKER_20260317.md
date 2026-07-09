@@ -2,11 +2,11 @@
 
 ## Dockerfiles Separados
 
-### Dockerfile.dev (Desenvolvimento)
-- **Localização**: `src/backend/ProcessoSelecao.Api/Dockerfile.dev`
-- **Comando**: `dotnet run` (sem `dotnet watch` para evitar erros)
+### Dockerfile (Desenvolvimento)
+- **Localização**: `src/backend/ProcessoSelecao.Api/Dockerfile`
+- **Comando**: `dotnet watch run` (hot-reload)
 - **Porta**: 5002
-- **Uso**: `docker-compose up backend` (ambiente de desenvolvimento)
+- **Uso**: `docker compose up` (ambiente de desenvolvimento)
 
 ### Dockerfile.prod (Produção)
 - **Localização**: `src/backend/ProcessoSelecao.Api/Dockerfile.prod`
@@ -15,8 +15,8 @@
 - **Uso**: Imagem otimizada para produção
 
 ## docker-compose.yml
-- **Backend**: Usa `Dockerfile.dev` por padrão.
-- **Frontend**: Usa `Dockerfile` (Angular).
+- **Backend**: Usa `Dockerfile` por padrão (desenvolvimento).
+- **Frontend**: Usa `Dockerfile` (Blazor Web App).
 - **SQL Server**: Imagem oficial do SQL Server 2022.
 
 ## Alterações Realizadas
@@ -43,5 +43,5 @@
 - ✅ Debugs removidos.
 
 ## Notas
-- O `dotnet watch` foi removido do `Dockerfile.dev` devido a erros de "item with the same key".
+- O `dotnet watch` foi removido do `Dockerfile` devido a erros de "item with the same key".
 - Para hot reload, executar `dotnet watch` localmente (fora do Docker).

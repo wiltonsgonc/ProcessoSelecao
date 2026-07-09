@@ -1,0 +1,183 @@
+@page "/admin/baremas"
+@using ProcessoSelecao.Blazor.Models
+@layout Layouts.AdminLayout
+@inject BaremaService Service
+@inject IJSRuntime JS
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Baremas</h1>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="() => showForm = true">Novo Barema</button>
+</div>
+
+@if (showForm)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <h2 class="text-lg font-semibold mb-4">Novo Barema</h2>
+        <form @onsubmit="Create" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">ID do Candidato</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.CandidatoId" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">ID do Avaliador</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.AvaliadorId" required />
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar</button>
+                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showForm = false">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+@if (showFinalizarModal && selectedBarema != null)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <h2 class="text-lg font-semibold mb-4">Finalizar Barema</h2>
+        <form @onsubmit="Finalizar" class="space-y-4">
+            <div><label class="block text-sm font-medium mb-1">Candidato: @selectedBarema.CandidatoNome</label></div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Nota para Originalidade (0-10)</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Originalidade" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Nota para Relevância (0-10)</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Relevancia" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Nota para Metodologia (0-10)</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Metodologia" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Nota para Apresentação (0-10)</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Apresentacao" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Observações</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded min-h-[80px]" @bind="finalizarObservacoes"></textarea>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Finalizar</button>
+                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showFinalizarModal = false">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+<div class="bg-white border border-gray-200 rounded-lg p-5">
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidato</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Avaliador</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nota Final</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Data</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in baremas)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2.5 border-b border-gray-200">@b.Id</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@(b.CandidatoNome ?? b.CandidatoId.ToString())</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@(b.AvaliadorNome ?? b.AvaliadorId.ToString())</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@b.NotaFinal.ToString("F2")</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @GetStatusClass(b.Status)">@GetStatusLabel(b.Status)</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@FormatDateTime(b.DataPreenchimento)</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            @if (b.Status != StatusBarema.Concluido)
+                            {
+                                <div class="flex gap-1">
+                                    <button class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700" @onclick="() => OpenFinalizar(b)">Avaliar</button>
+                                    <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Remove(b.Id)">Excluir</button>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<Barema> baremas = new();
+    private bool showForm = false;
+    private bool showFinalizarModal = false;
+    private Barema? selectedBarema;
+    private CreateBarema formData = new();
+    private Criterios criterios = new();
+    private string? finalizarObservacoes;
+
+    class Criterios
+    {
+        public double Originalidade { get; set; }
+        public double Relevancia { get; set; }
+        public double Metodologia { get; set; }
+        public double Apresentacao { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync() => await Load();
+    private async Task Load() => baremas = await Service.GetAllAsync();
+
+    private async Task Create()
+    {
+        await Service.CreateAsync(formData);
+        showForm = false; formData = new(); await Load();
+    }
+
+    private void OpenFinalizar(Barema b)
+    {
+        selectedBarema = b;
+        criterios = b.Criterios != null ? new Criterios
+        {
+            Originalidade = b.Criterios.GetValueOrDefault("originalidade"),
+            Relevancia = b.Criterios.GetValueOrDefault("relevancia"),
+            Metodologia = b.Criterios.GetValueOrDefault("metodologia"),
+            Apresentacao = b.Criterios.GetValueOrDefault("apresentacao")
+        } : new();
+        finalizarObservacoes = b.Observacoes;
+        showFinalizarModal = true;
+    }
+
+    private async Task Finalizar()
+    {
+        if (selectedBarema == null) return;
+        await Service.FinalizarAsync(selectedBarema.Id, new FinalizarBarema
+        {
+            Criterios = new Dictionary<string, double>
+            {
+                ["originalidade"] = criterios.Originalidade, ["relevancia"] = criterios.Relevancia,
+                ["metodologia"] = criterios.Metodologia, ["apresentacao"] = criterios.Apresentacao
+            },
+            Observacoes = finalizarObservacoes
+        });
+        showFinalizarModal = false; await Load();
+    }
+
+    private async Task Remove(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este barema?"))
+        { await Service.DeleteAsync(id); await Load(); }
+    }
+
+    private string GetStatusLabel(StatusBarema s) => s switch
+    {
+        StatusBarema.Pendente => "Pendente", StatusBarema.EmPreenchimento => "Em Preenchimento",
+        StatusBarema.Concluido => "Concluído", StatusBarema.Cancelado => "Cancelado", _ => "Desconhecido"
+    };
+
+    private string GetStatusClass(StatusBarema s) => s switch
+    {
+        StatusBarema.Pendente => "bg-yellow-500", StatusBarema.EmPreenchimento => "bg-cyan-600",
+        StatusBarema.Concluido => "bg-green-600", StatusBarema.Cancelado => "bg-red-600", _ => "bg-gray-500"
+    };
+
+    private string FormatDateTime(string? dt) => DateTime.TryParse(dt, out var d) ? d.ToString("dd/MM/yyyy HH:mm") : "-";
+}
