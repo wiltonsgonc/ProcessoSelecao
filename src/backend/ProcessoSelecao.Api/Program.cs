@@ -1,3 +1,4 @@
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using ProcessoSelecao.Application;
 using ProcessoSelecao.Application.Services;
@@ -8,6 +9,11 @@ using ProcessoSelecao.Infrastructure.Repositories;
 /// <summary>
 /// Configuração e inicialização da aplicação ASP.NET Core
 /// </summary>
+// Carrega variáveis do .env (gitignored) ANTES de criar o builder,
+// para que ConnectionStrings__DefaultConnection, JwtSettings, etc. sejam
+// lidos pela configuração (AddEnvironmentVariables ocorre dentro de CreateBuilder).
+LoadDotEnv();
+
 var builder = WebApplication.CreateBuilder(args);
 
 var environment = builder.Environment.EnvironmentName;
@@ -125,3 +131,24 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// ============================================
+// Helpers
+// ============================================
+
+// Procura o arquivo .env subindo a partir do diretório da aplicação
+// (bin/Debug/netX.0 → ... → raiz do repositório) e o carrega.
+static void LoadDotEnv()
+{
+    var dir = new DirectoryInfo(AppContext.BaseDirectory);
+    while (dir is not null)
+    {
+        var candidate = Path.Combine(dir.FullName, ".env");
+        if (File.Exists(candidate))
+        {
+            DotNetEnv.Env.Load(candidate);
+            return;
+        }
+        dir = dir.Parent;
+    }
+}
