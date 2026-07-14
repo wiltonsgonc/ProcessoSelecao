@@ -115,25 +115,45 @@ Edite `.env.dev` (desenvolvimento) e `.env.prod` (producao) com seus valores.
 Para desenvolver fora de containers, apenas o SQL Server roda em container.
 O backend e frontend rodam nativamente no sistema host.
 
-**1. SQL Server via Docker:**
+**1. SQL Server via Docker ou Podman:**
+
+> **IMPORTANTE - Complexidade da senha:** o SQL Server exige que a senha do `sa`
+> tenha no minimo 8 caracteres e contenha caracteres de **pelo menos 3 dos 4**
+> conjuntos: maiusculas, minusculas, digitos e simbolos. Placeholders como
+> `YOUR_STRONG_PASSWORD` **nao passam** na politica (o container sobe e cai com
+> `Exited (255)` e a mensagem `Password validation failed ... not complex enough`).
+> Defina uma senha forte propria e substitua `sua_senha` nos comandos abaixo.
 
 ```bash
+# Substitua 'sua_senha' pela mesma senha definida em SA_PASSWORD no .env (raiz do repo)
 docker run -d --name processo-selecao-sqlserver \
   -e ACCEPT_EULA=Y \
-  -e 'MSSQL_SA_PASSWORD=YOUR_STRONG_PASSWORD' \
+  -e 'MSSQL_SA_PASSWORD=sua_senha' \
   -e MSSQL_PID=Developer \
   -p 1433:1433 \
+  -v mssql_data:/var/opt/mssql \
   mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-Aguardar ~60 segundos para inicializacao. Verificar:
+> Com `podman`, basta trocar `docker` por `podman` no comando acima. O volume
+> nomeado `mssql_data` mantem os dados entre recriacoes do container.
+
+Aguardar ~60 segundos para inicializacao. Verificar que o container permanece `Up`
+(e nao `Exited`) e que aceita conexao:
 
 ```bash
+docker ps   # STATUS deve ser "Up" e PORTS deve mostrar 0.0.0.0:1433->1433/tcp
+
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P 'YOUR_STRONG_PASSWORD' -C -Q "SELECT 1"
+  -S localhost -U sa -P 'sua_senha' -C -Q "SELECT 1"
 ```
 
-**2. Inicializar banco de dados:**
+**2. Inicializar banco de dados (opcional):**
+
+> O backend executa `db.Database.Migrate()` na inicializacao, criando o banco
+> `ProcessoSelecaoDb` e todas as tabelas automaticamente usando o usuario `sa`.
+> O `init.sql` so e necessario se voce quiser provisionar o usuario externo
+> `db_user` (para acesso via DBeaver/SSMS).
 
 ```bash
 # Copiar init.sql para dentro do container
@@ -141,10 +161,10 @@ docker cp init.sql processo-selecao-sqlserver:/tmp/init.sql
 
 # Executar o script
 docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P 'YOUR_STRONG_PASSWORD' -C \
+  -S localhost -U sa -P 'sua_senha' -C \
   -d master -i /tmp/init.sql \
   -v DB_EXTERNAL_USER='db_user' \
-  -v DB_EXTERNAL_PASSWORD='YOUR_STRONG_PASSWORD' \
+  -v DB_EXTERNAL_PASSWORD='sua_senha' \
   -v DB_NAME='ProcessoSelecaoDb'
 ```
 
@@ -183,19 +203,35 @@ dotnet run --project ProcessoSelecao.Blazor
 
 > **Nota:** O Blazor roda em http://localhost:5119 (HTTP) ou https://localhost:7209 (HTTPS).
 
-**5. Variaveis de ambiente:**
+**5. Variaveis de ambiente (connection string):**
 
-Edite `src/backend/ProcessoSelecao.Api/appsettings.Development.json`:
+O backend carrega automaticamente um arquivo **`.env` na raiz do repositorio**
+(via `DotNetEnv`). Esse carregamento acontece **antes** de `WebApplication.CreateBuilder`,
+para que `ConnectionStrings__DefaultConnection` seja lido pela configuracao e
+**sobrescreva** o valor de `appsettings.Development.json`. O `Program.cs` procura o
+`.env` subindo a partir do diretorio da aplicacao ate encontra-lo, entao funciona
+tanto no Windows quanto no WSL/Linux, independente do diretorio de trabalho.
+
+Crie/edite o arquivo `.env` na **raiz do repositorio** com, no minimo:
+
+```env
+SA_PASSWORD=sua_senha
+# A senha na connection string DEVE ser identica ao SA_PASSWORD do container
+ConnectionStrings__DefaultConnection=Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=sua_senha;TrustServerCertificate=True;
+```
+
+> **Atencao:** se a senha na connection string nao bater com a senha `sa` do
+> container, o backend falha na migration com `Login failed for user 'sa'`
+> (SQL error 18456) e o `dotnet watch` fica em "Waiting for a file to change".
+> Nesse caso, o frontend Blazor mostra `Connection refused (localhost:5002)`.
+
+O `appsettings.Development.json` mantem a connection string com senha vazia
+(placeholder) de proposito -- o valor real vem do `.env` (nunca versionado):
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=YOUR_STRONG_PASSWORD;TrustServerCertificate=True;"
-  },
-  "JwtSettings": {
-    "SecretKey": "SUA_CHAVE_SECRETA_MINIMO_32_CARACTERES",
-    "Issuer": "ProcessoSelecaoApi",
-    "Audience": "ProcessoSelecaoWeb"
+    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=;TrustServerCertificate=True;"
   }
 }
 ```
@@ -641,6 +677,57 @@ sudo sh -c 'echo "fs.inotify.max_user_watches=524288" > /etc/sysctl.d/60-inotify
 sudo sh -c 'echo "fs.inotify.max_user_instances=512" >> /etc/sysctl.d/60-inotify.conf'
 sudo sysctl -p /etc/sysctl.d/60-inotify.conf
 ```
+
+### Erro: "Login failed for user 'sa'" (SQL error 18456) / backend cai na migration
+
+O backend nao consegue autenticar no SQL Server. Causas comuns:
+
+1. **Senha divergente**: a senha em `ConnectionStrings__DefaultConnection` (no `.env`
+   da raiz) esta diferente da senha `sa` do container. Confirme:
+   ```bash
+   # Senha real gravada no container:
+   docker inspect processo-selecao-sqlserver \
+     --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -i PASSWORD
+
+   # Testar login com a senha esperada:
+   docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+     -S localhost -U sa -P 'sua_senha' -C -Q "SELECT name FROM sys.databases"
+   ```
+2. **`.env` nao carregado**: garanta que existe um `.env` na **raiz do repositorio**
+   com `ConnectionStrings__DefaultConnection`. O `Program.cs` carrega esse arquivo
+   antes de montar a configuracao.
+3. Apos corrigir a senha, **reinicie o backend** -- o `dotnet watch` nao reinicia
+   sozinho um processo que ja crashou; ele fica em "Waiting for a file to change".
+   Pressione `Ctrl+R` no terminal do watch ou reinicie o `dotnet watch run`.
+
+### Frontend Blazor: "Connection refused (localhost:5002)"
+
+O Blazor Server faz as chamadas HTTP para a API **no lado do servidor**. Esse erro
+significa que a API nao esta escutando na porta 5002 -- normalmente porque o backend
+crashou (veja o erro de `sa` acima) ou nao foi iniciado. Verifique:
+
+```bash
+ss -tlnp | grep 5002        # deve listar o processo ProcessoSelecao
+curl http://localhost:5002/api/health   # deve responder "OK"
+```
+
+### WSL2: acessar a aplicacao pelo navegador do Windows
+
+Quando o backend e o frontend rodam **dentro do WSL2** (modo NAT), o navegador do
+Windows pode nao alcancar `localhost:5119` automaticamente. Se `http://localhost:5119`
+nao abrir no Windows, crie um portproxy (PowerShell como administrador):
+
+```powershell
+$wslIp = (wsl -d <distro> hostname -I).Trim().Split(' ')[0]
+netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5119 connectaddress=$wslIp connectport=5119
+# opcional, para acessar Swagger/API direto do Windows:
+netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5002 connectaddress=$wslIp connectport=5002
+```
+
+> No modo NAT o IP do WSL muda a cada reinicio; recrie o portproxy quando isso ocorrer.
+> A porta 1433 nao precisa de portproxy (o backend acessa o SQL Server dentro do WSL).
+> Evite o modo `networkingMode=mirrored` no `.wslconfig`: ele quebra o DNAT do
+> Docker/Podman (`Unable to enable DNAT rule: No chain/target/match`).
 
 ## Tecnologias
 
