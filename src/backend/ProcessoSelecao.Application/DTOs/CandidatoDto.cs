@@ -47,6 +47,9 @@ public class CandidatoDto
     public bool DeficienciaReabilitado { get; set; }
     public bool DeficienciaMultipla { get; set; }
     public string? MotivoOutrasNecessidades { get; set; }
+    public string? TituloProjeto { get; set; }
+    public float Nota1 { get; set; }
+    public float Nota2 { get; set; }
 }
 
 /// <summary>
@@ -61,6 +64,9 @@ public class CreateCandidatoDto
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
     public long ProcessoSelecaoId { get; set; }
+    public string? TituloProjeto { get; set; }
+    public float Nota1 { get; set; }
+    public float Nota2 { get; set; }
 }
 
 /// <summary>
@@ -70,4 +76,7 @@ public class UpdateCandidatoDto
 {
     public string Nome { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
+    public string? TituloProjeto { get; set; }
+    public float Nota1 { get; set; }
+    public float Nota2 { get; set; }
 }

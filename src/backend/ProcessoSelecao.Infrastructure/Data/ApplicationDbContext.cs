@@ -59,6 +59,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CampusProva).HasMaxLength(200);
             entity.Property(e => e.ValorInscricao).HasColumnType("decimal(10,2)");
             entity.Property(e => e.MotivoOutrasNecessidades).HasMaxLength(500);
+            entity.Property(e => e.TituloProjeto).HasMaxLength(500);
+            entity.Property(e => e.Nota1).HasDefaultValue(0);
+            entity.Property(e => e.Nota2).HasDefaultValue(0);
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Cpf).IsUnique();
         });
@@ -113,6 +116,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd().UseIdentityColumn(1, 1);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descricao).HasMaxLength(1000);
+            entity.Property(e => e.AgenciaFomento).HasMaxLength(200);
+            entity.Property(e => e.NivelBolsa).HasMaxLength(100);
         });
     }
 }

@@ -15,6 +15,9 @@ public class Candidato
     public double PontuacaoMedia { get; set; }
     public int TotalDocumentos { get; set; }
     public int DocumentosValidados { get; set; }
+    public string? TituloProjeto { get; set; }
+    public float Nota1 { get; set; }
+    public float Nota2 { get; set; }
 }
 
 public class CreateCandidato
@@ -26,10 +29,16 @@ public class CreateCandidato
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
     public int ProcessoSelecaoId { get; set; }
+    public string? TituloProjeto { get; set; }
+    public float Nota1 { get; set; }
+    public float Nota2 { get; set; }
 }
 
 public class UpdateCandidato
 {
     public string Nome { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
+    public string? TituloProjeto { get; set; }
+    public float Nota1 { get; set; }
+    public float Nota2 { get; set; }
 }

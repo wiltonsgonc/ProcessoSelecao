@@ -22,6 +22,8 @@ namespace ProcessoSelecao.Infrastructure.Migrations
                     DataInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataFim = table.Column<DateTime>(type: "datetime2", nullable: true),
                     VagasDisponiveis = table.Column<int>(type: "int", nullable: false),
+                    AgenciaFomento = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    NivelBolsa = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -99,6 +101,9 @@ namespace ProcessoSelecao.Infrastructure.Migrations
                     DeficienciaReabilitado = table.Column<bool>(type: "bit", nullable: false),
                     DeficienciaMultipla = table.Column<bool>(type: "bit", nullable: false),
                     MotivoOutrasNecessidades = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    TituloProjeto = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Nota1 = table.Column<float>(type: "real", nullable: false, defaultValue: 0f),
+                    Nota2 = table.Column<float>(type: "real", nullable: false, defaultValue: 0f),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },

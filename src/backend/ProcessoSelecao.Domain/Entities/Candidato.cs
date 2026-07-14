@@ -112,6 +112,15 @@ public class Candidato : BaseEntity
     /// <summary>Motivo/descrição outras necessidades</summary>
     public string? MotivoOutrasNecessidades { get; set; }
     
+    /// <summary>Título do projeto de pesquisa</summary>
+    public string? TituloProjeto { get; set; }
+    
+    /// <summary>Nota do Avaliador 1</summary>
+    public float Nota1 { get; set; }
+    
+    /// <summary>Nota do Avaliador 2</summary>
+    public float Nota2 { get; set; }
+    
     /// <summary>Processo de seleção relacionado</summary>
     public virtual ProcessoSelecao? ProcessoSelecao { get; set; }
     
