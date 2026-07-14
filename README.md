@@ -126,7 +126,7 @@ O backend e frontend rodam nativamente no sistema host.
 
 ```bash
 # Substitua 'sua_senha' pela mesma senha definida em SA_PASSWORD no .env (raiz do repo)
-docker run -d --name processo-selecao-sqlserver \
+podman run -d --name processo-selecao-sqlserver \
   -e ACCEPT_EULA=Y \
   -e 'MSSQL_SA_PASSWORD=sua_senha' \
   -e MSSQL_PID=Developer \
@@ -142,9 +142,9 @@ Aguardar ~60 segundos para inicializacao. Verificar que o container permanece `U
 (e nao `Exited`) e que aceita conexao:
 
 ```bash
-docker ps   # STATUS deve ser "Up" e PORTS deve mostrar 0.0.0.0:1433->1433/tcp
+podman ps   # STATUS deve ser "Up" e PORTS deve mostrar 0.0.0.0:1433->1433/tcp
 
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P 'sua_senha' -C -Q "SELECT 1"
 ```
 
@@ -157,10 +157,10 @@ docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 
 ```bash
 # Copiar init.sql para dentro do container
-docker cp init.sql processo-selecao-sqlserver:/tmp/init.sql
+podman cp init.sql processo-selecao-sqlserver:/tmp/init.sql
 
 # Executar o script
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P 'sua_senha' -C \
   -d master -i /tmp/init.sql \
   -v DB_EXTERNAL_USER='db_user' \
@@ -248,14 +248,14 @@ Os scripts detectam automaticamente se voce tem Docker ou Podman instalado.
 ./scripts/build-full.sh
 ```
 
-### Comando manual - Docker
+### Comando manual - Contêiner
 
 ```bash
 # Desenvolvimento
-docker compose --env-file .env.dev up -d
+podman compose --env-file .env.dev up -d
 
 # Producao
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
 ### Comando manual - Podman
@@ -272,20 +272,20 @@ podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 
 ```bash
 # Desenvolvimento
-docker-compose --env-file .env.dev up -d
+podman compose --env-file .env.dev up -d
 
 # Producao
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
 ### Comando manual - podman-compose (standalone)
 
 ```bash
 # Desenvolvimento
-podman-compose --env-file .env.dev up -d
+podman compose --env-file .env.dev up -d
 
 # Producao
-podman-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
 ### Modo Desenvolvimento
@@ -357,19 +357,19 @@ Acessos do banco:
 ## Comandos Uteis
 
 ```bash
-# Ver status dos containers
-docker ps          # ou: podman ps
+# Ver status dos contêineres
+podman ps          # ou: podman ps
 
 # Logs
-docker logs processo-selecao-backend      # ou: podman logs ...
-docker logs processo-selecao-frontend
-docker logs processo-selecao-sqlserver
+podman logs processo-selecao-backend      # ou: podman logs ...
+podman logs processo-selecao-frontend
+podman logs processo-selecao-sqlserver
 
 # Parar tudo
-docker compose down          # ou: podman compose down
+podman compose down          # ou: podman compose down
 
 # Reconstruir do zero (sem cache)
-docker compose build --no-cache && docker compose up -d
+podman compose build --no-cache && podman compose up -d
 ```
 
 ## Acessos
@@ -429,11 +429,6 @@ docker compose build --no-cache && docker compose up -d
 ### Conexao via Command Line
 
 ```bash
-# Docker
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U db_user -P "$(grep DB_EXTERNAL_PASSWORD .env.dev | cut -d= -f2)" -C \
-  -d ProcessoSelecaoDb
-
 # Podman
 podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U db_user -P "$(grep DB_EXTERNAL_PASSWORD .env.dev | cut -d= -f2)" -C \
@@ -444,12 +439,12 @@ podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 
 ```bash
 # Criar backup (substitua .env.dev por .env.prod em producao)
-docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "$(grep SA_PASSWORD .env.dev | cut -d= -f2)" -C \
   -Q "BACKUP DATABASE [ProcessoSelecaoDb] TO DISK = '/var/opt/mssql/backup/backup.bak' WITH COMPRESSION"
 
 # Restaurar backup
-docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "$(grep SA_PASSWORD .env.dev | cut -d= -f2)" -C \
   -Q "RESTORE DATABASE [ProcessoSelecaoDb] FROM DISK = '/var/opt/mssql/backup/backup.bak' WITH REPLACE"
 ```
@@ -602,11 +597,11 @@ podman system migrate
 podman run --rm docker.io/library/alpine echo "funcionou"
 ```
 
-Se ainda falhar, use `podman-compose` (standalone Python) diretamente:
+Se ainda falhar, use `podman compose` (standalone Python) diretamente:
 
 ```bash
 # O standalone nao usa netavark/aardvark-dns
-podman-compose --env-file .env.dev up -d
+podman compose --env-file .env.dev up -d
 ```
 
 Ou instale o Docker no WSL Ubuntu e use-o no lugar do Podman no Alma.
@@ -619,8 +614,6 @@ df -h
 
 # Limpar imagens e containers nao utilizados
 podman system prune -a
-# ou
-docker system prune -a
 ```
 
 ### Erro: Containers nao iniciam apos rebuild
@@ -641,10 +634,10 @@ O SQL Server 2022 precisa de no minimo 2GB de RAM. Em WSL ou VPS com pouca memor
 
 ```bash
 # Verificar logs do SQL Server
-docker logs processo-selecao-sqlserver
+podman logs processo-selecao-sqlserver
 
 # Verificar memoria disponivel
-docker stats
+podman stats
 ```
 
 **Solucoes:**
