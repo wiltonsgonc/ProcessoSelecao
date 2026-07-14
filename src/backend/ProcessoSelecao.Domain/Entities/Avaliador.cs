@@ -10,6 +10,9 @@ public class Avaliador : BaseEntity
     /// <summary>Nome completo do avaliador</summary>
     public string Nome { get; set; } = string.Empty;
     
+    /// <summary>CPF do avaliador</summary>
+    public string Cpf { get; set; } = string.Empty;
+    
     /// <summary>E-mail do avaliador</summary>
     public string Email { get; set; } = string.Empty;
     

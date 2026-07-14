@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ProcessoSelecao.Infrastructure.Data.Migrations
+namespace ProcessoSelecao.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -38,6 +38,7 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Cpf = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Tipo = table.Column<int>(type: "int", nullable: false),
                     AreaEspecializacao = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
@@ -72,7 +73,7 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     StatusValidacao = table.Column<int>(type: "int", nullable: false),
                     DataCadastro = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProcessoSelecaoId = table.Column<long>(type: "bigint", nullable: false),
-                    NumeroInscricao = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: ""),
+                    NumeroInscricao = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     DataNascimento = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PaisNatal = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     EstadoNatal = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -89,14 +90,14 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     LocalProva = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     CampusProva = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     ValorInscricao = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
-                    DeficienciaFisica = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaAuditiva = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaFala = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaVisual = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaMental = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaIntelectual = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaReabilitado = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeficienciaMultipla = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeficienciaFisica = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaAuditiva = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaFala = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaVisual = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaMental = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaIntelectual = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaReabilitado = table.Column<bool>(type: "bit", nullable: false),
+                    DeficienciaMultipla = table.Column<bool>(type: "bit", nullable: false),
                     MotivoOutrasNecessidades = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     DataCriacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -175,6 +176,12 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Avaliadores_Cpf",
+                table: "Avaliadores",
+                column: "Cpf",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Avaliadores_Email",
                 table: "Avaliadores",
                 column: "Email",
@@ -196,15 +203,15 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                 column: "CandidatoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Candidatos_Email",
-                table: "Candidatos",
-                column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Candidatos_Cpf",
                 table: "Candidatos",
                 column: "Cpf",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Candidatos_Email",
+                table: "Candidatos",
+                column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(

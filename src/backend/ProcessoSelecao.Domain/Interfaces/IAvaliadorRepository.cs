@@ -13,6 +13,9 @@ public interface IAvaliadorRepository : IRepository<Avaliador>
     /// <summary>Busca avaliador pelo e-mail</summary>
     Task<Avaliador?> GetByEmailAsync(string email);
     
+    /// <summary>Busca avaliador pelo CPF</summary>
+    Task<Avaliador?> GetByCpfAsync(string cpf);
+    
     /// <summary>Retorna apenas avaliadores ativos</summary>
     Task<IEnumerable<Avaliador>> GetAtivosAsync();
 }

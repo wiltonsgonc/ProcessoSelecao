@@ -60,6 +60,10 @@ public class AvaliadorService : IAvaliadorService
     /// <summary>Cria um novo avaliador</summary>
     public async Task<AvaliadorDto> CreateAsync(CreateAvaliadorDto dto)
     {
+        var existingByCpf = await _repository.GetByCpfAsync(dto.Cpf);
+        if (existingByCpf != null)
+            throw new InvalidOperationException("Já existe um avaliador cadastrado com este CPF.");
+
         var entity = _mapper.Map<Avaliador>(dto);
         entity.Ativo = true;
         var created = await _repository.AddAsync(entity);

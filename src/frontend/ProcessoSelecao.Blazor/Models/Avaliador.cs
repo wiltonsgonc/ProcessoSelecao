@@ -4,6 +4,7 @@ public class Avaliador
 {
     public int Id { get; set; }
     public string Nome { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public TipoAvaliador Tipo { get; set; }
     public string? AreaEspecializacao { get; set; }
@@ -15,6 +16,7 @@ public class Avaliador
 public class CreateAvaliador
 {
     public string Nome { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public TipoAvaliador Tipo { get; set; }
     public string? AreaEspecializacao { get; set; }

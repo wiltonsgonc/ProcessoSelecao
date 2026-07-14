@@ -43,11 +43,15 @@ public interface IBaremaService
 public class BaremaService : IBaremaService
 {
     private readonly IBaremaRepository _repository;
+    private readonly IAvaliadorRepository _avaliadorRepository;
+    private readonly ICandidatoRepository _candidatoRepository;
     private readonly IMapper _mapper;
 
-    public BaremaService(IBaremaRepository repository, IMapper mapper)
+    public BaremaService(IBaremaRepository repository, IAvaliadorRepository avaliadorRepository, ICandidatoRepository candidatoRepository, IMapper mapper)
     {
         _repository = repository;
+        _avaliadorRepository = avaliadorRepository;
+        _candidatoRepository = candidatoRepository;
         _mapper = mapper;
     }
 
@@ -68,6 +72,17 @@ public class BaremaService : IBaremaService
     /// <summary>Cria um novo barema</summary>
     public async Task<BaremaDto> CreateAsync(CreateBaremaDto dto)
     {
+        var avaliador = await _avaliadorRepository.GetByIdAsync(dto.AvaliadorId);
+        var candidato = await _candidatoRepository.GetByIdAsync(dto.CandidatoId);
+
+        if (avaliador != null && candidato != null
+            && !string.IsNullOrEmpty(avaliador.Cpf)
+            && !string.IsNullOrEmpty(candidato.Cpf)
+            && avaliador.Cpf == candidato.Cpf)
+        {
+            throw new InvalidOperationException("O avaliador não pode avaliar um candidato com o mesmo CPF.");
+        }
+
         var entity = new Barema
         {
             CandidatoId = dto.CandidatoId,

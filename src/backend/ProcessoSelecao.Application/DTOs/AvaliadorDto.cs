@@ -9,6 +9,7 @@ public class AvaliadorDto
 {
     public long Id { get; set; }
     public string Nome { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public TipoAvaliador Tipo { get; set; }
     public string? AreaEspecializacao { get; set; }
@@ -23,6 +24,7 @@ public class AvaliadorDto
 public class CreateAvaliadorDto
 {
     public string Nome { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public TipoAvaliador Tipo { get; set; }
     public string? AreaEspecializacao { get; set; }

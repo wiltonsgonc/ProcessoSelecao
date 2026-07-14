@@ -84,9 +84,11 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Cpf).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
             entity.Property(e => e.AreaEspecializacao).HasMaxLength(200);
             entity.Property(e => e.Instituicao).HasMaxLength(200);
+            entity.HasIndex(e => e.Cpf).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
         });
 

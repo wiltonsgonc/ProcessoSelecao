@@ -8,7 +8,7 @@ using ProcessoSelecao.Infrastructure.Data;
 
 #nullable disable
 
-namespace ProcessoSelecao.Infrastructure.Data.Migrations
+namespace ProcessoSelecao.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -37,6 +37,11 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Cpf")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime?>("DataAtualizacao")
                         .HasColumnType("datetime2");
 
@@ -64,6 +69,9 @@ namespace ProcessoSelecao.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Cpf")
+                        .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
