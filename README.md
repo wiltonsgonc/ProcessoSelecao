@@ -358,15 +358,15 @@ Acessos do banco:
 
 ```bash
 # Ver status dos contêineres
-podman ps          # ou: podman ps
+podman ps
 
 # Logs
-podman logs processo-selecao-backend      # ou: podman logs ...
+podman logs processo-selecao-backend
 podman logs processo-selecao-frontend
 podman logs processo-selecao-sqlserver
 
 # Parar tudo
-podman compose down          # ou: podman compose down
+podman compose down
 
 # Reconstruir do zero (sem cache)
 podman compose build --no-cache && podman compose up -d
