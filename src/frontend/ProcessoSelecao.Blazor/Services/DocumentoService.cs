@@ -13,16 +13,16 @@ public class DocumentoService
         _api = api;
     }
 
-    public async Task<List<Documento>> GetAllAsync()
+    public virtual async Task<List<Documento>> GetAllAsync()
         => await _api.GetAsync<List<Documento>>(Endpoint) ?? new();
 
-    public async Task<Documento?> GetByIdAsync(int id)
+    public virtual async Task<Documento?> GetByIdAsync(int id)
         => await _api.GetAsync<Documento>($"{Endpoint}/{id}");
 
-    public async Task<List<Documento>> GetByCandidatoIdAsync(int candidatoId)
+    public virtual async Task<List<Documento>> GetByCandidatoIdAsync(int candidatoId)
         => await _api.GetAsync<List<Documento>>($"{Endpoint}/candidato/{candidatoId}") ?? new();
 
-    public async Task<Documento?> UploadAsync(IBrowserFile file, CreateDocumento data)
+    public virtual async Task<Documento?> UploadAsync(IBrowserFile file, CreateDocumento data)
     {
         using var content = new MultipartFormDataContent();
         using var stream = file.OpenReadStream();
@@ -33,24 +33,24 @@ public class DocumentoService
         return await _api.UploadFileAsync<Documento>(Endpoint, content);
     }
 
-    public async Task<Documento?> CreateWithUrlAsync(CreateDocumentoWithUrl dto)
+    public virtual async Task<Documento?> CreateWithUrlAsync(CreateDocumentoWithUrl dto)
         => await _api.PostAsync<Documento>($"{Endpoint}/with-url", dto);
 
-    public async Task<Documento?> ValidateAsync(int id, ValidateDocumento dto)
+    public virtual async Task<Documento?> ValidateAsync(int id, ValidateDocumento dto)
         => await _api.PutAsync<Documento>($"{Endpoint}/{id}/validar", dto);
 
-    public async Task DeleteAsync(int id)
+    public virtual async Task DeleteAsync(int id)
         => await _api.DeleteAsync($"{Endpoint}/{id}");
 
-    public string GetDownloadUrl(int id)
+    public virtual string GetDownloadUrl(int id)
         => $"{_api.GetBaseUrl()}/{Endpoint}/download/{id}";
 
-    public string GetViewUrl(int id)
+    public virtual string GetViewUrl(int id)
         => $"{_api.GetBaseUrl()}/{Endpoint}/{id}/view";
 
-    public async Task<byte[]> ViewDocumentAsync(int id)
+    public virtual async Task<byte[]> ViewDocumentAsync(int id)
         => await _api.GetBytesAsync($"{Endpoint}/{id}/view");
 
-    public async Task<byte[]> DownloadMultipleAsync(List<int> ids)
+    public virtual async Task<byte[]> DownloadMultipleAsync(List<int> ids)
         => await _api.PostBytesAsync($"{Endpoint}/download-multiple", ids);
 }
