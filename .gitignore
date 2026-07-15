@@ -104,6 +104,7 @@ temp/
 # Saida de teste vulnerabilidade
 back.txt
 front.txt
+test.txt
 
 core.*
 back.txt
