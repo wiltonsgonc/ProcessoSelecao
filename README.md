@@ -535,9 +535,9 @@ cp .env.example .env.prod
 
 ## Testes Automatizados
 
-O projeto possui testes unitários na camada backend utilizando **xUnit**, **Moq** e **FluentAssertions**.
+O projeto possui testes unitários nas camadas backend e frontend.
 
-### Estrutura
+### Backend (xUnit + Moq + FluentAssertions)
 
 ```
 src/backend/ProcessoSelecao.Tests/
@@ -552,11 +552,24 @@ src/backend/ProcessoSelecao.Tests/
     └── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definição de senha
 ```
 
+### Frontend (bUnit + xUnit + FluentAssertions)
+
+```
+src/frontend/ProcessoSelecao.Blazor.Tests/
+└── Components/
+    ├── AvaliadorLoginTests.cs       # 2 testes - renderização, erro de login
+    ├── AvaliadorAvaliacaoTests.cs   # 1 teste  - redirect sem token
+    ├── AvaliacaoListTests.cs        # 5 testes - renderização, filtro, vazio, tabela, resumo
+    ├── ProcessoListTests.cs         # 3 testes - headers, vazio, botão novo
+    └── CandidatoListTests.cs        # 3 testes - título, botão novo, colunas da tabela
+```
+
 ### Executar os testes
 
 ```bash
-# Rodar todos os testes
+# Rodar todos os testes (backend + frontend)
 dotnet test src/backend/ProcessoSelecao.Tests
+dotnet test src/frontend/ProcessoSelecao.Blazor.Tests
 
 # Rodar com verbosity
 dotnet test src/backend/ProcessoSelecao.Tests --verbosity normal
@@ -573,6 +586,7 @@ dotnet test src/backend/ProcessoSelecao.Tests --filter "FullyQualifiedName~Proce
 | Moq | 4.20.72 | Mocking de interfaces |
 | FluentAssertions | 8.10.0 | Assertions legíveis |
 | BCrypt.Net-Next | 4.0.3 | Testes de autenticação |
+| bUnit | 1.38.5 | Testes de componentes Blazor |
 
 ## Compatibilidade
 
@@ -799,5 +813,6 @@ netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5002 con
 | Banco de Dados | SQL Server 2022 |
 | Autenticacao | JWT + BCrypt |
 | Containers | Docker / Podman |
-| Testes | xUnit, Moq, FluentAssertions |
+| Testes Backend | xUnit, Moq, FluentAssertions |
+| Testes Frontend | bUnit, xUnit, FluentAssertions |
 | CI/CD | GitHub Actions (opcional) |
