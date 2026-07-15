@@ -19,19 +19,23 @@ ProcessoSelecao/
 │   │   ├── ProcessoSelecao.Domain/        # Entidades e Interfaces
 │   │   ├── ProcessoSelecao.Infrastructure/ # DbContext e Repositorios
 │   │   ├── ProcessoSelecao.Application/   # DTOs e Services
-│   │   └── ProcessoSelecao.Api/           # Controllers e Configuracao
-│   │       ├── Dockerfile                 # Dev: dotnet watch (single-stage)
-│   │       └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
+│   │   ├── ProcessoSelecao.Api/           # Controllers e Configuracao
+│   │   │   ├── Dockerfile                 # Dev: dotnet watch (single-stage)
+│   │   │   └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
+│   │   └── ProcessoSelecao.Tests/         # Testes unitarios (xUnit + Moq)
+│   │       ├── Domain/                    # Testes de regras de negocio
+│   │       └── Application/               # Testes de services com mocks
 │   ├── frontend/
 │   │   └── ProcessoSelecao.Blazor/        # Frontend Blazor
 │   │       ├── Components/
 │   │       │   ├── App.razor              # Shell HTML
 │   │       │   ├── Routes.razor           # Router
-│   │       │   ├── Layouts/               # AdminLayout e PublicLayout
+│   │       │   ├── Layouts/               # AdminLayout, AvaliadorLayout e PublicLayout
 │   │       │   └── Pages/
 │   │       │       ├── Public/            # Home, ProcessoPublicList
 │   │       │       ├── Formulario/        # Wizard de inscricao (4 paginas)
-│   │       │       └── Admin/             # CRUD: Processos, Candidatos, etc.
+│   │       │       ├── Admin/             # CRUD + Avaliacao
+│   │       │       └── Avaliador/         # Portal do avaliador (login, painel, avaliacao)
 │   │       ├── Models/                    # DTOs C# (ProcessoSelecao, Candidato, etc.)
 │   │       ├── Services/                  # HTTP clients para a API
 │   │       ├── wwwroot/css/app.css        # Estilos
@@ -404,11 +408,26 @@ podman compose build --no-cache && podman compose up -d
 ### Modulo Avaliadores
 - Cadastrar avaliadores internos e externos
 - Associar avaliadores a processos
+- Login com CPF + senha (JWT)
+- Prevencao de auto-avaliação (CPF do avaliador != CPF do candidato)
+
+### Modulo Portal do Avaliador
+- Login autenticado via CPF + senha
+- Lista de baremas atribuídos ao avaliador
+- Visualização de dados do candidato
+- Visualização e download de documentos (PDF inline)
+- Avaliação com 4 critérios (Originalidade, Relevancia, Metodologia, Apresentacao)
+- Finalização da avaliação com nota final calculada
 
 ### Modulo Baremas
 - Criar baremas de avaliacao
 - Definir criterios (Originalidade, Relevancia, Metodologia, Apresentacao)
 - Calcular nota final
+
+### Modulo Avaliacao (Admin)
+- Visualização consolidada de todas as avaliações
+- Filtro por status (Pendente, Em Andamento, Concluido, Cancelado)
+- Resumo geral com contagem e média das notas
 
 ### Modulo Inscricao (Publico)
 - Formulario multi-step (4 paginas)
@@ -451,14 +470,21 @@ podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 
 ## APIs Disponiveis
 
-| Endpoint | Descricao |
-|----------|-----------|
-| GET/POST/PUT/DELETE /api/candidatos | Gestao de candidatos |
-| GET/POST/PUT/DELETE /api/documentos | Gestao de documentos |
-| GET/POST/PUT/DELETE /api/avaliadores | Gestao de avaliadores |
-| GET/POST/PUT/DELETE /api/baremas | Gestao de baremas |
-| GET/POST/PUT/DELETE /api/processosselecao | Gestao de processos |
-| POST /api/formulario/completa | Inscricao publica |
+| Endpoint | Descricao | Autenticacao |
+|----------|-----------|--------------|
+| GET/POST/PUT/DELETE /api/candidatos | Gestao de candidatos | Admin |
+| GET/POST/PUT/DELETE /api/documentos | Gestao de documentos | Admin |
+| GET/POST/PUT/DELETE /api/avaliadores | Gestao de avaliadores | Admin |
+| GET/POST/PUT/DELETE /api/baremas | Gestao de baremas | Admin |
+| GET/POST/PUT/DELETE /api/processosselecao | Gestao de processos | Admin |
+| POST /api/formulario/completa | Inscricao publica | Nao |
+| POST /api/avaliador-auth/login | Login do avaliador (CPF + senha) | Nao |
+| POST /api/avaliador-auth/definir-senha | Definir senha do avaliador | Nao |
+| GET /api/avaliador-painel/baremas | Baremas do avaliador autenticado | JWT |
+| GET /api/avaliador-painel/candidato/{id} | Dados do candidato | JWT |
+| GET /api/avaliador-painel/documentos/{id} | Documentos do candidato | JWT |
+| GET /api/avaliador-painel/documentos/{id}/download | Download de documento | JWT |
+| POST /api/avaliador-painel/baremas/{id}/finalizar | Finalizar avaliação | JWT |
 
 ## Variaveis de Ambiente
 
@@ -506,6 +532,47 @@ cp .env.example .env.prod
 | `SMTP_PASSWORD` | Senha SMTP | -- |
 | `FROM_EMAIL` | Email remetente | noreply@processoselecao.com |
 | `ASPNETCORE_ENVIRONMENT` | Ambiente .NET | Development/Production |
+
+## Testes Automatizados
+
+O projeto possui testes unitários na camada backend utilizando **xUnit**, **Moq** e **FluentAssertions**.
+
+### Estrutura
+
+```
+src/backend/ProcessoSelecao.Tests/
+├── Domain/
+│   ├── ProcessoSelecaoTests.cs      # 13 testes - máquina de estados
+│   ├── CandidatoTests.cs            # 5 testes - validação documentos e pontuação
+│   ├── BaremaTests.cs               # 6 testes - cálculo de nota e completude
+│   └── AvaliadorTests.cs            # 2 testes - avaliações pendentes
+└── Application/
+    ├── AvaliadorServiceTests.cs     # 4 testes - CRUD + validação CPF
+    ├── BaremaServiceTests.cs        # 5 testes - criação, finalização, auto-avaliação
+    └── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definição de senha
+```
+
+### Executar os testes
+
+```bash
+# Rodar todos os testes
+dotnet test src/backend/ProcessoSelecao.Tests
+
+# Rodar com verbosity
+dotnet test src/backend/ProcessoSelecao.Tests --verbosity normal
+
+# Rodar testes de uma classe específica
+dotnet test src/backend/ProcessoSelecao.Tests --filter "FullyQualifiedName~ProcessoSelecaoTests"
+```
+
+### Pacotes de teste
+
+| Pacote | Versão | Uso |
+|--------|--------|-----|
+| xUnit | 2.9.3 | Framework de testes |
+| Moq | 4.20.72 | Mocking de interfaces |
+| FluentAssertions | 8.10.0 | Assertions legíveis |
+| BCrypt.Net-Next | 4.0.3 | Testes de autenticação |
 
 ## Compatibilidade
 
@@ -730,5 +797,7 @@ netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5002 con
 | Frontend | Blazor Web App (Server-Side), .NET 10 |
 | CSS | Tailwind CSS (via CDN) |
 | Banco de Dados | SQL Server 2022 |
+| Autenticacao | JWT + BCrypt |
 | Containers | Docker / Podman |
+| Testes | xUnit, Moq, FluentAssertions |
 | CI/CD | GitHub Actions (opcional) |
