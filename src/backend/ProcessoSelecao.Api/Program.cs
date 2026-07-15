@@ -1,10 +1,13 @@
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ProcessoSelecao.Application;
 using ProcessoSelecao.Application.Services;
 using ProcessoSelecao.Domain.Interfaces;
 using ProcessoSelecao.Infrastructure.Data;
 using ProcessoSelecao.Infrastructure.Repositories;
+using System.Text;
 
 /// <summary>
 /// Configuração e inicialização da aplicação ASP.NET Core
@@ -55,10 +58,38 @@ builder.Services.AddScoped<IProcessoSelecaoRepository, ProcessoSelecaoRepository
 builder.Services.AddScoped<ICandidatoService, CandidatoService>();
 builder.Services.AddScoped<IDocumentoService, DocumentoService>();
 builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
+builder.Services.AddScoped<IAvaliadorAuthService, AvaliadorAuthService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IInscricaoService, InscricaoService>();
+
+// ============================================
+// Configuração de Autenticação JWT
+// ============================================
+var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"]
+    ?? builder.Configuration["JwtSettings__SecretKey"]
+    ?? "ProcessoSelecao_SecretKey_Minimo32Caracteres_2026!";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "ProcessoSelecaoApi",
+        ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? "ProcessoSelecaoWeb",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+    };
+});
+builder.Services.AddAuthorization();
 
 // ============================================
 // Configuração de Email
@@ -124,7 +155,8 @@ app.MapGet("/api/health", () => "OK");
 // CORS
 app.UseCors("AllowFrontend");
 
-// Autorização
+// Autenticação e Autorização
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Mapeamento dos controllers

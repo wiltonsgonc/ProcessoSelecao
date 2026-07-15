@@ -28,6 +28,9 @@ public class Avaliador : BaseEntity
     /// <summary>Indica se o avaliador está ativo no sistema</summary>
     public bool Ativo { get; set; } = true;
     
+    /// <summary>Hash da senha do avaliador (para login)</summary>
+    public string? SenhaHash { get; set; }
+    
     /// <summary>ID do processo de seleção (opcional)</summary>
     public long? ProcessoSelecaoId { get; set; }
     
