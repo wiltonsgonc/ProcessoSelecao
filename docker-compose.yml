@@ -3,7 +3,7 @@
 # Modo padrao: DESENVOLVIMENTO (hot-reload)
 #
 # Iniciar (desenvolvimento):
-#   docker compose --env-file .env.dev up -d
+#   docker compose -f docker-compose.yml --env-file .env.dev up -d --build
 #
 # Iniciar (producao - sobrepoe build e configs):
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build

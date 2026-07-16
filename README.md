@@ -252,45 +252,18 @@ Os scripts detectam automaticamente se voce tem Docker ou Podman instalado.
 ./scripts/build-full.sh
 ```
 
-### Comando manual - Contêiner
+### Comando manual para contêiner
 
 ```bash
-# Desenvolvimento
-podman compose --env-file .env.dev up -d
+# Desenvolvimento (com rebuild)
+podman compose -f docker-compose.yml --env-file .env.dev up -d --build
 
-# Producao
+# Producao (com rebuild)
 podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-### Comando manual - Podman
-
-```bash
-# Desenvolvimento
-podman compose --env-file .env.dev up -d
-
-# Producao
-podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
-```
-
-### Comando manual - docker-compose (standalone)
-
-```bash
-# Desenvolvimento
-podman compose --env-file .env.dev up -d
-
-# Producao
-podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
-```
-
-### Comando manual - podman-compose (standalone)
-
-```bash
-# Desenvolvimento
-podman compose --env-file .env.dev up -d
-
-# Producao
-podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
-```
+> Substitua `podman compose` por `docker compose` se estiver usando Docker.
+> Para rebuild sem cache, substitua `up -d --build` por `build --no-cache` seguido de `up -d`.
 
 ### Modo Desenvolvimento
 
