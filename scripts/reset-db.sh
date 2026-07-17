@@ -48,7 +48,7 @@ echo "Usando: $ENV_FILE"
 # Exportar variaveis do arquivo env (ignora comentarios e linhas vazias)
 set -a
 # shellcheck disable=SC1090
-source <(grep -E '^[A-Z_]+=.' "$ENV_FILE" | sed 's/#.*//')
+source <(grep -E '^[A-Z_]+=.' "$ENV_FILE" | sed 's/#.*//' | tr -d '\r')
 set +a
 
 if [ -z "${SA_PASSWORD:-}" ]; then
