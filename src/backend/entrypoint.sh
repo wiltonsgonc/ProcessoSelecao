@@ -7,15 +7,15 @@ mkdir -p /app/documentos /app/logs
 chmod -R 777 /app/documentos /app/logs 2>/dev/null || true
 
 echo "==> Aguardando SQL Server ficar disponivel..."
-RETRIES=30
+RETRIES=10
 until bash -c "echo > /dev/tcp/sqlserver/1433" 2>/dev/null; do
     RETRIES=$((RETRIES - 1))
     if [ "$RETRIES" -le 0 ]; then
-        echo "ERRO: SQL Server nao ficou disponivel apos 30 tentativas"
+        echo "ERRO: SQL Server nao ficou disponivel apos 10 tentativas"
         exit 1
     fi
-    echo "SQL Server ainda nao esta pronto... (tentativa $((30 - RETRIES))/30)"
-    sleep 2
+    echo "SQL Server ainda nao esta pronto... (tentativa $((10 - RETRIES))/10)"
+    sleep 5
 done
 
 echo "==> SQL Server esta pronto!"

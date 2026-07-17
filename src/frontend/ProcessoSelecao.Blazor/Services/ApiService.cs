@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace ProcessoSelecao.Blazor.Services;
 
 public class ApiService
@@ -13,17 +15,36 @@ public class ApiService
 
     public virtual async Task<T?> GetAsync<T>(string endpoint)
     {
-        var url = new Uri(_http.BaseAddress!, endpoint);
-        _logger.LogInformation("GET {Url}", url);
-        var response = await _http.GetAsync(endpoint);
-        _logger.LogInformation("GET {Url} -> {Status}", url, response.StatusCode);
-        if (!response.IsSuccessStatusCode)
+        for (int i = 0; i < 6; i++)
         {
-            var body = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning("GET {Url} failed: {Body}", url, body);
-            return default;
+            try
+            {
+                var url = new Uri(_http.BaseAddress!, endpoint);
+                _logger.LogInformation("GET {Url} (tentativa {Attempt}/6)", url, i + 1);
+                var response = await _http.GetAsync(endpoint);
+                _logger.LogInformation("GET {Url} -> {Status}", url, response.StatusCode);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("GET {Url} failed: {Body}", url, body);
+                    if (i < 5)
+                    {
+                        await Task.Delay(3000);
+                        continue;
+                    }
+                    return default;
+                }
+
+                return await response.Content.ReadFromJsonAsync<T>();
+            }
+            catch (HttpRequestException ex) when (i < 5)
+            {
+                _logger.LogWarning(ex, "GET {Endpoint} falhou (tentativa {Attempt}/6), aguardando 3s...", endpoint, i + 1);
+                await Task.Delay(3000);
+            }
         }
-        return await response.Content.ReadFromJsonAsync<T>();
+        return default;
     }
 
     public virtual async Task<T?> PostAsync<T>(string endpoint, object data)
