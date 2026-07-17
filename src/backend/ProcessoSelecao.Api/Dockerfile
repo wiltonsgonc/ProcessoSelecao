@@ -5,6 +5,10 @@
 # ==============================================
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+# Instala curl para healthcheck do compose
+RUN apt-get update && apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /src
 
 # Copia apenas os .csproj primeiro (cache do restore)
