@@ -65,17 +65,12 @@ check_podman_compose_version() {
   major=$(echo "$version" | cut -d. -f1)
   minor=$(echo "$version" | cut -d. -f2)
 
-  if [[ "$major" -lt 1 ]] || { [[ "$major" -eq 1 ]] && [[ "$minor" -lt 2 ]]; }; then
-    echo ""
-    echo "AVISO: podman-compose $version detectado."
-    echo "  Versoes < 1.2 nao suportam 'condition: service_healthy' no depends_on."
-    echo "  O script vai aguardar o SQL Server manualmente antes de subir o backend."
-    echo "  Para suporte completo, atualize: pip install --upgrade podman-compose"
-    echo ""
-    PODMAN_COMPOSE_NO_HEALTHCHECK=true
-  else
-    PODMAN_COMPOSE_NO_HEALTHCHECK=false
-  fi
+  echo ""
+  echo "AVISO: Podman detectado (podman-compose $version)."
+  echo "  podman-compose nao suporta 'condition: service_healthy' de forma confiavel."
+  echo "  O script vai aguardar o SQL Server manualmente antes de subir o backend."
+  echo ""
+  PODMAN_COMPOSE_NO_HEALTHCHECK=true
 }
 
 # ==============================================
@@ -117,12 +112,12 @@ pull_base_images() {
 # ==============================================
 wait_for_sqlserver() {
   local sa_password="$1"
-  local max_attempts=90   # 90 * 5s = 7.5 minutos
+  local max_attempts=60   # 60 * 5s = 300s
   local attempt=0
   local container="processo-selecao-sqlserver"
 
   echo ""
-  echo ">>> Aguardando SQL Server ficar pronto (pode levar ate 7 min no primeiro start)..."
+  echo ">>> Aguardando SQL Server ficar pronto (pode levar ate 5 min no primeiro start)..."
 
   # Determina o exec command
   local exec_cmd
@@ -211,7 +206,7 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 # Extrair SA_PASSWORD do env file para o wait manual
-SA_PASSWORD_VALUE=$(grep -E '^SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2- | tr -d '"'"'" || true)
+SA_PASSWORD_VALUE=$(grep -E '^SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' | tr -d '"'"'" || true)
 if [[ -z "$SA_PASSWORD_VALUE" ]]; then
   echo "Erro: SA_PASSWORD nao encontrado em $ENV_FILE"
   exit 1
@@ -258,7 +253,7 @@ echo "  Frontend:   http://localhost:4200"
 echo "  Backend:    http://localhost:5002"
 echo "  Swagger:    http://localhost:5002/swagger"
 if [ "$DEV_MODE" = true ]; then
-  echo "  SQL Server: localhost:1433"
+  echo "  SQL Server: localhost:14330"
 fi
 echo ""
 echo "Logs em tempo real:"

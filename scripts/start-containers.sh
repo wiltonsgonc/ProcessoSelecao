@@ -28,7 +28,7 @@ detect_runtime() {
 # ==============================================
 wait_for_sqlserver() {
   local sa_password="$1"
-  local max_attempts=90
+  local max_attempts=60   # 60 * 5s = 300s
   local attempt=0
   local container="processo-selecao-sqlserver"
 
@@ -50,6 +50,33 @@ wait_for_sqlserver() {
 
   echo "ERRO: SQL Server nao ficou pronto em tempo habil."
   echo "Verifique: ${RUNTIME} logs processo-selecao-sqlserver"
+  exit 1
+}
+
+# ==============================================
+# Aguarda Backend ficar pronto via TCP
+# ==============================================
+wait_for_backend() {
+  local max_attempts=30
+  local attempt=0
+  local container="processo-selecao-backend"
+
+  echo ""
+  echo ">>> Aguardando backend ficar disponivel..."
+
+  while [[ $attempt -lt $max_attempts ]]; do
+    attempt=$((attempt + 1))
+    if ${RUNTIME} exec "$container" \
+        bash -c "echo > /dev/tcp/localhost/5002" 2>/dev/null; then
+      echo "  Backend pronto apos ${attempt} tentativas!"
+      return 0
+    fi
+    echo "  Tentativa ${attempt}/${max_attempts}..."
+    sleep 3
+  done
+
+  echo "ERRO: Backend nao ficou pronto em tempo habil."
+  echo "Verifique: ${RUNTIME} logs processo-selecao-backend"
   exit 1
 }
 
@@ -140,7 +167,7 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
-SA_PASSWORD_VALUE=$(grep -E '^SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2- | tr -d '"'"'" || true)
+SA_PASSWORD_VALUE=$(grep -E '^SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' | tr -d '"'"'" || true)
 if [[ -z "$SA_PASSWORD_VALUE" ]]; then
   echo "Erro: SA_PASSWORD nao encontrado em $ENV_FILE"
   exit 1
@@ -174,7 +201,7 @@ ${RUNTIME} run -d \
   --env-file "$ENV_FILE" \
   -e MSSQL_SA_PASSWORD="$SA_PASSWORD_VALUE" \
   -e MSSQL_AGENT_ENABLED="false" \
-  -p 1433:1433 \
+  -p 14330:1433 \
   -v sqlserver_data:/var/opt/mssql/data \
   -v sqlserver_log:/var/opt/mssql/log \
   -v sqlserver_backup:/var/opt/mssql/backup \
@@ -247,6 +274,13 @@ else
 fi
 
 # -------------------------------------------------
+# [4.5/5] Aguardar Backend
+# -------------------------------------------------
+echo ""
+echo "[4.5/5] Aguardando backend ficar saudavel..."
+wait_for_backend
+
+# -------------------------------------------------
 # [5/5] Frontend
 # -------------------------------------------------
 echo ""
@@ -284,7 +318,7 @@ echo "  Frontend:   http://localhost:4200"
 echo "  Backend:    http://localhost:5002"
 echo "  Swagger:    http://localhost:5002/swagger"
 if [ "$DEV_MODE" = true ]; then
-  echo "  SQL Server: localhost:1433"
+  echo "  SQL Server: localhost:14330"
 fi
 echo ""
 echo "Logs:"

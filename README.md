@@ -134,7 +134,7 @@ podman run -d --name processo-selecao-sqlserver \
   -e ACCEPT_EULA=Y \
   -e 'MSSQL_SA_PASSWORD=sua_senha' \
   -e MSSQL_PID=Developer \
-  -p 1433:1433 \
+  -p 14330:1433 \
   -v mssql_data:/var/opt/mssql \
   mcr.microsoft.com/mssql/server:2022-latest
 ```
@@ -146,7 +146,7 @@ Aguardar ~60 segundos para inicializacao. Verificar que o container permanece `U
 (e nao `Exited`) e que aceita conexao:
 
 ```bash
-podman ps   # STATUS deve ser "Up" e PORTS deve mostrar 0.0.0.0:1433->1433/tcp
+podman ps   # STATUS deve ser "Up" e PORTS deve mostrar 0.0.0.0:14330->1433/tcp
 
 podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P 'sua_senha' -C -Q "SELECT 1"
@@ -221,7 +221,7 @@ Crie/edite o arquivo `.env` na **raiz do repositorio** com, no minimo:
 ```env
 SA_PASSWORD=sua_senha
 # A senha na connection string DEVE ser identica ao SA_PASSWORD do container
-ConnectionStrings__DefaultConnection=Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=sua_senha;TrustServerCertificate=True;
+ConnectionStrings__DefaultConnection=Server=localhost,14330;Database=ProcessoSelecaoDb;User Id=sa;Password=sua_senha;TrustServerCertificate=True;
 ```
 
 > **Atencao:** se a senha na connection string nao bater com a senha `sa` do
@@ -235,7 +235,7 @@ O `appsettings.Development.json` mantem a connection string com senha vazia
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=localhost,14330;Database=ProcessoSelecaoDb;User Id=sa;Password=;TrustServerCertificate=True;"
   }
 }
 ```
@@ -271,7 +271,7 @@ Neste modo:
 - **Backend**: usa `Dockerfile` com `dotnet watch run` -- alteracoes no codigo reiniciam o servidor automaticamente
 - **Frontend**: usa `Dockerfile` com `dotnet run` -- Blazor Server com SignalR
 - **Volumes**: montam o codigo fonte diretamente, sem necessidade de rebuild a cada alteracao
-- **SQL Server**: porta 1433 exposta externamente para acesso via DBeaver/SSMS
+- **SQL Server**: porta 14330 exposta externamente para acesso via DBeaver/SSMS
 
 ### Build individual
 
@@ -355,7 +355,7 @@ podman compose build --no-cache && podman compose up -d
 - **Frontend (Docker)**: http://localhost:4200
 - **Backend API**: http://localhost:5002
 - **Swagger**: http://localhost:5002/swagger
-- **SQL Server**: localhost:1433
+- **SQL Server**: localhost:14330
   - **Admin**: sa / definido no `.env`
   - **App**: db_user / definido no `.env`
   - **Database**: ProcessoSelecaoDb
@@ -412,7 +412,7 @@ podman compose build --no-cache && podman compose up -d
 ### Conexao via DBeaver ou SSMS
 
 **Configuracoes de conexao:**
-- **Servidor**: localhost,1433
+- **Servidor**: localhost,14330
 - **Autenticacao**: SQL Server Authentication
 - **Usuario**: db_user
 - **Senha**: definida em `DB_EXTERNAL_PASSWORD` no `.env`
@@ -772,7 +772,7 @@ netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5002 con
 ```
 
 > No modo NAT o IP do WSL muda a cada reinicio; recrie o portproxy quando isso ocorrer.
-> A porta 1433 nao precisa de portproxy (o backend acessa o SQL Server dentro do WSL).
+> A porta 14330 nao precisa de portproxy (o backend acessa o SQL Server dentro do WSL).
 > Evite o modo `networkingMode=mirrored` no `.wslconfig`: ele quebra o DNAT do
 > Docker/Podman (`Unable to enable DNAT rule: No chain/target/match`).
 
