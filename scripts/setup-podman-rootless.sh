@@ -28,9 +28,7 @@ SHELL_RC="${HOME}/.bashrc"
 [ -f "${HOME}/.bash_profile" ] && SHELL_RC="${HOME}/.bash_profile"
 
 # ==============================================
-# [1/9] containers.conf — desabilita aardvark-dns
-# que depende de D-Bus para funcionar.
-# Sem isso: "aardvark-dns failed to start: Failed to connect to bus"
+# [1/9] containers.conf
 # ==============================================
 echo "[1/9] Criando containers.conf (desabilita aardvark-dns)..."
 mkdir -p ~/.config/containers
@@ -40,11 +38,6 @@ cgroup_manager = "cgroupfs"
 events_logger = "file"
 
 [network]
-# Desabilitar aardvark-dns:
-# O aardvark-dns exige D-Bus do usuario (systemd --user) para iniciar.
-# Em sessoes SSH sem PAM completo ou sem lingering ativo,
-# o socket /run/user/<uid>/bus nao existe e o container falha ao subir.
-# Com dns_bind_port = 0 o Podman usa resolucao de rede sem aardvark.
 dns_bind_port = 0
 EOF
 echo "  OK: ~/.config/containers/containers.conf criado"
@@ -75,9 +68,7 @@ else
 fi
 
 # ==============================================
-# [4/9] Lingering — mantem sessao do usuario ativa
-# mesmo sem login ativo. Necessario para que
-# systemd --user e o D-Bus persistam.
+# [4/9] Lingering
 # ==============================================
 echo ""
 echo "[4/9] Habilitando lingering..."
@@ -85,10 +76,7 @@ sudo loginctl enable-linger "$CUSER" 2>/dev/null || true
 echo "  OK: loginctl enable-linger $CUSER"
 
 # ==============================================
-# [5/9] XDG_RUNTIME_DIR — cria e garante permissao
-# O Podman rootless EXIGE esta variavel para
-# localizar sockets (D-Bus, Podman API, etc).
-# Sem ela: "no such file or directory" nos sockets.
+# [5/9] XDG_RUNTIME_DIR
 # ==============================================
 echo ""
 echo "[5/9] Configurando XDG_RUNTIME_DIR (${RUNTIME_DIR})..."
@@ -97,13 +85,12 @@ sudo chown "${CUSER}:${CUSER}" "${RUNTIME_DIR}"
 chmod 700 "${RUNTIME_DIR}"
 echo "  OK: ${RUNTIME_DIR} criado com permissao 700"
 
-# Exporta para a sessao atual
 export XDG_RUNTIME_DIR="${RUNTIME_DIR}"
 export DBUS_SESSION_BUS_ADDRESS="unix:path=${RUNTIME_DIR}/bus"
 echo "  OK: variaveis exportadas para sessao atual"
 
 # ==============================================
-# [6/9] Persiste as variaveis no shell do usuario
+# [6/9] Persiste as variaveis no shell
 # ==============================================
 echo ""
 echo "[6/9] Persistindo variaveis no ${SHELL_RC}..."
@@ -122,9 +109,7 @@ else
 fi
 
 # ==============================================
-# [7/9] Reinicia logind para propagar lingering
-# Necessario no Alma/RHEL para o runtime dir
-# ser criado automaticamente pelo PAM na proxima sessao.
+# [7/9] Reinicia logind
 # ==============================================
 echo ""
 echo "[7/9] Reiniciando systemd-logind para propagar lingering..."
@@ -136,7 +121,7 @@ else
 fi
 
 # ==============================================
-# [8/9] Migra storage do Podman
+# [8/9] Migra storage
 # ==============================================
 echo ""
 echo "[8/9] Migrando Podman (storage e rede)..."

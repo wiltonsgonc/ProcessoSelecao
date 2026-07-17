@@ -24,11 +24,11 @@ detect_runtime() {
 remove_container() {
   local name="$1"
   if ${RUNTIME} ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${name}$"; then
-    echo "  Removendo $name..."
+    echo "  Removendo ${name}..."
     ${RUNTIME} stop "$name" 2>/dev/null || true
     ${RUNTIME} rm "$name" 2>/dev/null || true
   else
-    echo "  Container $name nao encontrado, ignorando."
+    echo "  Container ${name} nao encontrado, ignorando."
   fi
 }
 
@@ -75,10 +75,10 @@ if [ "$REMOVE_VOLUMES" = true ]; then
   echo "[2/3] Removendo volumes..."
   for vol in sqlserver_data sqlserver_log sqlserver_backup; do
     if ${RUNTIME} volume exists "$vol" 2>/dev/null; then
-      echo "  Removendo volume: $vol"
+      echo "  Removendo volume: ${vol}"
       ${RUNTIME} volume rm "$vol"
     else
-      echo "  Volume $vol nao encontrado, ignorando."
+      echo "  Volume ${vol} nao encontrado, ignorando."
     fi
   done
 fi
