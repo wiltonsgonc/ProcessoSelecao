@@ -28,7 +28,7 @@ services:
       DB_EXTERNAL_USER: ${DB_EXTERNAL_USER:-db_user}
       DB_EXTERNAL_PASSWORD: ${DB_EXTERNAL_PASSWORD}
     ports:
-      - "1433:1433"
+      - "14330:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
@@ -86,8 +86,7 @@ services:
     ports:
       - "5002:5002"
     depends_on:
-      sqlserver:
-        condition: service_healthy
+      - sqlserver
     volumes:
       - ./src/backend:/src:Z
       - backend_cache:/src/.dotnet
