@@ -130,12 +130,28 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ============================================
-// Aplicar migrations automaticamente
+// Aplicar migrations automaticamente (com retry)
 // ============================================
-using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    var maxRetries = 30;
+    var delaySeconds = 5;
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Database.Migrate();
+            Console.WriteLine($"[OK] Migrations aplicadas na tentativa {attempt}");
+            break;
+        }
+        catch (Exception ex) when (attempt < maxRetries)
+        {
+            Console.WriteLine($"[WARN] Tentativa {attempt}/{maxRetries} falhou: {ex.Message}");
+            Console.WriteLine($"Aguardando {delaySeconds}s antes da proxima tentativa...");
+            Thread.Sleep(TimeSpan.FromSeconds(delaySeconds));
+        }
+    }
 }
 
 // ============================================
