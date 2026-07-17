@@ -15,13 +15,14 @@ COPY ["ProcessoSelecao.Domain/ProcessoSelecao.Domain.csproj", "ProcessoSelecao.D
 
 RUN dotnet restore "ProcessoSelecao.Api/ProcessoSelecao.Api.csproj"
 
-# dotnet-ef instalado antes do COPY . . para aproveitar cache
-RUN dotnet tool install dotnet-ef --tool-path /usr/local/bin
-
 COPY . .
+
+# Copia entrypoint para fora do /src (volume mount substitui /src)
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /src/ProcessoSelecao.Api
 
 EXPOSE 5002
 
-CMD ["dotnet", "watch", "run", "--no-restore", "--urls", "http://0.0.0.0:5002"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

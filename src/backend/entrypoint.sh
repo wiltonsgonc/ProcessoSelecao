@@ -3,15 +3,14 @@ set -e
 
 echo "==> Verificando configuracao do container..."
 
-# Garantir que diretorios de runtime existam (bind mount pode esconder os criados na imagem)
 mkdir -p /app/documentos /app/logs
-chown -R appuser:appuser /app/documentos /app/logs 2>/dev/null || chmod -R 777 /app/documentos /app/logs
+chmod -R 777 /app/documentos /app/logs 2>/dev/null || true
 
 echo "==> Aguardando SQL Server ficar disponivel..."
 RETRIES=30
-until /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "${SA_PASSWORD}" -C -Q "SELECT 1" > /dev/null 2>&1; do
+until bash -c "echo > /dev/tcp/sqlserver/1433" 2>/dev/null; do
     RETRIES=$((RETRIES - 1))
-    if [ $RETRIES -le 0 ]; then
+    if [ "$RETRIES" -le 0 ]; then
         echo "ERRO: SQL Server nao ficou disponivel apos 30 tentativas"
         exit 1
     fi
@@ -20,6 +19,8 @@ until /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "${SA_PASSWORD}" -C -Q
 done
 
 echo "==> SQL Server esta pronto!"
-echo "==> Iniciando aplicacao..."
+echo "==> Restaurando pacotes..."
+dotnet restore
 
-exec dotnet ProcessoSelecao.Api.dll
+echo "==> Iniciando aplicacao..."
+exec dotnet watch run --no-restore --urls "http://0.0.0.0:5002"
