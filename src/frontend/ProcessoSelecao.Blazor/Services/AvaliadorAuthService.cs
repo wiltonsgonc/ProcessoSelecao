@@ -23,8 +23,8 @@ public class AvaliadorAuthService
     {
         try
         {
-            var baseUrl = _configuration["ApiBaseUrl"] ?? _configuration["ApiSettings__BaseUrl"] ?? "http://localhost:5002";
-            var response = await _http.PostAsJsonAsync($"{baseUrl}/api/avaliador-auth/login", new { Cpf = cpf, Senha = senha });
+            var baseUrl = _configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api";
+            var response = await _http.PostAsJsonAsync($"{baseUrl}/avaliador-auth/login", new { Cpf = cpf, Senha = senha });
 
             if (!response.IsSuccessStatusCode) return false;
 

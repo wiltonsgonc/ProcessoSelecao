@@ -18,7 +18,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddHttpClient("Api", client =>
 {
     client.BaseAddress = new Uri(
-        builder.Configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api");
+        (builder.Configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api").TrimEnd('/') + "/");
 });
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Api"));
