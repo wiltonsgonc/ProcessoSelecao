@@ -110,3 +110,6 @@ core.*
 back.txt
 front.txt
 log.txt
+
+# Planejamento
+/plan/
