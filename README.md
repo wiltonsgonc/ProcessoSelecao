@@ -240,6 +240,61 @@ O `appsettings.Development.json` mantem a connection string com senha vazia
 }
 ```
 
+### Preenchimento automatico de dados (Data Seed)
+
+O projeto inclui um **DataSeeder** que popula automaticamente o banco com dados
+realistas para desenvolvimento. Ao iniciar o backend, o seed e executado **apos**
+as migrations e preenche:
+
+| Entidade | Quantidade | Detalhes |
+|----------|-----------|----------|
+| ProcessosSelecao | 3 | PIBIC (aberto), PIBITI (aberto), Mestrado 2025 (finalizado) |
+| Avaliadores | 4 | 2 internos, 2 externos (UFPE, UFRPE) -- senha padrao `123456` |
+| Candidatos | 6 | Distribuidos entre os 3 processos, com status variados |
+| Documentos | 15 | 2-3 por candidato (historicos, cartas, curriculos Lattes) |
+| Baremas | 4 | Avaliacoes em diferentes estados (concluido, pendente, etc.) |
+
+#### Controles
+
+| Controle | Local | Efeito |
+|----------|-------|--------|
+| `"SeedData": { "Enabled": true/false }` | `appsettings.Development.json` | Liga/desliga o seed |
+| Banco ja populado | (automatico) | Seed e ignorado (idempotente) |
+
+Para **desativar** o seed sem alterar o codigo, mude no
+`appsettings.Development.json`:
+
+```json
+"SeedData": {
+  "Enabled": false
+}
+```
+
+Para **forcar um novo seed** (re-popular), limpe as tabelas e reinicie o backend.
+Use o endpoint `POST /api/admin/reset-identities` (remove os dados) e reinicie
+a aplicacao -- o seed sera executado novamente no banco vazio.
+
+#### Acessos para teste (modo Development)
+
+Com o seed ativo, voce pode navegar pelo sistema usando:
+
+| Papel | Credencial | Senha |
+|-------|-----------|-------|
+| Avaliador Interno | `joao.silva@universidade.edu.br` ou CPF `98765432100` | `123456` |
+| Avaliador Interno | `maria.santos@universidade.edu.br` ou CPF `12345678900` | `123456` |
+| Avaliador Externo (UFPE) | `carlos.oliveira@ufpe.br` ou CPF `11122233344` | `123456` |
+| Avaliador Externo (UFRPE) | `ana.costa@ufrpe.br` ou CPF `55566677788` | `123456` |
+
+Rotas disponiveis com dados preenchidos:
+
+| Rota | O que ve |
+|------|----------|
+| `/` | Lista de processos publicos (PIBIC, PIBITI abertos) |
+| `/inscricao/1` | Formulario de inscricao multi-step |
+| `/avaliador/login` | Login com CPF + `123456` |
+| `/avaliador/painel` | Baremas atribuidos ao avaliador logado |
+| `/avaliador/avaliacao/{id}` | Formulario de avaliacao com criterios pre-preenchidos |
+
 ### Usando os scripts (recomendado)
 
 Os scripts detectam automaticamente se voce tem Docker ou Podman instalado.
