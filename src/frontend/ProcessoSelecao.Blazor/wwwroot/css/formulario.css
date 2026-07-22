@@ -1,0 +1,383 @@
+/* ============================================
+   Formulario de Inscricao - Estilos
+   ============================================ */
+
+/* ---- Loading / NotFound ---- */
+.carregando {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40vh;
+    font-size: 1.125rem;
+    color: #6b7280;
+}
+
+.not-found {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+.not-found h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #dc2626;
+    margin-bottom: 0.5rem;
+}
+.not-found h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+.not-found p {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+.not-found a {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+/* ---- Container ---- */
+.formulario-container {
+    max-width: 48rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* ---- Progress Bar ---- */
+.progresso {
+    width: 100%;
+    height: 8px;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.barra-progresso {
+    height: 100%;
+    background-color: #2563eb;
+    border-radius: 9999px;
+    transition: width 0.4s ease;
+}
+
+/* ---- Step Indicators ---- */
+.indicadores-pagina {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.indicadores-pagina span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    background-color: #e5e7eb;
+    color: #9ca3af;
+    transition: all 0.3s ease;
+}
+
+.indicadores-pagina span.ativa {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+/* ---- Page Content ---- */
+.conteudo-pagina {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Form Elements ---- */
+.conteudo-pagina form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.conteudo-pagina h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.conteudo-pagina h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-top: 0.5rem;
+}
+
+.conteudo-pagina label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.conteudo-pagina input[type="text"],
+.conteudo-pagina input[type="email"],
+.conteudo-pagina input[type="date"],
+.conteudo-pagina input[type="url"],
+.conteudo-pagina input[type="number"],
+.conteudo-pagina input[type="password"],
+.conteudo-pagina select,
+.conteudo-pagina textarea {
+    display: block;
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: #ffffff;
+    color: #111827;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.conteudo-pagina input:focus,
+.conteudo-pagina select:focus,
+.conteudo-pagina textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.conteudo-pagina input.invalid,
+.conteudo-pagina select.invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.conteudo-pagina InputFile {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: #ffffff;
+}
+
+.conteudo-pagina InputFile.invalid {
+    border-color: #dc2626;
+}
+
+.conteudo-pagina input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #2563eb;
+    margin-right: 0.5rem;
+}
+
+/* ---- Required Field ---- */
+.campo-obrigatorio {
+    display: flex;
+    flex-direction: column;
+}
+
+.asterisco {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* ---- Validation Error ---- */
+.erro {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #dc2626;
+}
+
+/* ---- Info / Cookies ---- */
+.info-cookies {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* ---- Checkbox Field ---- */
+.campo-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.campo-checkbox label {
+    margin-bottom: 0;
+    font-weight: 400;
+}
+
+/* ---- Buttons ---- */
+.botoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.botoes button {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.botoes button[type="submit"],
+.botoes button:not([type="button"]) {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.botoes button[type="submit"]:hover,
+.botoes button:not([type="button"]):hover {
+    background-color: #1d4ed8;
+}
+
+.botoes button[type="button"] {
+    background-color: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.botoes button[type="button"]:hover {
+    background-color: #f3f4f6;
+}
+
+/* ---- Modal ---- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+.modal-conteudo {
+    background: #ffffff;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    max-width: 32rem;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-conteudo h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.modal-conteudo p {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+/* ---- Confirmation Modal ---- */
+.resumo-dados {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.termo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    margin-top: 0.75rem;
+    cursor: pointer;
+}
+
+.modal-botoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.btn-voltar {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #374151;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-voltar:hover {
+    background-color: #f3f4f6;
+}
+
+.btn-confirmar {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
+    background-color: #16a34a;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-confirmar:hover {
+    background-color: #15803d;
+}
+
+/* ---- Success Modal ---- */
+.numero-inscricao {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2563eb;
+    text-align: center;
+    padding: 1rem;
+    margin: 1rem 0;
+    background-color: #eff6ff;
+    border: 2px solid #2563eb;
+    border-radius: 0.5rem;
+}
+
+.aviso {
+    font-size: 0.8125rem;
+    color: #b45309;
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+}

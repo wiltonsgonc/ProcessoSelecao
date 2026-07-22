@@ -1,0 +1,95 @@
+@page "/candidato/login"
+@layout Layouts.PublicLayout
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+
+<PageTitle>Acompanhamento de Inscrição</PageTitle>
+
+<div class="formulario-container" style="max-width: 480px; margin: 2rem auto;">
+    <div class="conteudo-pagina">
+    <h2>Acompanhamento da Inscrição</h2>
+    <p>Informe seu número de inscrição e CPF para acessar o acompanhamento.</p>
+
+    @if (!string.IsNullOrEmpty(erro))
+    {
+        <div class="erro" style="margin-bottom: 1rem; text-align: center;">@erro</div>
+    }
+
+    <form @onsubmit="Buscar">
+        <div class="campo-obrigatorio">
+            <label for="numeroInscricao">Número de Inscrição: <span class="asterisco">*</span></label>
+            <input id="numeroInscricao" @bind="numeroInscricao" placeholder="Ex: 202600100001"
+                   class="@(submitted && string.IsNullOrEmpty(numeroInscricao) ? "invalid" : "")" />
+            @if (submitted && string.IsNullOrEmpty(numeroInscricao))
+            {
+                <div class="erro"><span>Campo obrigatório</span></div>
+            }
+        </div>
+
+        <div class="campo-obrigatorio">
+            <label for="cpf">CPF: <span class="asterisco">*</span></label>
+            <input id="cpf" @bind="cpf" placeholder="000.000.000-00"
+                   class="@(submitted && string.IsNullOrEmpty(cpf) ? "invalid" : "")" />
+            @if (submitted && string.IsNullOrEmpty(cpf))
+            {
+                <div class="erro"><span>Campo obrigatório</span></div>
+            }
+        </div>
+
+        <div class="botoes">
+            <button type="submit">Buscar Inscrição</button>
+        </div>
+    </form>
+    </div>
+</div>
+
+@code {
+    private string numeroInscricao = "";
+    private string cpf = "";
+    private string erro = "";
+    private bool submitted = false;
+
+    private async Task Buscar()
+    {
+        submitted = true;
+        erro = "";
+
+        if (string.IsNullOrEmpty(numeroInscricao) || string.IsNullOrEmpty(cpf))
+            return;
+
+        try
+        {
+            var baseUrl = Configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api";
+            var response = await Http.GetAsync($"{baseUrl}/candidatos/buscar?numeroInscricao={Uri.EscapeDataString(numeroInscricao)}&cpf={Uri.EscapeDataString(cpf)}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                erro = "Candidato não encontrado. Verifique o número de inscrição e CPF.";
+                return;
+            }
+
+            var candidato = await response.Content.ReadFromJsonAsync<CandidatoInfo>(
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (candidato != null)
+            {
+                Navigation.NavigateTo($"/candidato/acompanhamento/{candidato.Id}");
+            }
+            else
+            {
+                erro = "Candidato não encontrado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            erro = $"Erro ao conectar: {ex.Message}";
+        }
+    }
+
+    private class CandidatoInfo
+    {
+        public long Id { get; set; }
+        public string Nome { get; set; } = "";
+        public string NumeroInscricao { get; set; } = "";
+    }
+}
