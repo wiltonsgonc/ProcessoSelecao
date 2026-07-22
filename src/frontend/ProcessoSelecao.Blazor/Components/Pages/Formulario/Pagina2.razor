@@ -150,7 +150,21 @@
     protected override void OnInitialized()
     {
         if (FormularioService.DadosPagina2 != null)
+        {
             dados = FormularioService.DadosPagina2;
+        }
+        else if (FormularioService.DadosPagina1 != null)
+        {
+            var d1 = FormularioService.DadosPagina1;
+            dados.Nome = d1.Nome ?? "";
+            dados.DataNascimento = d1.DataNascimento ?? "";
+            dados.Email = d1.Email ?? "";
+            dados.Telefone1 = d1.Telefone ?? "";
+            if (string.Equals(d1.TipoDocumento, "CPF", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(d1.NumeroDocumento))
+            {
+                dados.Cpf = d1.NumeroDocumento;
+            }
+        }
     }
 
     private async Task OnSubmit()

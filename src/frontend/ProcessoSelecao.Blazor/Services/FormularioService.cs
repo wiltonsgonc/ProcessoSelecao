@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components.Forms;
-
 namespace ProcessoSelecao.Blazor.Services;
 
 public class FormularioService
@@ -55,7 +53,7 @@ public class FormularioService
         NotifyStateChanged();
     }
 
-    public async Task<object?> EnviarInscricaoCompletaAsync(int processoSelecaoId)
+    public async Task<InscricaoResultResponse> EnviarInscricaoCompletaAsync(int processoSelecaoId)
     {
         using var formData = new MultipartFormDataContent();
         formData.Add(new StringContent(processoSelecaoId.ToString()), "processoSelecaoId");
@@ -68,24 +66,54 @@ public class FormularioService
         };
         formData.Add(new StringContent(System.Text.Json.JsonSerializer.Serialize(dados)), "dados");
 
-        if (DadosPagina3?.RgCpfCandidato != null)
-            formData.Add(new StreamContent(DadosPagina3.RgCpfCandidato.OpenReadStream()), "rgCpfCandidato", DadosPagina3.RgCpfCandidato.Name);
-        if (DadosPagina3?.AnexoI != null)
-            formData.Add(new StreamContent(DadosPagina3.AnexoI.OpenReadStream()), "anexoI", DadosPagina3.AnexoI.Name);
-        if (!string.IsNullOrEmpty(DadosPagina3?.CurriculoLattesCandidato))
+        if (DadosPagina3 == null)
+            throw new Exception("Dados da página 3 (documentos) não preenchidos. Preencha os documentos antes de enviar.");
+
+        var hasAnyFile = DadosPagina3.RgCpfCandidatoArquivo != null
+            || DadosPagina3.AnexoIArquivo != null
+            || DadosPagina3.AnexoIIArquivo != null
+            || DadosPagina3.ComprovanteMatriculaArquivo != null
+            || DadosPagina3.HistoricoEscolarArquivo != null;
+        var hasAnyLink = !string.IsNullOrEmpty(DadosPagina3.CurriculoLattesCandidato)
+            || !string.IsNullOrEmpty(DadosPagina3.CurriculoLattesOrientador);
+
+        if (!hasAnyFile && !hasAnyLink)
+            throw new Exception("Nenhum arquivo ou link foi preenchido na página 3. Anexe os documentos obrigatórios antes de enviar.");
+
+        if (DadosPagina3.RgCpfCandidatoArquivo != null)
+            formData.Add(new ByteArrayContent(DadosPagina3.RgCpfCandidatoArquivo), "rgCpfCandidato", DadosPagina3.RgCpfCandidatoNome ?? "arquivo.pdf");
+        if (DadosPagina3.AnexoIArquivo != null)
+            formData.Add(new ByteArrayContent(DadosPagina3.AnexoIArquivo), "anexoI", DadosPagina3.AnexoINome ?? "arquivo.pdf");
+        if (!string.IsNullOrEmpty(DadosPagina3.CurriculoLattesCandidato))
             formData.Add(new StringContent(DadosPagina3.CurriculoLattesCandidato), "curriculoLattesCandidato");
-        if (!string.IsNullOrEmpty(DadosPagina3?.CurriculoLattesOrientador))
+        if (!string.IsNullOrEmpty(DadosPagina3.CurriculoLattesOrientador))
             formData.Add(new StringContent(DadosPagina3.CurriculoLattesOrientador), "curriculoLattesOrientador");
-        if (DadosPagina3?.AnexoII != null)
-            formData.Add(new StreamContent(DadosPagina3.AnexoII.OpenReadStream()), "anexoII", DadosPagina3.AnexoII.Name);
-        if (DadosPagina3?.ComprovanteMatricula != null)
-            formData.Add(new StreamContent(DadosPagina3.ComprovanteMatricula.OpenReadStream()), "comprovanteMatricula", DadosPagina3.ComprovanteMatricula.Name);
-        if (DadosPagina3?.HistoricoEscolar != null)
-            formData.Add(new StreamContent(DadosPagina3.HistoricoEscolar.OpenReadStream()), "historicoEscolar", DadosPagina3.HistoricoEscolar.Name);
+        if (DadosPagina3.AnexoIIArquivo != null)
+            formData.Add(new ByteArrayContent(DadosPagina3.AnexoIIArquivo), "anexoII", DadosPagina3.AnexoIINome ?? "arquivo.pdf");
+        if (DadosPagina3.ComprovanteMatriculaArquivo != null)
+            formData.Add(new ByteArrayContent(DadosPagina3.ComprovanteMatriculaArquivo), "comprovanteMatricula", DadosPagina3.ComprovanteMatriculaNome ?? "arquivo.pdf");
+        if (DadosPagina3.HistoricoEscolarArquivo != null)
+            formData.Add(new ByteArrayContent(DadosPagina3.HistoricoEscolarArquivo), "historicoEscolar", DadosPagina3.HistoricoEscolarNome ?? "arquivo.pdf");
 
         var response = await _http.PostAsync($"{_apiUrl}/formulario/completa", formData);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<object>();
+        var responseBody = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            string mensagemErro = "Erro ao enviar inscrição.";
+            try
+            {
+                var erroObj = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+                if (erroObj != null && erroObj.TryGetValue("erro", out var erro))
+                    mensagemErro = erro;
+                else if (erroObj != null && erroObj.TryGetValue("message", out var msg))
+                    mensagemErro = msg;
+            }
+            catch { mensagemErro += $" (Status {(int)response.StatusCode})"; }
+            throw new Exception(mensagemErro);
+        }
+        return System.Text.Json.JsonSerializer.Deserialize<InscricaoResultResponse>(responseBody,
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            ?? new InscricaoResultResponse();
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
@@ -116,6 +144,15 @@ public class DadosPagina1
     public bool PoliticaPrivacidade { get; set; }
 }
 
+public class InscricaoResultResponse
+{
+    public long CandidatoId { get; set; }
+    public long ProcessoSelecaoId { get; set; }
+    public string NumeroInscricao { get; set; } = string.Empty;
+    public string Mensagem { get; set; } = string.Empty;
+    public DateTime DataInscricao { get; set; }
+}
+
 public class DadosPagina2
 {
     public string? Nome { get; set; }
@@ -140,13 +177,18 @@ public class DadosPagina2
 
 public class DadosPagina3
 {
-    public IBrowserFile? RgCpfCandidato { get; set; }
-    public IBrowserFile? AnexoI { get; set; }
+    public byte[]? RgCpfCandidatoArquivo { get; set; }
+    public string? RgCpfCandidatoNome { get; set; }
+    public byte[]? AnexoIArquivo { get; set; }
+    public string? AnexoINome { get; set; }
     public string? CurriculoLattesCandidato { get; set; }
     public string? CurriculoLattesOrientador { get; set; }
-    public IBrowserFile? AnexoII { get; set; }
-    public IBrowserFile? ComprovanteMatricula { get; set; }
-    public IBrowserFile? HistoricoEscolar { get; set; }
+    public byte[]? AnexoIIArquivo { get; set; }
+    public string? AnexoIINome { get; set; }
+    public byte[]? ComprovanteMatriculaArquivo { get; set; }
+    public string? ComprovanteMatriculaNome { get; set; }
+    public byte[]? HistoricoEscolarArquivo { get; set; }
+    public string? HistoricoEscolarNome { get; set; }
 }
 
 public class DadosPagina4

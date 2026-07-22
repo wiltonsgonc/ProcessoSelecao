@@ -2,6 +2,7 @@
 @layout Layouts.PublicLayout
 @inject ProcessoSelecaoService ProcessoSelecaoService
 @inject FormularioService FormularioService
+@inject NavigationManager Navigation
 
 <PageTitle>Inscrição</PageTitle>
 
@@ -70,11 +71,16 @@ else
                     </div>
 
                     <div class="modal-botoes">
-                        <button type="button" class="btn-voltar" @onclick="FecharModalConfirmacao">Retornar ao cadastro</button>
-                        <button type="button" class="btn-confirmar" @onclick="ConfirmarInscricao">
-                            Li e aceito os termos e condições
+                        <button type="button" class="btn-voltar" @onclick="FecharModalConfirmacao" disabled="@enviando">Retornar ao cadastro</button>
+                        <button type="button" class="btn-confirmar" @onclick="ConfirmarInscricao" disabled="@enviando">
+                            @(enviando ? "Enviando..." : "Li e aceito os termos e condições")
                         </button>
                     </div>
+
+                    @if (!string.IsNullOrEmpty(mensagemErro))
+                    {
+                        <div class="erro" style="margin-top: 1rem; text-align: center; font-size: 0.875rem;">@mensagemErro</div>
+                    }
                 </div>
             </div>
         }
@@ -110,6 +116,8 @@ else
     private bool termoAceito = false;
     private bool processoEncontrado = false;
     private bool carregando = true;
+    private bool enviando = false;
+    private string? mensagemErro = null;
     private string numeroInscricao = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -164,15 +172,21 @@ else
             return;
         }
 
+        enviando = true;
+        mensagemErro = null;
+        StateHasChanged();
+
         try
         {
             var result = await FormularioService.EnviarInscricaoCompletaAsync(ProcessoId);
+            numeroInscricao = result.NumeroInscricao;
             mostrarModalConfirmacao = false;
             mostrarModalSucesso = true;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Erro ao enviar inscrição: {ex.Message}");
+            mensagemErro = $"Erro ao enviar inscrição: {ex.Message}";
+            enviando = false;
         }
     }
 
@@ -180,6 +194,7 @@ else
     {
         mostrarModalSucesso = false;
         FormularioService.LimparDados();
+        Navigation.NavigateTo("/candidato/login");
     }
 
     public void Dispose()

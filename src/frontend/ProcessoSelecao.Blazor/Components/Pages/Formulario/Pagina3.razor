@@ -5,9 +5,9 @@
 
     <div class="campo-obrigatorio">
         <label>RG e CPF Candidato (PDF): <span class="asterisco">*</span></label>
-        <InputFile OnChange="e => OnFileChange(e, v => dados.RgCpfCandidato = v)"
-                   class="@(dados.RgCpfCandidato == null && submitted ? "invalid" : "")" />
-        @if (dados.RgCpfCandidato == null && submitted)
+        <InputFile OnChange="e => OnFileChange(e, v => dados.RgCpfCandidatoArquivo = v, n => dados.RgCpfCandidatoNome = n)"
+                   class="@(dados.RgCpfCandidatoArquivo == null && submitted ? "invalid" : "")" />
+        @if (dados.RgCpfCandidatoArquivo == null && submitted)
         {
             <div class="erro"><span>Arquivo obrigatório</span></div>
         }
@@ -15,9 +15,9 @@
 
     <div class="campo-obrigatorio">
         <label>Anexo I do edital: <span class="asterisco">*</span></label>
-        <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoI = v)"
-                   class="@(dados.AnexoI == null && submitted ? "invalid" : "")" />
-        @if (dados.AnexoI == null && submitted)
+        <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoIArquivo = v, n => dados.AnexoINome = n)"
+                   class="@(dados.AnexoIArquivo == null && submitted ? "invalid" : "")" />
+        @if (dados.AnexoIArquivo == null && submitted)
         {
             <div class="erro"><span>Arquivo obrigatório</span></div>
         }
@@ -47,9 +47,9 @@
 
     <div class="campo-obrigatorio">
         <label>Anexo II (ver edital): <span class="asterisco">*</span></label>
-        <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoII = v)"
-                   class="@(dados.AnexoII == null && submitted ? "invalid" : "")" />
-        @if (dados.AnexoII == null && submitted)
+        <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoIIArquivo = v, n => dados.AnexoIINome = n)"
+                   class="@(dados.AnexoIIArquivo == null && submitted ? "invalid" : "")" />
+        @if (dados.AnexoIIArquivo == null && submitted)
         {
             <div class="erro"><span>Arquivo obrigatório</span></div>
         }
@@ -57,9 +57,9 @@
 
     <div class="campo-obrigatorio">
         <label>Comprovante de Matrícula Assinado Instituição de Ensino: <span class="asterisco">*</span></label>
-        <InputFile OnChange="e => OnFileChange(e, v => dados.ComprovanteMatricula = v)"
-                   class="@(dados.ComprovanteMatricula == null && submitted ? "invalid" : "")" />
-        @if (dados.ComprovanteMatricula == null && submitted)
+        <InputFile OnChange="e => OnFileChange(e, v => dados.ComprovanteMatriculaArquivo = v, n => dados.ComprovanteMatriculaNome = n)"
+                   class="@(dados.ComprovanteMatriculaArquivo == null && submitted ? "invalid" : "")" />
+        @if (dados.ComprovanteMatriculaArquivo == null && submitted)
         {
             <div class="erro"><span>Arquivo obrigatório</span></div>
         }
@@ -67,9 +67,9 @@
 
     <div class="campo-obrigatorio">
         <label>Histórico Escolar graduação (ver edital): <span class="asterisco">*</span></label>
-        <InputFile OnChange="e => OnFileChange(e, v => dados.HistoricoEscolar = v)"
-                   class="@(dados.HistoricoEscolar == null && submitted ? "invalid" : "")" />
-        @if (dados.HistoricoEscolar == null && submitted)
+        <InputFile OnChange="e => OnFileChange(e, v => dados.HistoricoEscolarArquivo = v, n => dados.HistoricoEscolarNome = n)"
+                   class="@(dados.HistoricoEscolarArquivo == null && submitted ? "invalid" : "")" />
+        @if (dados.HistoricoEscolarArquivo == null && submitted)
         {
             <div class="erro"><span>Arquivo obrigatório</span></div>
         }
@@ -88,23 +88,29 @@
     private DadosPagina3 dados = new();
     private bool submitted = false;
 
+    private const long MaxAllowedSize = 10 * 1024 * 1024; // 10 MB
+
     protected override void OnInitialized()
     {
         if (FormularioService.DadosPagina3 != null)
             dados = FormularioService.DadosPagina3;
     }
 
-    private void OnFileChange(InputFileChangeEventArgs e, Action<IBrowserFile> setter)
+    private async Task OnFileChange(InputFileChangeEventArgs e, Action<byte[]> setArquivo, Action<string> setNome)
     {
-        setter(e.File);
+        using var stream = e.File.OpenReadStream(maxAllowedSize: MaxAllowedSize);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        setArquivo(ms.ToArray());
+        setNome(e.File.Name);
     }
 
     private async Task OnSubmit()
     {
         submitted = true;
 
-        if (dados.RgCpfCandidato == null || dados.AnexoI == null || dados.AnexoII == null ||
-            dados.ComprovanteMatricula == null || dados.HistoricoEscolar == null ||
+        if (dados.RgCpfCandidatoArquivo == null || dados.AnexoIArquivo == null || dados.AnexoIIArquivo == null ||
+            dados.ComprovanteMatriculaArquivo == null || dados.HistoricoEscolarArquivo == null ||
             string.IsNullOrEmpty(dados.CurriculoLattesCandidato) || string.IsNullOrEmpty(dados.CurriculoLattesOrientador))
             return;
 
