@@ -9,6 +9,7 @@ using ProcessoSelecao.Infrastructure.Data;
 using ProcessoSelecao.Infrastructure.Repositories;
 using System.Text;
 
+
 /// <summary>
 /// Configuração e inicialização da aplicação ASP.NET Core
 /// </summary>
@@ -107,6 +108,9 @@ builder.Services.AddSingleton<EmailSettings>(sp =>
     };
 });
 
+// DataSeeder para preenchimento automatico em desenvolvimento
+builder.Services.AddScoped<DataSeeder>();
+
 // Configuração do AutoMapper (chave vazia = OSS license, sem bloqueio)
 builder.Services.AddAutoMapper(cfg => cfg.LicenseKey = "", typeof(MappingProfile));
 builder.Logging.AddFilter("LuckyPennySoftware.AutoMapper.License", LogLevel.None);
@@ -132,6 +136,7 @@ var app = builder.Build();
 // ============================================
 // Aplicar migrations automaticamente (com retry)
 // ============================================
+var migrationSuccess = false;
 {
     var maxRetries = 30;
     var delaySeconds = 5;
@@ -143,6 +148,7 @@ var app = builder.Build();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             db.Database.Migrate();
             Console.WriteLine($"[OK] Migrations aplicadas na tentativa {attempt}");
+            migrationSuccess = true;
             break;
         }
         catch (Exception ex) when (attempt < maxRetries)
@@ -151,6 +157,48 @@ var app = builder.Build();
             Console.WriteLine($"Aguardando {delaySeconds}s antes da proxima tentativa...");
             Thread.Sleep(TimeSpan.FromSeconds(delaySeconds));
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO] Tentativa {attempt}/{maxRetries} falhou (ultima): {ex.Message}");
+        }
+    }
+
+    if (!migrationSuccess)
+    {
+        Console.WriteLine($"[ERRO] Migrations falharam apos {maxRetries} tentativas. Seed nao sera executado.");
+    }
+}
+
+// ============================================
+// Preenchimento automatico de dados (apenas Development)
+// ============================================
+if (app.Environment.IsDevelopment() && migrationSuccess)
+{
+    try
+    {
+        using var seedScope = app.Services.CreateScope();
+        var seeder = seedScope.ServiceProvider.GetRequiredService<DataSeeder>();
+        await seeder.SeedAsync();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[SeedData] Erro durante o seed: {ex.Message}");
+    }
+
+    try
+    {
+        using var reseedScope = app.Services.CreateScope();
+        var reseedCtx = reseedScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var maxCandidatoId = await reseedCtx.Candidatos.AnyAsync()
+            ? await reseedCtx.Candidatos.MaxAsync(c => c.Id)
+            : 0L;
+        await reseedCtx.Database.ExecuteSqlRawAsync(
+            "DBCC CHECKIDENT ('Candidatos', RESEED, {0})", maxCandidatoId);
+        Console.WriteLine($"[SeedData] RESEED Candidatos identitty para {maxCandidatoId}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[SeedData] Erro durante reseed: {ex.Message}");
     }
 }
 
