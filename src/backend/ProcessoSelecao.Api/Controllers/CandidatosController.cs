@@ -35,6 +35,18 @@ public class CandidatosController : ControllerBase
         return Ok(candidato);
     }
 
+    /// <summary>Busca candidato por número de inscrição e CPF</summary>
+    [HttpGet("buscar")]
+    public async Task<ActionResult<CandidatoDto>> GetByInscricaoECPF([FromQuery] string numeroInscricao, [FromQuery] string cpf)
+    {
+        if (string.IsNullOrWhiteSpace(numeroInscricao) || string.IsNullOrWhiteSpace(cpf))
+            return BadRequest(new { message = "Número de inscrição e CPF são obrigatórios" });
+
+        var candidato = await _service.GetByInscricaoECPFAsync(numeroInscricao, cpf);
+        if (candidato == null) return NotFound(new { message = "Candidato não encontrado. Verifique o número de inscrição e CPF." });
+        return Ok(candidato);
+    }
+
     /// <summary>Retorna candidatos de um processo</summary>
     [HttpGet("processo/{processoId}")]
     public async Task<ActionResult<IEnumerable<CandidatoDto>>> GetByProcessoId(long processoId)

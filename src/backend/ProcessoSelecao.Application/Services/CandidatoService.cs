@@ -31,6 +31,9 @@ public interface ICandidatoService
     
     /// <summary>Retorna a pontuação de um candidato</summary>
     Task<float> GetPontuacaoAsync(long id);
+
+    /// <summary>Busca candidato por número de inscrição e CPF</summary>
+    Task<CandidatoDto?> GetByInscricaoECPFAsync(string numeroInscricao, string cpf);
 }
 
 /// <summary>
@@ -98,6 +101,14 @@ public class CandidatoService : ICandidatoService
     {
         var candidato = await _repository.GetByIdAsync(id) ?? throw new Exception("Candidato não encontrado");
         return candidato.CalcularPontuacao();
+    }
+
+    /// <summary>Busca candidato por número de inscrição e CPF</summary>
+    public async Task<CandidatoDto?> GetByInscricaoECPFAsync(string numeroInscricao, string cpf)
+    {
+        var candidatos = await _repository.GetAllAsync();
+        var candidato = candidatos.FirstOrDefault(c => c.NumeroInscricao == numeroInscricao && c.Cpf == cpf);
+        return candidato != null ? MapToDto(candidato) : null;
     }
 
     private CandidatoDto MapToDto(Candidato candidato)
