@@ -9,10 +9,6 @@
 <div class="flex justify-between items-center mb-5">
     <h1 class="text-2xl font-bold">Documentos</h1>
     <div class="flex gap-2">
-        @if (selectedIds.Any())
-        {
-            <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" @onclick="DownloadSelected">Baixar Selecionados (@selectedIds.Count)</button>
-        }
         <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="ShowUploadForm">Upload Documento</button>
     </div>
 </div>
@@ -50,26 +46,45 @@
 
 @if (showValidateModal && selectedDocumento != null)
 {
-    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
-        <h2 class="text-lg font-semibold mb-4">Validar Documento</h2>
-        <form @onsubmit="Validate" class="space-y-4">
-            <div><label class="block text-sm font-medium mb-1">Documento: @selectedDocumento.NomeArquivo</label></div>
-            <div class="flex items-center gap-2">
-                <input type="checkbox" @bind="validateValidado" class="w-4 h-4" />
-                <label class="text-sm font-medium">Aprovado</label>
-            </div>
-            @if (!validateValidado)
-            {
-                <div>
-                    <label class="block text-sm font-medium mb-1">Motivo da Rejeição</label>
-                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded min-h-[80px]" @bind="validateMotivo"></textarea>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @onclick="() => showValidateModal = false">
+        <div class="bg-white rounded-lg w-full max-w-md p-6" @onclick:stopPropagation="true">
+            <h2 class="text-lg font-semibold mb-4">Validar Documento</h2>
+            <form @onsubmit="Validate" class="space-y-4">
+                <div><label class="block text-sm font-medium mb-1">Documento: @selectedDocumento.NomeArquivo</label></div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" @bind="validateValidado" class="w-4 h-4" />
+                    <label class="text-sm font-medium">Aprovado</label>
                 </div>
-            }
-            <div class="flex gap-2">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
-                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showValidateModal = false">Cancelar</button>
+                @if (!validateValidado)
+                {
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Motivo da Rejeição</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded min-h-[80px]" @bind="validateMotivo"></textarea>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(validateError))
+                {
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">@validateError</div>
+                }
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
+                    <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showValidateModal = false">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (showViewModal && !string.IsNullOrEmpty(viewUrl))
+{
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @onclick="() => showViewModal = false">
+        <div class="bg-white rounded-lg w-11/12 h-5/6 flex flex-col" @onclick:stopPropagation="true">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">@viewDocNome</h2>
+                <button class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600" @onclick="() => showViewModal = false">Fechar</button>
             </div>
-        </form>
+            <iframe src="@viewUrl" class="w-full flex-1 border-0" title="Visualização do documento"></iframe>
+        </div>
     </div>
 }
 
@@ -78,7 +93,12 @@
     <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
         <div class="flex justify-between items-center cursor-pointer" @onclick="() => grupo.Expandido = !grupo.Expandido">
             <h3 class="font-semibold">@(grupo.CandidatoNome ?? $"Candidato #{grupo.CandidatoId}") (@grupo.Documentos.Count documentos)</h3>
-            <button class="px-3 py-1 rounded text-xs @(grupo.Expandido ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700")">@(grupo.Expandido ? "Recolher" : "Expandir")</button>
+            <div class="flex items-center gap-2">
+                <button class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors" @onclick:stopPropagation="true" @onclick="() => DownloadGroupDocuments(grupo)">
+                    @GetGroupDownloadButtonText(grupo)
+                </button>
+                <button class="px-3 py-1 rounded text-xs @(grupo.Expandido ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700")">@(grupo.Expandido ? "Recolher" : "Expandir")</button>
+            </div>
         </div>
         @if (grupo.Expandido)
         {
@@ -106,6 +126,7 @@
                                     @doc.NomeArquivo
                                     @if (!string.IsNullOrEmpty(doc.LinkUrl)) { <a href="@doc.LinkUrl" target="_blank" class="ml-1 text-blue-600 text-xs">Link</a> }
                                 </td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">@GetTipoLabel(doc.Tipo)</td>
                                 <td class="px-3 py-2 border-b border-gray-100 text-sm">@FormatDateTime(doc.DataUpload)</td>
                                 <td class="px-3 py-2 border-b border-gray-100 text-sm"><span class="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white @GetDocStatusClass(doc)">@GetDocStatusLabel(doc)</span></td>
                                 <td class="px-3 py-2 border-b border-gray-100 text-sm">@(doc.MotivoRejeicao ?? "-")</td>
@@ -130,6 +151,9 @@
     private List<DocGrupo> documentosAgrupados = new();
     private bool showUploadForm = false;
     private bool showValidateModal = false;
+    private bool showViewModal = false;
+    private string? viewUrl;
+    private string? viewDocNome;
     private IBrowserFile? selectedFile;
     private string uploadTipo = "1";
     private int uploadCandidatoId;
@@ -165,24 +189,39 @@
         showUploadForm = false; await Load();
     }
 
+    private string? validateError;
+
     private void OpenValidate(Documento doc)
     {
-        selectedDocumento = doc; validateValidado = doc.Validado; validateMotivo = doc.MotivoRejeicao; showValidateModal = true;
+        selectedDocumento = doc; validateValidado = doc.Validado; validateMotivo = doc.MotivoRejeicao; showValidateModal = true; validateError = null;
     }
 
     private async Task Validate()
     {
         if (selectedDocumento == null) return;
-        await Service.ValidateAsync(selectedDocumento.Id, new ValidateDocumento { Validado = validateValidado, MotivoRejeicao = validateMotivo });
-        showValidateModal = false; await Load();
+        try
+        {
+            await Service.ValidateAsync(selectedDocumento.Id, new ValidateDocumento { Validado = validateValidado, MotivoRejeicao = validateMotivo });
+            showValidateModal = false; await Load();
+        }
+        catch (Exception ex)
+        {
+            validateError = ex.Message;
+        }
     }
 
-    private async Task ViewDocument(Documento doc)
+    private void ViewDocument(Documento doc)
     {
-        if (!string.IsNullOrEmpty(doc.LinkUrl)) { await JS.InvokeVoidAsync("window.open", doc.LinkUrl, "_blank"); return; }
-        var bytes = await Service.ViewDocumentAsync(doc.Id);
-        var base64 = Convert.ToBase64String(bytes);
-        await JS.InvokeVoidAsync("window.open", $"data:application/pdf;base64,{base64}", "_blank");
+        if (!string.IsNullOrEmpty(doc.LinkUrl))
+        {
+            viewUrl = doc.LinkUrl;
+        }
+        else
+        {
+            viewUrl = Service.GetViewUrl(doc.Id);
+        }
+        viewDocNome = doc.NomeArquivo;
+        showViewModal = true;
     }
 
     private async Task Remove(int id)
@@ -198,14 +237,47 @@
         foreach (var doc in grupo.Documentos) { if (isChecked) selectedIds.Add(doc.Id); else selectedIds.Remove(doc.Id); }
     }
 
-    private async Task DownloadSelected()
+    private string GetGroupDownloadButtonText(DocGrupo grupo)
     {
-        if (!selectedIds.Any()) return;
-        var bytes = await Service.DownloadMultipleAsync(selectedIds.ToList());
-        await JS.InvokeVoidAsync("BlazorDownloadFile", "documentos_selecionados.zip", Convert.ToBase64String(bytes));
+        var grupoIds = grupo.Documentos.Select(d => d.Id).ToList();
+        var selectedInGroup = grupoIds.Count(id => selectedIds.Contains(id));
+        if (selectedInGroup == 0 || selectedInGroup == grupo.Documentos.Count)
+            return $"Baixar Todos ({grupo.Documentos.Count})";
+        return $"Baixar Selecionados ({selectedInGroup})";
+    }
+
+    private async Task DownloadGroupDocuments(DocGrupo grupo)
+    {
+        var grupoIds = grupo.Documentos.Select(d => d.Id).ToList();
+        var selectedInGroup = grupoIds.Where(id => selectedIds.Contains(id)).ToList();
+        var safeName = string.Join("_", (grupo.CandidatoNome ?? $"Candidato_{grupo.CandidatoId}").Split(Path.GetInvalidFileNameChars()));
+        List<int> ids;
+        string fileName;
+        if (selectedInGroup.Count == 0 || selectedInGroup.Count == grupo.Documentos.Count)
+        {
+            ids = grupoIds;
+            fileName = $"documentos_{safeName}.zip";
+        }
+        else
+        {
+            ids = selectedInGroup;
+            fileName = $"documentos_{safeName}_selecionados.zip";
+        }
+
+        var bytes = await Service.DownloadMultipleAsync(ids);
+        await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, Convert.ToBase64String(bytes));
     }
 
     private string FormatDateTime(string? dt) => DateTime.TryParse(dt, out var d) ? d.ToString("dd/MM/yyyy HH:mm") : "-";
+    private string GetTipoLabel(TipoDocumento tipo) => tipo switch
+    {
+        TipoDocumento.HistoricoEscolar => "Historico",
+        TipoDocumento.ComprovanteMatricula => "Comprovante",
+        TipoDocumento.CartaIntencao => "Carta Intencao",
+        TipoDocumento.CurriculumLatte => "Curriculo Lattes",
+        TipoDocumento.CartaRecomendacao => "Carta Recomendacao",
+        _ => tipo.ToString()
+    };
     private string GetDocStatusLabel(Documento d) => d.Validado ? "Validado" : !string.IsNullOrEmpty(d.MotivoRejeicao) ? "Rejeitado" : "Pendente";
     private string GetDocStatusClass(Documento d) => d.Validado ? "bg-green-600" : !string.IsNullOrEmpty(d.MotivoRejeicao) ? "bg-red-600" : "bg-yellow-500";
 }
