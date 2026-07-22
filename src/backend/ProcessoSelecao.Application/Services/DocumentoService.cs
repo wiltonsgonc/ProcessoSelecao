@@ -158,39 +158,30 @@ public class DocumentoService : IDocumentoService
         }
         
         var caminhoArquivo = documento.CaminhoLocal;
-        
-        // Se o caminho já for um caminho absoluto válido dentro do container, usa diretamente
-        if (caminhoArquivo.StartsWith("/app/") || caminhoArquivo.StartsWith("/"))
+        var caminhoBaseAbsoluto = Path.GetFullPath(_caminhoBase);
+
+        if (File.Exists(caminhoArquivo))
         {
-            if (File.Exists(caminhoArquivo))
-            {
-                return caminhoArquivo;
-            }
-            // Tenta mapear para o caminho base
-            var nomeArquivo = Path.GetFileName(caminhoArquivo);
-            caminhoArquivo = Path.Combine(_caminhoBase, nomeArquivo);
+            return caminhoArquivo;
         }
-        // Se o caminho for relativo (começa com ./ ou não for um caminho absoluto), combina com o caminho base
-        else if (!Path.IsPathRooted(caminhoArquivo) || caminhoArquivo.StartsWith("."))
+
+        var nomeArquivo = Path.GetFileName(caminhoArquivo);
+        var candidatoId = documento.CandidatoId;
+        var candidatoDir = Path.Combine(caminhoBaseAbsoluto, candidatoId.ToString());
+
+        var candidatoFiles = Directory.Exists(candidatoDir) ? Directory.GetFiles(candidatoDir, nomeArquivo + "*") : Array.Empty<string>();
+        if (candidatoFiles.Length > 0)
         {
-            // Remove o prefixo ./ se existir
-            if (caminhoArquivo.StartsWith("./"))
-            {
-                caminhoArquivo = caminhoArquivo.Substring(2);
-            }
-            // Se o caminho já contém "documentos/", não adiciona novamente
-            if (!caminhoArquivo.StartsWith("documentos/"))
-            {
-                caminhoArquivo = Path.Combine("documentos", caminhoArquivo);
-            }
-            caminhoArquivo = Path.Combine(_caminhoBase, caminhoArquivo);
+            return candidatoFiles[0];
         }
-        
-        if (!File.Exists(caminhoArquivo))
+
+        var fallbackPath = Path.Combine(caminhoBaseAbsoluto, candidatoId.ToString(), nomeArquivo);
+        if (File.Exists(fallbackPath))
         {
-            throw new FileNotFoundException($"Arquivo não encontrado: {caminhoArquivo}");
+            return fallbackPath;
         }
-        return caminhoArquivo;
+
+        throw new FileNotFoundException($"Arquivo não encontrado: {caminhoArquivo}");
     }
 
     private static async Task<string> CalculateHashAsync(string filePath)

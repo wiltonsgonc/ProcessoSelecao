@@ -76,7 +76,7 @@ public class DocumentosController : ControllerBase
             
             var filePath = await _service.GetFilePathAsync(id);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, "application/pdf", documento.NomeArquivo, enableRangeProcessing: true);
+            return File(fileBytes, "application/pdf", enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
