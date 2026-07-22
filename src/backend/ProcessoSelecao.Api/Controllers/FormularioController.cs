@@ -54,12 +54,14 @@ public class FormularioController : ControllerBase
     }
 
     [HttpPost("completa")]
+    [RequestFormLimits(MultipartBodyLengthLimit = 52428800)]
+    [RequestSizeLimit(52428800)]
     public async Task<IActionResult> PostInscricaoCompleta()
     {
         try
         {
             var form = await Request.ReadFormAsync();
-            _logger.LogInformation("Recebida requisição de inscrição completa. Processo: {ProcessoId}", form["processoSelecaoId"].FirstOrDefault());
+            _logger.LogInformation("Recebida requisição de inscrição completa. Processo: {ProcessoId}, Arquivos recebidos: {FileCount}", form["processoSelecaoId"].FirstOrDefault(), form.Files.Count);
             
             var processoSelecaoIdStr = form["processoSelecaoId"].FirstOrDefault();
             if (!long.TryParse(processoSelecaoIdStr, out var processoSelecaoId))
@@ -125,6 +127,11 @@ public class FormularioController : ControllerBase
             var resultado = await _inscricaoService.CriarInscricaoCompletaAsync(dados, caminhoBase);
 
             return Ok(resultado);
+        }
+        catch (InscricaoDuplicadaException ex)
+        {
+            _logger.LogWarning(ex, "Tentativa de inscrição duplicada");
+            return Conflict(new { message = ex.Message });
         }
         catch (Exception ex)
         {

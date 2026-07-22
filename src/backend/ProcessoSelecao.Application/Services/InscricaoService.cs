@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using ProcessoSelecao.Application.DTOs;
 using ProcessoSelecao.Domain.Entities;
 using ProcessoSelecao.Domain.Enums;
@@ -18,143 +19,165 @@ public class InscricaoService : IInscricaoService
     private readonly IDocumentoRepository _documentoRepository;
     private readonly IProcessoSelecaoRepository _processoRepository;
     private readonly IMapper _mapper;
+    private readonly ILogger<InscricaoService> _logger;
 
     public InscricaoService(
         ICandidatoRepository candidatoRepository,
         IDocumentoRepository documentoRepository,
         IProcessoSelecaoRepository processoRepository,
-        IMapper mapper)
+        IMapper mapper,
+        ILogger<InscricaoService> logger)
     {
         _candidatoRepository = candidatoRepository;
         _documentoRepository = documentoRepository;
         _processoRepository = processoRepository;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<InscricaoResultDto> CriarInscricaoCompletaAsync(CreateInscricaoCompletaDto dto, string caminhoBase)
     {
+        var processo = await _processoRepository.GetByIdAsync(dto.ProcessoSelecaoId);
+        if (processo == null)
+            throw new Exception("Processo de seleção não encontrado");
+
+        processo.AbrirAutomaticamente();
+
+        if (processo.Status != StatusProcesso.Aberto)
+            throw new Exception("Este processo de seleção não está aberto para inscrições");
+
+        if (!processo.EstaDentroDoPrazo())
+            throw new Exception("O prazo para este processo de seleção expirou");
+
+        var email = dto.Pagina1?.Email;
+        var cpf = dto.Pagina2?.Cpf;
+        
+        if (string.IsNullOrWhiteSpace(email))
+            email = $"temp_{Guid.NewGuid()}@temp.com";
+        
+        if (string.IsNullOrWhiteSpace(cpf))
+            cpf = Guid.NewGuid().ToString("N")[..11];
+
+        var numeroInscricao = await GerarNumeroInscricaoAsync(dto.ProcessoSelecaoId);
+        
+        DateTime? dataNascimento = null;
+        if (!string.IsNullOrEmpty(dto.Pagina1?.DataNascimento) && DateTime.TryParse(dto.Pagina1.DataNascimento, out var parsedData))
+            dataNascimento = parsedData;
+        
+        DateTime? dataVencimentoRG = null;
+        if (!string.IsNullOrEmpty(dto.Pagina2?.DataVencimentoRG) && DateTime.TryParse(dto.Pagina2.DataVencimentoRG, out var parsedVenc))
+            dataVencimentoRG = parsedVenc;
+        
+        decimal? valorInscricao = null;
+        if (!string.IsNullOrEmpty(dto.Pagina4?.ValorInscricao) && decimal.TryParse(dto.Pagina4.ValorInscricao, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var valorParsed))
+            valorInscricao = valorParsed;
+        
+        var candidato = new Candidato
+        {
+            Nome = dto.Pagina1?.Nome ?? "Nome não informado",
+            Email = email,
+            Cpf = cpf,
+            RG = dto.Pagina2?.NumeroRegistroGeral,
+            Telefone = dto.Pagina1?.Telefone ?? dto.Pagina2?.Telefone1,
+            AreaPesquisa = dto.Pagina1?.AreaOfertada ?? string.Empty,
+            ProcessoSelecaoId = dto.ProcessoSelecaoId,
+            NumeroInscricao = numeroInscricao,
+            DataCadastro = DateTime.UtcNow,
+            StatusValidacao = StatusValidacao.Pendente,
+            DataNascimento = dataNascimento,
+            PaisNatal = dto.Pagina2?.PaisNatal,
+            EstadoNatal = dto.Pagina2?.EstadoNatal,
+            Naturalidade = dto.Pagina2?.Naturalidade,
+            NomeSocial = dto.Pagina2?.NomeSocial,
+            EstadoCivil = dto.Pagina2?.EstadoCivil,
+            Nacionalidade = dto.Pagina2?.Nacionalidade,
+            Sexo = dto.Pagina2?.Sexo,
+            Telefone2 = dto.Pagina2?.Telefone2,
+            CorRaca = dto.Pagina2?.CorRaca,
+            DataVencimentoRG = dataVencimentoRG,
+            TipoVisto = dto.Pagina2?.TipoVisto,
+            FormaInscricao = dto.Pagina4?.FormaInscricao,
+            LocalProva = dto.Pagina4?.LocalProva,
+            CampusProva = dto.Pagina4?.CampusProva,
+            ValorInscricao = valorInscricao,
+            DeficienciaFisica = dto.Pagina4?.DeficienciaFisica ?? false,
+            DeficienciaAuditiva = dto.Pagina4?.DeficienciaAuditiva ?? false,
+            DeficienciaFala = dto.Pagina4?.DeficienciaFala ?? false,
+            DeficienciaVisual = dto.Pagina4?.DeficienciaVisual ?? false,
+            DeficienciaMental = dto.Pagina4?.DeficienciaMental ?? false,
+            DeficienciaIntelectual = dto.Pagina4?.DeficienciaIntelectual ?? false,
+            DeficienciaReabilitado = dto.Pagina4?.DeficienciaReabilitado ?? false,
+            DeficienciaMultipla = dto.Pagina4?.DeficienciaMultipla ?? false,
+            MotivoOutrasNecessidades = dto.Pagina4?.MotivoOutrasNecessidades
+        };
+
+        Candidato candidatoCriado;
         try
         {
-            var processo = await _processoRepository.GetByIdAsync(dto.ProcessoSelecaoId);
-            if (processo == null)
-                throw new Exception("Processo de seleção não encontrado");
-
-            processo.AbrirAutomaticamente();
-
-            if (processo.Status != StatusProcesso.Aberto)
-                throw new Exception("Este processo de seleção não está aberto para inscrições");
-
-            if (!processo.EstaDentroDoPrazo())
-                throw new Exception("O prazo para este processo de seleção expirou");
-
-            var email = dto.Pagina1?.Email;
-            var cpf = dto.Pagina2?.Cpf;
-            
-            if (string.IsNullOrWhiteSpace(email))
-                email = $"temp_{Guid.NewGuid()}@temp.com";
-            
-            if (string.IsNullOrWhiteSpace(cpf))
-                cpf = Guid.NewGuid().ToString("N")[..11];
-
-            var numeroInscricao = await GerarNumeroInscricaoAsync(dto.ProcessoSelecaoId);
-            
-            DateTime? dataNascimento = null;
-            if (!string.IsNullOrEmpty(dto.Pagina1?.DataNascimento) && DateTime.TryParse(dto.Pagina1.DataNascimento, out var parsedData))
-                dataNascimento = parsedData;
-            
-            DateTime? dataVencimentoRG = null;
-            if (!string.IsNullOrEmpty(dto.Pagina2?.DataVencimentoRG) && DateTime.TryParse(dto.Pagina2.DataVencimentoRG, out var parsedVenc))
-                dataVencimentoRG = parsedVenc;
-            
-            decimal? valorInscricao = null;
-            if (!string.IsNullOrEmpty(dto.Pagina4?.ValorInscricao) && decimal.TryParse(dto.Pagina4.ValorInscricao, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var valorParsed))
-                valorInscricao = valorParsed;
-            
-            var candidato = new Candidato
-            {
-                Nome = dto.Pagina1?.Nome ?? "Nome não informado",
-                Email = email,
-                Cpf = cpf,
-                RG = dto.Pagina2?.NumeroRegistroGeral,
-                Telefone = dto.Pagina1?.Telefone ?? dto.Pagina2?.Telefone1,
-                AreaPesquisa = dto.Pagina1?.AreaOfertada ?? string.Empty,
-                ProcessoSelecaoId = dto.ProcessoSelecaoId,
-                NumeroInscricao = numeroInscricao,
-                DataCadastro = DateTime.UtcNow,
-                StatusValidacao = StatusValidacao.Pendente,
-                DataNascimento = dataNascimento,
-                PaisNatal = dto.Pagina2?.PaisNatal,
-                EstadoNatal = dto.Pagina2?.EstadoNatal,
-                Naturalidade = dto.Pagina2?.Naturalidade,
-                NomeSocial = dto.Pagina2?.NomeSocial,
-                EstadoCivil = dto.Pagina2?.EstadoCivil,
-                Nacionalidade = dto.Pagina2?.Nacionalidade,
-                Sexo = dto.Pagina2?.Sexo,
-                Telefone2 = dto.Pagina2?.Telefone2,
-                CorRaca = dto.Pagina2?.CorRaca,
-                DataVencimentoRG = dataVencimentoRG,
-                TipoVisto = dto.Pagina2?.TipoVisto,
-                FormaInscricao = dto.Pagina4?.FormaInscricao,
-                LocalProva = dto.Pagina4?.LocalProva,
-                CampusProva = dto.Pagina4?.CampusProva,
-                ValorInscricao = valorInscricao,
-                DeficienciaFisica = dto.Pagina4?.DeficienciaFisica ?? false,
-                DeficienciaAuditiva = dto.Pagina4?.DeficienciaAuditiva ?? false,
-                DeficienciaFala = dto.Pagina4?.DeficienciaFala ?? false,
-                DeficienciaVisual = dto.Pagina4?.DeficienciaVisual ?? false,
-                DeficienciaMental = dto.Pagina4?.DeficienciaMental ?? false,
-                DeficienciaIntelectual = dto.Pagina4?.DeficienciaIntelectual ?? false,
-                DeficienciaReabilitado = dto.Pagina4?.DeficienciaReabilitado ?? false,
-                DeficienciaMultipla = dto.Pagina4?.DeficienciaMultipla ?? false,
-                MotivoOutrasNecessidades = dto.Pagina4?.MotivoOutrasNecessidades
-            };
-
-            var candidatoCriado = await _candidatoRepository.AddAsync(candidato);
-
-            if (dto.Documentos != null)
-            {
-                foreach (var doc in dto.Documentos)
-                {
-                    if (doc.Arquivo != null && doc.Arquivo.Length > 0)
-                    {
-                        await SalvarDocumentoAsync(candidatoCriado.Id, doc.Tipo, doc.NomeArquivo, doc.Arquivo, caminhoBase);
-                    }
-                }
-            }
-
-            if (dto.DocumentosLink != null)
-            {
-                foreach (var doc in dto.DocumentosLink)
-                {
-                    if (!string.IsNullOrWhiteSpace(doc.LinkUrl))
-                    {
-                        await SalvarDocumentoLinkAsync(candidatoCriado.Id, doc.Tipo, doc.LinkUrl, doc.Descricao);
-                    }
-                }
-            }
-
-            return new InscricaoResultDto
-            {
-                CandidatoId = candidatoCriado.Id,
-                ProcessoSelecaoId = dto.ProcessoSelecaoId,
-                NumeroInscricao = numeroInscricao,
-                Mensagem = "Inscrição realizada com sucesso!",
-                DataInscricao = candidatoCriado.DataCadastro
-            };
+            candidatoCriado = await _candidatoRepository.AddAsync(candidato);
         }
-        catch (Exception ex)
+        catch (Exception dbEx)
         {
-            throw new Exception($"Erro ao criar inscrição: {ex.Message}", ex);
+            var msg = dbEx.Message + (dbEx.InnerException?.Message ?? "");
+            if (msg.Contains("Email"))
+                throw new InscricaoDuplicadaException("Já existe uma inscrição com este e-mail. Utilize um e-mail diferente.");
+            if (msg.Contains("Cpf"))
+                throw new InscricaoDuplicadaException("Já existe uma inscrição com este CPF. Utilize um CPF diferente.");
+            throw new Exception($"Erro ao salvar candidato: {dbEx.Message}");
         }
+
+        _logger.LogInformation("Candidato criado com ID {CandidatoId}. Documentos recebidos: {DocCount}, Links: {LinkCount}",
+            candidatoCriado.Id,
+            dto.Documentos?.Count ?? 0,
+            dto.DocumentosLink?.Count ?? 0);
+
+        if (dto.Documentos != null)
+        {
+            foreach (var doc in dto.Documentos)
+            {
+                if (doc.Arquivo != null && doc.Arquivo.Length > 0)
+                {
+                    _logger.LogInformation("Salvando documento {Tipo}, tamanho: {Tamanho} bytes", doc.Tipo, doc.Arquivo.Length);
+                    await SalvarDocumentoAsync(candidatoCriado.Id, doc.Tipo, doc.NomeArquivo, doc.Arquivo, caminhoBase);
+                }
+                else
+                {
+                    _logger.LogWarning("Documento {Tipo} {Nome} ignorado: arquivo nulo ou vazio", doc.Tipo, doc.NomeArquivo);
+                }
+            }
+        }
+
+        if (dto.DocumentosLink != null)
+        {
+            foreach (var doc in dto.DocumentosLink)
+            {
+                if (!string.IsNullOrWhiteSpace(doc.LinkUrl))
+                {
+                    await SalvarDocumentoLinkAsync(candidatoCriado.Id, doc.Tipo, doc.LinkUrl, doc.Descricao);
+                }
+            }
+        }
+
+        return new InscricaoResultDto
+        {
+            CandidatoId = candidatoCriado.Id,
+            ProcessoSelecaoId = dto.ProcessoSelecaoId,
+            NumeroInscricao = numeroInscricao,
+            Mensagem = "Inscrição realizada com sucesso!",
+            DataInscricao = candidatoCriado.DataCadastro
+        };
     }
 
     private async Task SalvarDocumentoAsync(long candidatoId, TipoDocumento tipo, string nomeArquivo, byte[] arquivo, string caminhoBase)
     {
-        var caminhoDiretorio = Path.Combine(caminhoBase, candidatoId.ToString());
+        var caminhoAbsoluto = Path.GetFullPath(caminhoBase);
+        var caminhoDiretorio = Path.Combine(caminhoAbsoluto, candidatoId.ToString());
         Directory.CreateDirectory(caminhoDiretorio);
 
         var nomeUnico = $"{Guid.NewGuid()}_{nomeArquivo}";
         var caminhoCompleto = Path.Combine(caminhoDiretorio, nomeUnico);
+
+        _logger.LogInformation("Salvando documento em: {Caminho}", caminhoCompleto);
 
         await File.WriteAllBytesAsync(caminhoCompleto, arquivo);
 
@@ -248,4 +271,9 @@ public class DocumentoLinkDto
     public TipoDocumento Tipo { get; set; }
     public string LinkUrl { get; set; } = string.Empty;
     public string? Descricao { get; set; }
+}
+
+public class InscricaoDuplicadaException : Exception
+{
+    public InscricaoDuplicadaException(string message) : base(message) { }
 }
