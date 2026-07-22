@@ -14,6 +14,9 @@ x86/
 *.userosscache
 *.sln.docstates
 
+# Agentes
+.kilo/
+
 # Rider
 .idea/
 
