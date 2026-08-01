@@ -79,4 +79,135 @@ public class AvaliadorServiceTests
         result.Should().NotBeNull();
         result!.Id.Should().Be(1);
     }
+
+    [Fact]
+    public async Task CreateAsync_CriaAvaliadorComCamposAcademicos()
+    {
+        var dto = new CreateAvaliadorDto
+        {
+            Nome = "Maria Santos",
+            Cpf = "98765432100",
+            Email = "maria@test.com",
+            Tipo = TipoAvaliador.Externo,
+            LinkLattes = "https://lattes.cnpq.br/9876543210",
+            UltimaFormacao = "Doutorado em Engenharia",
+            Cargo = "Pesquisadora",
+            NivelCnpq = NivelCnpq.Pq1A
+        };
+        _repositoryMock.Setup(r => r.GetByCpfAsync("98765432100")).ReturnsAsync((Avaliador?)null);
+
+        var entity = new Avaliador
+        {
+            Id = 2,
+            Nome = "Maria Santos",
+            Cpf = "98765432100",
+            LinkLattes = "https://lattes.cnpq.br/9876543210",
+            UltimaFormacao = "Doutorado em Engenharia",
+            Cargo = "Pesquisadora",
+            NivelCnpq = NivelCnpq.Pq1A
+        };
+        _mapperMock.Setup(m => m.Map<Avaliador>(dto)).Returns(entity);
+        _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Avaliador>())).ReturnsAsync(entity);
+
+        var dtoResult = new AvaliadorDto
+        {
+            Id = 2,
+            Nome = "Maria Santos",
+            LinkLattes = "https://lattes.cnpq.br/9876543210",
+            UltimaFormacao = "Doutorado em Engenharia",
+            Cargo = "Pesquisadora",
+            NivelCnpq = NivelCnpq.Pq1A
+        };
+        _mapperMock.Setup(m => m.Map<AvaliadorDto>(entity)).Returns(dtoResult);
+
+        var result = await _service.CreateAsync(dto);
+
+        result.Should().NotBeNull();
+        result.Nome.Should().Be("Maria Santos");
+        result.LinkLattes.Should().Be("https://lattes.cnpq.br/9876543210");
+        result.UltimaFormacao.Should().Be("Doutorado em Engenharia");
+        result.Cargo.Should().Be("Pesquisadora");
+        result.NivelCnpq.Should().Be(NivelCnpq.Pq1A);
+    }
+
+    [Fact]
+    public async Task CreateAsync_DefineNivelCnpqDefault_SeNaoInformado()
+    {
+        var dto = new CreateAvaliadorDto
+        {
+            Nome = "Carlos Oliveira",
+            Cpf = "11122233344",
+            Email = "carlos@test.com"
+        };
+        _repositoryMock.Setup(r => r.GetByCpfAsync("11122233344")).ReturnsAsync((Avaliador?)null);
+
+        var entity = new Avaliador { Id = 3, Nome = "Carlos Oliveira", Cpf = "11122233344" };
+        _mapperMock.Setup(m => m.Map<Avaliador>(dto)).Returns(entity);
+        _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Avaliador>())).ReturnsAsync(entity);
+
+        var dtoResult = new AvaliadorDto { Id = 3, Nome = "Carlos Oliveira", NivelCnpq = NivelCnpq.NaoSeAplica };
+        _mapperMock.Setup(m => m.Map<AvaliadorDto>(entity)).Returns(dtoResult);
+
+        var result = await _service.CreateAsync(dto);
+
+        result.Should().NotBeNull();
+        result.NivelCnpq.Should().Be(NivelCnpq.NaoSeAplica);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_AtualizaCamposAcademicos()
+    {
+        var entity = new Avaliador
+        {
+            Id = 1,
+            Nome = "João",
+            Cpf = "12345678900",
+            LinkLattes = "https://lattes.cnpq.br/antigo",
+            UltimaFormacao = "Mestrado",
+            Cargo = "Professor",
+            NivelCnpq = NivelCnpq.Pq2
+        };
+        _repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(entity);
+
+        var dto = new UpdateAvaliadorDto
+        {
+            Nome = "João Silva",
+            LinkLattes = "https://lattes.cnpq.br/novo",
+            UltimaFormacao = "Doutorado",
+            Cargo = "Professor Associado",
+            NivelCnpq = NivelCnpq.Pq1C,
+            Ativo = true
+        };
+
+        var updatedEntity = new Avaliador
+        {
+            Id = 1,
+            Nome = "João Silva",
+            LinkLattes = "https://lattes.cnpq.br/novo",
+            UltimaFormacao = "Doutorado",
+            Cargo = "Professor Associado",
+            NivelCnpq = NivelCnpq.Pq1C
+        };
+        _mapperMock.Setup(m => m.Map(dto, entity)).Returns(updatedEntity);
+        _repositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Avaliador>())).ReturnsAsync(updatedEntity);
+
+        var dtoResult = new AvaliadorDto
+        {
+            Id = 1,
+            Nome = "João Silva",
+            LinkLattes = "https://lattes.cnpq.br/novo",
+            UltimaFormacao = "Doutorado",
+            Cargo = "Professor Associado",
+            NivelCnpq = NivelCnpq.Pq1C
+        };
+        _mapperMock.Setup(m => m.Map<AvaliadorDto>(updatedEntity)).Returns(dtoResult);
+
+        var result = await _service.UpdateAsync(1, dto);
+
+        result.Should().NotBeNull();
+        result.LinkLattes.Should().Be("https://lattes.cnpq.br/novo");
+        result.UltimaFormacao.Should().Be("Doutorado");
+        result.Cargo.Should().Be("Professor Associado");
+        result.NivelCnpq.Should().Be(NivelCnpq.Pq1C);
+    }
 }
