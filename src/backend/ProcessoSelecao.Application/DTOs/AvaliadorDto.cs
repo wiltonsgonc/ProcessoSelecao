@@ -16,10 +16,14 @@ public class AvaliadorDto
     public string? Instituicao { get; set; }
     public bool Ativo { get; set; }
     public int AvaliacoesPendentes { get; set; }
+    public string? LinkLattes { get; set; }
+    public string? UltimaFormacao { get; set; }
+    public string? Cargo { get; set; }
+    public NivelCnpq NivelCnpq { get; set; }
 }
 
 /// <summary>
-/// DTO para criação de novo Avaliador
+/// DTO para criar novo Avaliador
 /// </summary>
 public class CreateAvaliadorDto
 {
@@ -30,10 +34,14 @@ public class CreateAvaliadorDto
     public string? AreaEspecializacao { get; set; }
     public string? Instituicao { get; set; }
     public long? ProcessoSelecaoId { get; set; }
+    public string? LinkLattes { get; set; }
+    public string? UltimaFormacao { get; set; }
+    public string? Cargo { get; set; }
+    public NivelCnpq NivelCnpq { get; set; }
 }
 
 /// <summary>
-/// DTO para atualização de Avaliador
+/// DTO para atualizacao de Avaliador
 /// </summary>
 public class UpdateAvaliadorDto
 {
@@ -41,4 +49,8 @@ public class UpdateAvaliadorDto
     public string? AreaEspecializacao { get; set; }
     public string? Instituicao { get; set; }
     public bool Ativo { get; set; }
+    public string? LinkLattes { get; set; }
+    public string? UltimaFormacao { get; set; }
+    public string? Cargo { get; set; }
+    public NivelCnpq NivelCnpq { get; set; }
 }
