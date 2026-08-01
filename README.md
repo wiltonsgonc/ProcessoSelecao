@@ -48,7 +48,8 @@ ProcessoSelecao/
 │   ├── build-frontend.sh                  # Build apenas do frontend
 │   ├── start-containers.sh               # Iniciar containers sem rebuild
 │   ├── down-containers.sh                # Parar e remover containers
-│   └── reset-db.sh                        # Reset do banco de dados
+│   ├── reset-db.sh                        # Reset do banco de dados
+│   └── apply-migrations.sh                # Aplicar migrations no container
 ├── docker-compose.yml                     # Compose base (dev padrao)
 ├── docker-compose.prod.yml                # Override para producao
 ├── .env.dev                               # Variaveis de ambiente (dev)
@@ -382,6 +383,13 @@ O script:
 ./scripts/reset-db.sh
 ```
 
+### Aplicar migrations
+
+```bash
+# Aplica migrations pendentes no banco de dados dentro do container
+./scripts/apply-migrations.sh
+```
+
 Acessos do banco:
 - **Admin (sa)**: senha definida em `SA_PASSWORD` no `.env.dev` ou `.env.prod`
 - **App (db_user)**: senha definida em `DB_EXTERNAL_PASSWORD` no `.env.dev` ou `.env.prod`
@@ -435,6 +443,7 @@ podman compose build --no-cache && podman compose up -d
 
 ### Modulo Avaliadores
 - Cadastrar avaliadores internos e externos
+- Campos academicos: Link Lattes, Ultima Formacao, Cargo, Nivel CNPq (PQ/DT)
 - Associar avaliadores a processos
 - Login com CPF + senha (JWT)
 - Prevencao de auto-avaliação (CPF do avaliador != CPF do candidato)
