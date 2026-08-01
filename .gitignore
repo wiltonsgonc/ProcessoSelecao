@@ -16,6 +16,8 @@ x86/
 
 # Agentes
 .kilo/
+.rtk/
+CLAUDE.MD
 
 # Rider
 .idea/
