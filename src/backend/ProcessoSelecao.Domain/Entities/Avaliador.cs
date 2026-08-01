@@ -40,6 +40,18 @@ public class Avaliador : BaseEntity
     /// <summary>Avaliações realizadas por este avaliador</summary>
     public virtual ICollection<Barema> Baremas { get; set; } = new List<Barema>();
 
+    /// <summary>Link do currículo Lattes</summary>
+    public string? LinkLattes { get; set; }
+
+    /// <summary>Última formação acadêmica</summary>
+    public string? UltimaFormacao { get; set; }
+
+    /// <summary>Cargo atual</summary>
+    public string? Cargo { get; set; }
+
+    /// <summary>Nível de pesquisador/bolsista do CNPq</summary>
+    public NivelCnpq NivelCnpq { get; set; } = NivelCnpq.NaoSeAplica;
+
     /// <summary>
     /// Lista avaliações pendentes do avaliador
     /// </summary>
