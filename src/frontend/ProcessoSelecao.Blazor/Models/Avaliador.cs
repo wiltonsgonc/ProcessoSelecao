@@ -11,6 +11,10 @@ public class Avaliador
     public string? Instituicao { get; set; }
     public bool Ativo { get; set; }
     public int AvaliacoesPendentes { get; set; }
+    public string? LinkLattes { get; set; }
+    public string? UltimaFormacao { get; set; }
+    public string? Cargo { get; set; }
+    public NivelCnpq NivelCnpq { get; set; }
 }
 
 public class CreateAvaliador
@@ -22,6 +26,10 @@ public class CreateAvaliador
     public string? AreaEspecializacao { get; set; }
     public string? Instituicao { get; set; }
     public int? ProcessoSelecaoId { get; set; }
+    public string? LinkLattes { get; set; }
+    public string? UltimaFormacao { get; set; }
+    public string? Cargo { get; set; }
+    public NivelCnpq NivelCnpq { get; set; }
 }
 
 public class UpdateAvaliador
@@ -30,4 +38,8 @@ public class UpdateAvaliador
     public string? AreaEspecializacao { get; set; }
     public string? Instituicao { get; set; }
     public bool Ativo { get; set; }
+    public string? LinkLattes { get; set; }
+    public string? UltimaFormacao { get; set; }
+    public string? Cargo { get; set; }
+    public NivelCnpq NivelCnpq { get; set; }
 }
