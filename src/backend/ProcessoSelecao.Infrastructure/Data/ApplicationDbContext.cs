@@ -92,6 +92,11 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.AreaEspecializacao).HasMaxLength(200);
             entity.Property(e => e.Instituicao).HasMaxLength(200);
             entity.Property(e => e.SenhaHash).HasMaxLength(200);
+            // New properties
+            entity.Property(e => e.LinkLattes).HasMaxLength(500);
+            entity.Property(e => e.UltimaFormacao).HasMaxLength(200);
+            entity.Property(e => e.Cargo).HasMaxLength(200);
+            entity.Property(e => e.NivelCnpq);
             entity.HasIndex(e => e.Cpf).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
         });
