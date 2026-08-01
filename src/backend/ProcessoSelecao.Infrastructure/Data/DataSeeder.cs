@@ -91,7 +91,11 @@ public class DataSeeder
             Instituicao = "Universidade Federal",
             Ativo = true,
             SenhaHash = senhaPadrao,
-            ProcessoSelecaoId = processo1.Id
+            ProcessoSelecaoId = processo1.Id,
+            LinkLattes = "https://lattes.cnpq.br/9876543210",
+            UltimaFormacao = "Doutorado em Ciencia da Computacao",
+            Cargo = "Professor Associado",
+            NivelCnpq = NivelCnpq.Pq1D
         };
 
         var avaliador2 = new Avaliador
@@ -104,7 +108,11 @@ public class DataSeeder
             Instituicao = "Universidade Federal",
             Ativo = true,
             SenhaHash = senhaPadrao,
-            ProcessoSelecaoId = processo1.Id
+            ProcessoSelecaoId = processo1.Id,
+            LinkLattes = "https://lattes.cnpq.br/1234567890",
+            UltimaFormacao = "Doutorado em Engenharia de Software",
+            Cargo = "Professora Associada",
+            NivelCnpq = NivelCnpq.Pq1C
         };
 
         var avaliador3 = new Avaliador
@@ -117,7 +125,11 @@ public class DataSeeder
             Instituicao = "UFPE",
             Ativo = true,
             SenhaHash = senhaPadrao,
-            ProcessoSelecaoId = processo2.Id
+            ProcessoSelecaoId = processo2.Id,
+            LinkLattes = "https://lattes.cnpq.br/1112223334",
+            UltimaFormacao = "Mestrado em Sistemas de Informacao",
+            Cargo = "Pesquisador",
+            NivelCnpq = NivelCnpq.Pq2
         };
 
         var avaliador4 = new Avaliador
@@ -130,7 +142,11 @@ public class DataSeeder
             Instituicao = "UFRPE",
             Ativo = true,
             SenhaHash = senhaPadrao,
-            ProcessoSelecaoId = processo2.Id
+            ProcessoSelecaoId = processo2.Id,
+            LinkLattes = "https://lattes.cnpq.br/5556667778",
+            UltimaFormacao = "Pos-Doutorado em Inteligencia Artificial",
+            Cargo = "Pesquisadora Titular",
+            NivelCnpq = NivelCnpq.Pq1A
         };
 
         _context.Avaliadores.AddRange(avaliador1, avaliador2, avaliador3, avaliador4);
