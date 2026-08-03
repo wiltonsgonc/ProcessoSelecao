@@ -16,6 +16,7 @@ x86/
 
 # Agentes
 .kilo/
+.kilocode/
 .rtk/
 CLAUDE.MD
 
