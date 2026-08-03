@@ -1,54 +1,98 @@
 @startuml ProcessoSelecao
-actor "Usuário" as C
-participant "Aplicação Web" as App
-participant "Banco de Dados" as BD
-participant "Serviço de E-mail" as Email
+actor "Candidato" as C
+actor "Administrador" as Admin
 actor "Avaliador" as Aval
+participant "Blazor Server\n(Frontend)" as FE
+participant "API .NET 10\n(Backend)" as API
+database "SQL Server\n(ProcessoSelecaoDb)" as DB
+database "Armazenamento\nLocal (/documentos/)" as FS
 
-' Fase 1: Consulta e Download
-C -> App: Consulta candidatos (matrícula)
-App -> BD: getDadosCandidato(matrícula)
-BD --> App: Dados candidato + metadados docs
-App --> C: Exibe dados e opção download
+== Inscrição pública (4 páginas) ==
 
-C -> App: Solicita download documentos
-App -> BD: downloadDocumentos(candidatoId)
-BD --> App: Arquivos PDF/DOC
-App --> C: Download disponível
+C -> FE : Acessa /inscricao/{processoId}
+FE --> C : Exibe Pagina1 (CPF, nome, data nasc., telefone)
 
-' Fase 2: Validação e Preparação
-C -> App: Valida documentos
-App -> App: checkValidadeDocumentos()
-App --> C: Resultado validação (OK/Erros)
+C -> FE : Preenche Pagina1, seleciona TipoDocumento=CPF
+FE -> API : POST /api/formulario/salvar-pagina1\n{tipoDocumento: "CPF", numeroDocumento: "529.982.247-25"}
+API -> DB : CpfValidator.Clean + IsValid\nSalva dados pag1 em memória
 
-C -> App: Inicia preparação envio
-App -> App: compactaDocumentos()
-App -> BD: uploadZip(candidatoId, arquivo)
-BD --> App: URL compartilhável
+C -> FE : Avança Pagina2 (dados pessoais + CPF validado)
+FE -> API : POST /api/formulario/salvar-pagina2\n{cpf: "52998224725", nome, email, ...}
 
-' Fase 3: Seleção e Notificação
-C -> App: Seleciona avaliadores
-App -> Email: enviaNotificação(avaliador, URL)
-Email --> Aval: E-mail com link
+C -> FE : Avança Pagina3 (upload documentos PDF)
+FE -> FE : Candidato seleciona arquivos PDF
+FE -> API : POST /api/formulario/upload\n(arquivo binário)
+API -> FS : Salva em /documentos/{candidatoId}/
 
-' Fase 4: Avaliação
-Aval -> BD: GET URL (acessa documentos)
-BD --> Aval: Serve arquivos ZIP
-Aval -> App: GET Formulário barema
-App --> Aval: Formulário barema
-Aval -> App: POST Barema preenchido
-App -> C: Notifica "Barema recebido"
+C -> FE : Avança Pagina4 (resumo + termos)
+C -> FE : Aceita política de privacidade
+FE -> API : POST /api/formulario/completa
+API -> DB : Cria Candidato + Documentos
+API -> DB : Gera NumeroInscricao (ex: 202600100001)
+FE --> C : Confirmação da inscrição
 
-' Fase 5: Consolidação
-C -> App: Visualiza todas avaliações
-App -> App: calculaResultados()
-App --> C: Ranking final candidatos
+== Validação de documentos (Admin) ==
 
-note over Aval,BD
-  <b>Problema comum:</b>
-  Avaliadores externos têm
-  problemas de acesso ao BD
-  (firewall, autenticação)
-end note
+Admin -> FE : Acessa /admin/candidatos
+FE -> API : GET /api/candidatos
+API -> DB : SELECT Candidatos
+DB --> API : Lista de candidatos
+API --> FE : JSON lista de candidatos
+FE --> Admin : Exibe tabela de candidatos
+
+Admin -> FE : Seleciona candidato, clica "Detalhe"
+FE -> API : GET /api/documentos?candidatoId={id}
+API -> DB : SELECT Documentos WHERE candidatoId = id
+DB --> API : Lista de documentos
+API --> FE : JSON documentos
+FE --> Admin : Exibe status dos documentos
+
+Admin -> FE : Valida documento (aprova ou rejeita com motivo)
+FE -> API : PUT /api/documentos/{id}/validar\n{validado: true} ou {motivoRejeicao: "..." }
+API -> DB : UPDATE Documento SET validado/motivo
+DB --> API : OK
+API --> FE : Atualizado
+FE --> Admin : Status atualizado
+
+== Avaliação do avaliador ==
+
+Aval -> FE : Acessa /avaliador/login
+FE --> C : Exibe tela de login (CPF + senha)
+Aval -> FE : Insere CPF + senha
+FE -> API : POST /api/avaliador-auth/login\n{cpf: "52998224725", senha: "123456"}
+API -> DB : AvaliadorAuthService.LoginAsync\nCpfValidator.Clean + BCrypt verify
+DB --> API : Avaliador encontrado + senha OK
+API --> FE : JWT Token
+FE -> FE : Armazena token em sessionStorage
+
+Aval -> FE : Acessa /avaliador/painel
+FE -> API : GET /api/avaliador-painel/baremas\n(Authorization: Bearer JWT)
+API -> DB : SELECT Baremas WHERE avaliadorId = id AND status = Pendente
+DB --> API : Lista de baremas pendentes
+API --> FE : JSON baremas
+FE --> Aval : Exibe baremas atribuídos
+
+Aval -> FE : Seleciona barema do candidato
+FE -> API : GET /api/avaliador-painel/candidato/{id}\n+ GET /api/avaliador-painel/documentos/{id}
+API -> DB : SELECT Candidato + Documentos WHERE id = id
+DB --> API : Dados candidato + documentos
+API --> FE : JSON dados + documentos
+FE --> Aval : Exibe dados do candidato + PDF inline
+
+Aval -> FE : Preenche barema (4 critérios)
+FE -> API : POST /api/avaliador-painel/baremas/{id}/finalizar\n{criterios: {originalidade: 8, relevancia: 7, ...}, observacoes: "..."}
+API -> DB : BaremaService.FinalizarAsync\nCalcularNotaFinal() = média dos critérios
+DB --> API : Barema atualizada (status=Concluido, notaFinal=7.5)
+API --> FE : OK
+FE --> Aval : Avaliação finalizada
+
+== Consolidação (Admin) ==
+
+Admin -> FE : Acessa /admin/avaliacoes
+FE -> API : GET /api/avaliadores/avaliacoes
+API -> DB : SELECT Baremas com status Concluido
+DB --> API : Lista de avaliações com notas
+API --> FE : JSON avaliações consolidadas
+FE --> Admin : Tabela com nota final por candidato
 
 @enduml

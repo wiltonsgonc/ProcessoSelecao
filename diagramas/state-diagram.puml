@@ -1,58 +1,68 @@
 @startuml ProcessoSelecao
 
-[*] --> Cadastrado : Candidato insere dados
-Cadastrado --> DocumentosBaixados : Download de documentos
-DocumentosBaixados --> EmValidacao : Inicia validação
+' ============================================================
+' Ciclo de vida de um Candidato no processo
+' ============================================================
 
-state EmValidacao {
-  [*] --> Analisando
-  Analisando --> Validado : Documentos OK
-  Analisando --> ComPendencia : Faltam docs
-  Analisando --> Rejeitado : Docs inválidos
-  ComPendencia --> [*] : Aguarda correção
+[*] --> Inscrito : Candidato submete inscrição\n(Pagina1-4)
+
+state Inscrito {
+  [*] --> PendenteDoc : Documentos enviados
+  PendenteDoc --> EmAnaliseDoc : Admin inicia análise
+  EmAnaliseDoc --> DocumentosValidados : Todos documentos aprovados
+  EmAnaliseDoc --> DocumentosRejeitado : 1+ documentos rejeitados
+  DocumentosRejeitado --> [*] : Notificação de rejeição
 }
 
-Validado --> EmAvaliacao : Enviado p/ avaliadores
-Rejeitado --> [*] : Processo encerrado
+DocumentosValidados --> EmAvaliacao : Baremas criados para avaliadores
+DocumentosRejeitado --> [*] : Processo encerrado para candidato
 
 state EmAvaliacao {
   [*] --> AguardandoAvaliadores
   AguardandoAvaliadores --> SendoAvaliado : 1+ avaliadores aceitam
-  SendoAvaliado --> AvaliadoParcial : Recebe 1 barema
-  AvaliadoParcial --> TotalmenteAvaliado : Todos baremas recebidos
-  
-  state "Problema de Acesso" as Problema {
-    [*] --> Notificado
-    Notificado --> Resolvido : Correção aplicada
-    Resolvido --> [*]
-  }
-  
-  SendoAvaliado --> Problema : Avaliador reporta
-  Problema --> SendoAvaliado : Retoma
+  SendoAvaliado --> AvaliadoParcial : 1 barema concluído
+  AvaliadoParcial --> TotalmenteAvaliado : Todos baremas concluídos
+  TotalmenteAvaliado --> [*]
 }
 
-TotalmenteAvaliado --> Classificado : Notas consolidadas
+TotalmenteAvaliado --> Classificado : Notas consolidadas\n(pelo admin)
 
 state Classificado {
   [*] --> Aprovado : Nota ≥ corte
-  [*] --> EmListaEspera : Nota próxima corte
+  [*] --> EmListaEspera : Nota próxima ao corte
   [*] --> Reprovado : Nota < corte
 }
 
-Aprovado --> [*] : Carta oferta enviada
+Aprovado --> [*] : Carta de oferta enviada
 EmListaEspera --> [*] : Aguarda desistência
 Reprovado --> [*] : Notificação enviada
 
-note right of Cadastrado
-  Dados básicos inseridos 
-  manualmente pelo candidato
-end note
+' ============================================================
+' Máquina de estados do Barema
+' ============================================================
 
-note left of Rejeitado
-  <b>Motivos comuns:</b>
-  - Documentos falsificados
-  - Fora do prazo
-  - Incompletos
-end note
+state "StatusBarema" as SB {
+  [*] --> BaremaPendente : Barema criado
+  BaremaPendente --> BaremaEmPreenchimento : Avaliador inicia preenchimento
+  BaremaEmPreenchimento --> BaremaConcluido : Avaliador finaliza
+  BaremaEmPreenchimento --> BaremaCancelado : Admin cancela
+  BaremaConcluido --> [*]
+  BaremaCancelado --> [*]
+}
+
+' ============================================================
+' Máquina de estados do Processo de Seleção
+' ============================================================
+
+state "StatusProcesso" as SP {
+  [*] --> Rascunho : Processo criado
+  Rascunho --> Aberto : Data de início chegou\n(ou admin inicia)
+  Aberto --> EmAndamento : Inscrições encerradas
+  EmAndamento --> Finalizado : Prazo expirou\n(ou admin finaliza)
+  Finalizado --> [*]
+  Rascunho --> Cancelado : Admin cancela
+  Aberto --> Cancelado : Admin cancela
+  EmAndamento --> Cancelado : Admin cancela
+}
 
 @enduml

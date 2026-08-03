@@ -1,36 +1,72 @@
 @startuml ProcessoSelecao
 start
-:Usuário ativa um formulário de cadastro de candidato;
-:Candidato faz a inscrição e envio de documentos;
-:Usuário valida documentos;
-if (Documentos válidos?) then (Sim)
-  :Prepara arquivos compactados;
-  :Seleciona avaliadores;
-  :Upload para Cloud Storage;
-  :Envia e-mail com link para avaliadores;
-  
-  fork
-    :Avaliador interno acessa Cloud;
-  fork again
-    :Avaliador externo tenta acessar Cloud;
-    if (Acesso bem-sucedido?) then (Sim)
-      :Preenche barema online;
-    else (Não)
-      :Reporta problema de acesso;
-      :Sistema envia documentos por e-mail;
-      :Preenche barema offline;
-    endif
-  end fork
-  
-  :Envia avaliação;
-  :Coordenador recebe barema;
-  :Consolida resultados;
-  stop
-else (Não)
-  :Solicita documentos;
-  :Rejeita candidato;
-  :Registra motivo da rejeição;
+
+:Candidato acessa formulário de inscrição;
+:Candidato preenche Pagina1\n(TipoDocumento, CPF com máscara 000.000.000-00);
+
+if (CPF válido?) then (Não)
+  :Exibe "CPF inválido" (vermelho);
   stop
 endif
+
+:Candidato preenche Pagina2\n(dados pessoais + CPF confirmado);
+:Candidato faz upload de documentos PDF\nna Pagina3;
+:Candidato revisa dados na Pagina4;
+:Candidato aceita política de privacidade;
+:Candidato submete inscrição;
+:Backend salva Candidato + Documentos;
+:Backend gera Número de Inscrição;
+
+fork
+  :Candidato recebe confirmação;
+fork again
+  :Notificação por e-mail\n(EmailNotificationService);
+end fork
+
+partition "Validação de Documentos" {
+  :Admin acessa área administrativa;
+  :Admin seleciona candidato;
+  :Admin visualiza documentos;
+
+  if (Documentos aprovados?) then (Sim)
+    :Admin aprova documentos;
+    :StatusValidacao = Validado;
+  else (Não)
+    :Admin rejeita com motivo;
+    :StatusValidacao = Rejeitado;
+    :Notifica candidato da rejeição;
+    stop
+  endif
+}
+
+partition "Atribuição de Avaliadores" {
+  :Admin seleciona avaliadores para o candidato;
+  :Backend cria Barema(s)\n(StatusBarema = Pendente);
+}
+
+partition "Avaliação" {
+  :Avaliador faz login (CPF + senha);
+  :Avaliador acessa painel;
+  :Avaliador seleciona barema do candidato;
+  :Avaliador visualiza dados + documentos;
+
+  fork
+    :Avaliador preenche critérios\n(Originalidade, Relevância,\nMetodologia, Apresentação);
+  fork again
+    :Backend valida auto-avaliação\n(CPF avaliador ≠ CPF candidato);
+  end fork
+
+  :Avaliador finaliza avaliação;
+  :Backend calcula NotaFinal\n(média dos critérios);
+  :StatusBarema = Concluído;
+}
+
+partition "Consolidação" {
+  :Admin acessa avaliações consolidadas;
+  :Admin visualiza ranking com notas;
+  :Sistema exibe pontuação média por candidato;
+}
+
+stop
 
 @enduml

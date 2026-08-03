@@ -1,30 +1,117 @@
 @startuml ProcessoSelecao
-' Classes principais
+' Classes principais (fiéis à implementação .NET)
+class BaseEntity {
+    # id: long
+    # dataCriacao: DateTime
+    # dataAtualizacao: DateTime?
+}
+
 class Candidato {
-    - id: long
     - nome: string
-    - matricula: string
+    - cpf: string
+    - rg: string?
+    - telefone: string?
     - email: string
-    - areaPesquisa: string
+    - areaPesquisa: string?
     - statusValidacao: StatusValidacao
     - dataCadastro: DateTime
-  
+    - processoSelecaoId: long
+    - numeroInscricao: string
+    - dataNascimento: DateTime?
+    - paisNatal: string?
+    - estadoNatal: string?
+    - naturalidade: string?
+    - nomeSocial: string?
+    - estadoCivil: string?
+    - nacionalidade: string?
+    - sexo: string?
+    - telefone2: string?
+    - corRaca: string?
+    - dataVencimentoRG: DateTime?
+    - tipoVisto: string?
+    - formaInscricao: string?
+    - localProva: string?
+    - campusProva: string?
+    - valorInscricao: decimal?
+    - deficienciaFisica: bool
+    - deficienciaAuditiva: bool
+    - deficienciaFala: bool
+    - deficienciaVisual: bool
+    - deficienciaMental: bool
+    - deficienciaIntelectual: bool
+    - deficienciaReabilitado: bool
+    - deficienciaMultipla: bool
+    - motivoOutrasNecessidades: string?
+    - tituloProjeto: string?
+    - nota1: float
+    - nota2: float
+
     + ValidarDocumentos(): bool
     + CalcularPontuacao(): float
 }
 
 class Documento {
-    - id: long
     - tipo: TipoDocumento
     - nomeArquivo: string
     - caminhoLocal: string
-    - hashValidacao: string
+    - linkUrl: string?
+    - hashValidacao: string?
     - dataUpload: DateTime
     - validado: bool
-    - motivoRejeicao: string
-  
+    - motivoRejeicao: string?
+    - candidatoId: long
+
     + VerificarIntegridade(): bool
     + ExtrairMetadados(): Dictionary<string, string>
+}
+
+class Avaliador {
+    - nome: string
+    - cpf: string
+    - email: string
+    - tipo: TipoAvaliador
+    - areaEspecializacao: string?
+    - instituicao: string?
+    - ativo: bool
+    - senhaHash: string?
+    - processoSelecaoId: long?
+    - linkLattes: string?
+    - ultimaFormacao: string?
+    - cargo: string?
+    - nivelCnpq: NivelCnpq
+
+    + ListarAvaliacoesPendentes(): List<Barema>
+}
+
+class Barema {
+    - candidatoId: long
+    - avaliadorId: long
+    - criteriosJson: string?
+    - notaFinal: float
+    - observacoes: string?
+    - dataPreenchimento: DateTime?
+    - status: StatusBarema
+
+    + CalcularNotaFinal(criterios: Dictionary<string, float>): float
+    + ValidarCompletude(): bool
+}
+
+class ProcessoSelecao {
+    - nome: string
+    - descricao: string?
+    - dataInicio: DateTime
+    - dataFim: DateTime?
+    - vagasDisponiveis: int
+    - agenciaFomento: string?
+    - nivelBolsa: string?
+    - status: StatusProcesso
+
+    + IniciarProcesso(): void
+    + AbrirAutomaticamente(): bool
+    + FinalizarProcesso(): void
+    + VerificarPrazoExpirado(): bool
+    + EstaDentroDoPrazo(): bool
+    + ReverterSePrazoValido(): void
 }
 
 enum TipoDocumento {
@@ -37,22 +124,9 @@ enum TipoDocumento {
 
 enum StatusValidacao {
     Pendente
+    EmAnalise
     Validado
     Rejeitado
-    EmAnalise
-}
-
-class Avaliador {
-    - id: long
-    - nome: string
-    - email: string
-    - tipo: TipoAvaliador
-    - areaEspecializacao: string
-    - instituicao: string
-    - ativo: bool
-  
-    + PreencherBarema(barema: Barema): void
-    + ListarAvaliacoesPendentes(): List<Avaliacao>
 }
 
 enum TipoAvaliador {
@@ -60,45 +134,49 @@ enum TipoAvaliador {
     Externo
 }
 
-class Barema {
-    - id: long
-    - candidato: Candidato
-    - avaliador: Avaliador
-    - criterios: Dictionary<string, float>
-    - notaFinal: float
-    - observacoes: string
-    - dataPreenchimento: DateTime
-    - status: StatusBarema
-  
-    + CalcularNotaFinal(): float
-    + ValidarCompletude(): bool
+enum StatusBarema {
+    Pendente
+    EmPreenchimento
+    Concluido
+    Cancelado
 }
 
-class ProcessoSelecao {
-    - id: long
-    - nome: string
-    - dataInicio: DateTime
-    - dataFim: DateTime
-    - vagasDisponiveis: int
-    - status: StatusProcesso
-  
-    + IniciarProcesso(): void
-    + FinalizarProcesso(): void
-    + GerarRelatorio(): Relatorio
+enum StatusProcesso {
+    Rascunho
+    Aberto
+    EmAndamento
+    Finalizado
+    Cancelado
 }
+
+enum NivelCnpq {
+    NaoSeAplica
+    Pq2
+    Pq1D
+    Pq1C
+    Pq1B
+    Pq1A
+    Dt2
+    Dt1
+}
+
+' Heranças
+BaseEntity <|-- Candidato
+BaseEntity <|-- Documento
+BaseEntity <|-- Avaliador
+BaseEntity <|-- Barema
+BaseEntity <|-- ProcessoSelecao
 
 ' Relacionamentos
-Candidato "1" *-- "0..*" Documento : possui
-Candidato "1" -- "1..*" Barema : é avaliado por
-Avaliador "1" -- "0..*" Barema : preenche
-Barema "1" -- "1" Avaliacao : contém
 ProcessoSelecao "1" *-- "0..*" Candidato : inclui
 ProcessoSelecao "1" *-- "0..*" Avaliador : designa
+Candidato "1" *-- "0..*" Documento : possui
+Candidato "1" -- "0..*" Barema : é avaliado por
+Avaliador "1" -- "0..*" Barema : preenche
 
 ' Interfaces de serviço
 interface EmailNotificationService {
-    + SendNotification(to: string, subject: string, body: string): void
-    + SendBulkNotification(recipients: List<string>, template: string): void
+    + SendAsync(to: string, subject: string, body: string): Task
 }
 
 @enduml

@@ -1,70 +1,77 @@
 @startuml ProcessoSelecao
 left to right direction
 
-actor "Usuário" as Usuario
-actor "Avaliador Interno" as AvaliadorInt
-actor "Avaliador Externo" as AvaliadorExt
+actor "Candidato" as Candidato
+actor "Avaliador" as Avaliador
+actor "Administrador" as Admin
 
 rectangle "Sistema de Seleção IC/Pesquisa" {
-  (Consultar dados no BD) as UC1
-  (Baixar documentos dos candidatos) as UC2
-  (Validar documentos) as UC3
-  (Preparar arquivos compactados) as UC4
-  (Selecionar lista de avaliadores) as UC5
-  (Enviar documentos para sistema) as UC6
-  (Notificar avaliadores via e-mail) as UC7
-  (Receber retorno do barema) as UC8
-  (Consolidar avaliações) as UC9
-  
-  (Receber notificação por e-mail) as UC10
-  (Acessar documentos no sistema) as UC11
-  (Preencher barema de avaliação) as UC12
-  (Submeter avaliação) as UC13
-  
-  (Reportar problema de acesso) as UC14
-  (Validar integridade de documentos) as UC15
-  (Rejeitar candidato) as UC16
+  ' --- Candidato ---
+  (Realizar inscrição pública) as UC1
+  (Enviar documentos na inscrição) as UC2
+  (Acompanhar inscrição) as UC3
+  (Editar dados do cadastro) as UC4
+  (Alterar documentos) as UC5
+
+  ' --- Avaliador ---
+  (Fazer login com CPF e senha) as UC6
+  (Visualizar candidatos atribuídos) as UC7
+  (Visualizar documentos do candidato) as UC8
+  (Preencher avaliação) as UC9
+  (Finalizar avaliação) as UC10
+
+  ' --- Administrador ---
+  (Gerenciar processos de seleção) as UC11
+  (Gerenciar candidatos) as UC12
+  (Gerenciar avaliadores) as UC13
+  (Gerenciar baremas) as UC14
+  (Validar documentos) as UC15
+  (Visualizar avaliações consolidadas) as UC16
+  (Habilitar edição de documentos) as UC17
+
+  ' --- Sistema ---
+  (Calcular nota final) as UC18
+  (Notificar por e-mail) as UC19
+  (Prevenir auto-avaliação) as UC20
 }
 
-' Relações principais
-Usuario --> UC1
-Usuario --> UC2
-Usuario --> UC3
-Usuario --> UC4
-Usuario --> UC5
-Usuario --> UC6
-Usuario --> UC7
-Usuario --> UC8
-Usuario --> UC9
+' Relações com atores
+Candidato --> UC1
+Candidato --> UC2
+Candidato --> UC3
+Candidato --> UC4
+Candidato --> UC5
 
-AvaliadorInt --> UC10
-AvaliadorInt --> UC11
-AvaliadorInt --> UC12
-AvaliadorInt --> UC13
+Avaliador --> UC6
+Avaliador --> UC7
+Avaliador --> UC8
+Avaliador --> UC9
+Avaliador --> UC10
 
-AvaliadorExt --> UC10
-AvaliadorExt --> UC11
-AvaliadorExt --> UC12
-AvaliadorExt --> UC13
-AvaliadorExt --> UC14
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
 
-' Generalização
-AvaliadorInt <|-- AvaliadorExt
+' Inclusões e extensões
+UC1 .> UC2 : <<include>>
+UC3 .> UC4 : <<include>>
+UC4 .> UC5 : <<include>>
+UC15 .> UC2 : <<include>>
+UC9 .> UC18 : <<include>>
+UC10 .> UC18 : <<include>>
+UC13 .> UC6 : <<include>>
+UC20 ..> UC9 : protege
+UC16 .> UC18 : <<include>>
+UC17 .> UC5 : habilita
 
-' Extensões (problemas/fluxos alternativos)
-UC11 .> UC14 : <<extend>>\nse acesso falhar
-UC3 .> UC15 : <<extend>>\nvalidação detalhada
-UC3 .> UC16 : <<extend>>\ndocumentos inválidos
-
-' Inclusões
-UC1 <.. UC2 : <<include>>
-UC8 <.. UC9 : <<include>>
-
-note right of AvaliadorExt
-  <b>Problema identificado:</b>
-  Acesso ao sistema
-  frequentemente falha
-  para avaliadores externos
+note right of Avaliador
+  <b>Auto-avaliação bloqueada:</b>
+  avaliador não pode avaliar
+  candidato com o mesmo CPF
 end note
 
 @enduml
