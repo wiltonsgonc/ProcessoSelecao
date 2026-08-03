@@ -68,8 +68,11 @@ public class CandidatoService : ICandidatoService
     /// <summary>Cria um novo candidato</summary>
     public async Task<CandidatoDto> CreateAsync(CreateCandidatoDto dto)
     {
-        // Verificar se já existe candidato com o mesmo CPF (limpo)
         var cpfLimpo = CpfValidator.Clean(dto.Cpf);
+        if (!CpfValidator.IsValid(cpfLimpo))
+            throw new ArgumentException("CPF inválido. Informe um CPF com 11 dígitos válidos.");
+
+        // Verificar se já existe candidato com o mesmo CPF (limpo)
         var cpfExistente = await _repository.GetByCpfAsync(cpfLimpo);
         if (cpfExistente != null)
         {
