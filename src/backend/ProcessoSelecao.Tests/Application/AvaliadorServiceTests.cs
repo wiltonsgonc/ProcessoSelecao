@@ -25,10 +25,10 @@ public class AvaliadorServiceTests
     [Fact]
     public async Task CreateAsync_CriaAvaliador_SeCpfNaoExiste()
     {
-        var dto = new CreateAvaliadorDto { Nome = "João", Cpf = "12345678900", Email = "joao@test.com" };
-        _repositoryMock.Setup(r => r.GetByCpfAsync("12345678900")).ReturnsAsync((Avaliador?)null);
+        var dto = new CreateAvaliadorDto { Nome = "João", Cpf = "52998224725", Email = "joao@test.com" };
+        _repositoryMock.Setup(r => r.GetByCpfAsync("52998224725")).ReturnsAsync((Avaliador?)null);
 
-        var entity = new Avaliador { Id = 1, Nome = "João", Cpf = "12345678900" };
+        var entity = new Avaliador { Id = 1, Nome = "João", Cpf = "52998224725" };
         _mapperMock.Setup(m => m.Map<Avaliador>(dto)).Returns(entity);
         _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Avaliador>())).ReturnsAsync(entity);
 
@@ -45,14 +45,25 @@ public class AvaliadorServiceTests
     [Fact]
     public async Task CreateAsync_LancaExcecao_SeCpfJaExiste()
     {
-        var dto = new CreateAvaliadorDto { Nome = "João", Cpf = "12345678900" };
-        var existing = new Avaliador { Id = 1, Cpf = "12345678900" };
-        _repositoryMock.Setup(r => r.GetByCpfAsync("12345678900")).ReturnsAsync(existing);
+        var dto = new CreateAvaliadorDto { Nome = "João", Cpf = "52998224725" };
+        var existing = new Avaliador { Id = 1, Cpf = "52998224725" };
+        _repositoryMock.Setup(r => r.GetByCpfAsync("52998224725")).ReturnsAsync(existing);
 
         var act = () => _service.CreateAsync(dto);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*CPF*");
+    }
+
+    [Fact]
+    public async Task CreateAsync_LancaExcecao_SeCpfInvalido()
+    {
+        var dto = new CreateAvaliadorDto { Nome = "João", Cpf = "12345678900", Email = "joao@test.com" };
+
+        var act = () => _service.CreateAsync(dto);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*CPF inválido*");
     }
 
     [Fact]
@@ -68,7 +79,7 @@ public class AvaliadorServiceTests
     [Fact]
     public async Task GetByIdAsync_RetornaDto_SeEncontrado()
     {
-        var entity = new Avaliador { Id = 1, Nome = "João", Cpf = "12345678900", Baremas = new List<Barema>() };
+        var entity = new Avaliador { Id = 1, Nome = "João", Cpf = "52998224725", Baremas = new List<Barema>() };
         _repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(entity);
 
         var dto = new AvaliadorDto { Id = 1, Nome = "João" };
@@ -86,7 +97,7 @@ public class AvaliadorServiceTests
         var dto = new CreateAvaliadorDto
         {
             Nome = "Maria Santos",
-            Cpf = "98765432100",
+            Cpf = "12345678909",
             Email = "maria@test.com",
             Tipo = TipoAvaliador.Externo,
             LinkLattes = "https://lattes.cnpq.br/9876543210",
@@ -94,13 +105,13 @@ public class AvaliadorServiceTests
             Cargo = "Pesquisadora",
             NivelCnpq = NivelCnpq.Pq1A
         };
-        _repositoryMock.Setup(r => r.GetByCpfAsync("98765432100")).ReturnsAsync((Avaliador?)null);
+        _repositoryMock.Setup(r => r.GetByCpfAsync("12345678909")).ReturnsAsync((Avaliador?)null);
 
         var entity = new Avaliador
         {
             Id = 2,
             Nome = "Maria Santos",
-            Cpf = "98765432100",
+            Cpf = "12345678909",
             LinkLattes = "https://lattes.cnpq.br/9876543210",
             UltimaFormacao = "Doutorado em Engenharia",
             Cargo = "Pesquisadora",
@@ -136,12 +147,12 @@ public class AvaliadorServiceTests
         var dto = new CreateAvaliadorDto
         {
             Nome = "Carlos Oliveira",
-            Cpf = "11122233344",
+            Cpf = "11122233396",
             Email = "carlos@test.com"
         };
-        _repositoryMock.Setup(r => r.GetByCpfAsync("11122233344")).ReturnsAsync((Avaliador?)null);
+        _repositoryMock.Setup(r => r.GetByCpfAsync("11122233396")).ReturnsAsync((Avaliador?)null);
 
-        var entity = new Avaliador { Id = 3, Nome = "Carlos Oliveira", Cpf = "11122233344" };
+        var entity = new Avaliador { Id = 3, Nome = "Carlos Oliveira", Cpf = "11122233396" };
         _mapperMock.Setup(m => m.Map<Avaliador>(dto)).Returns(entity);
         _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Avaliador>())).ReturnsAsync(entity);
 
@@ -161,7 +172,7 @@ public class AvaliadorServiceTests
         {
             Id = 1,
             Nome = "João",
-            Cpf = "12345678900",
+            Cpf = "52998224725",
             LinkLattes = "https://lattes.cnpq.br/antigo",
             UltimaFormacao = "Mestrado",
             Cargo = "Professor",

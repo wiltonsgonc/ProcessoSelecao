@@ -31,17 +31,17 @@ public class AvaliadorAuthServiceTests
             Id = 1,
             Nome = "João",
             Email = "joao@test.com",
-            Cpf = "12345678900",
+            Cpf = "52998224725",
             Ativo = true,
             SenhaHash = hash
         };
 
-        _repositoryMock.Setup(r => r.GetByCpfAsync("12345678900")).ReturnsAsync(avaliador);
+        _repositoryMock.Setup(r => r.GetByCpfAsync("52998224725")).ReturnsAsync(avaliador);
         _configurationMock.Setup(c => c["JwtSettings:SecretKey"]).Returns("ProcessoSelecao_SecretKey_Minimo32Caracteres_2026!");
         _configurationMock.Setup(c => c["JwtSettings:Issuer"]).Returns("ProcessoSelecaoApi");
         _configurationMock.Setup(c => c["JwtSettings:Audience"]).Returns("ProcessoSelecaoWeb");
 
-        var result = await _service.LoginAsync("12345678900", senha);
+        var result = await _service.LoginAsync("52998224725", senha);
 
         result.Should().NotBeNull();
         result!.Token.Should().NotBeNullOrEmpty();
@@ -52,9 +52,9 @@ public class AvaliadorAuthServiceTests
     [Fact]
     public async Task LoginAsync_RetornaNull_SeCpfNaoExiste()
     {
-        _repositoryMock.Setup(r => r.GetByCpfAsync("00000000000")).ReturnsAsync((Avaliador?)null);
+        _repositoryMock.Setup(r => r.GetByCpfAsync("11111111111")).ReturnsAsync((Avaliador?)null);
 
-        var result = await _service.LoginAsync("00000000000", "qualquer");
+        var result = await _service.LoginAsync("11111111111", "qualquer");
 
         result.Should().BeNull();
     }
@@ -66,14 +66,14 @@ public class AvaliadorAuthServiceTests
         var avaliador = new Avaliador
         {
             Id = 1,
-            Cpf = "12345678900",
+            Cpf = "52998224725",
             Ativo = true,
             SenhaHash = hash
         };
 
-        _repositoryMock.Setup(r => r.GetByCpfAsync("12345678900")).ReturnsAsync(avaliador);
+        _repositoryMock.Setup(r => r.GetByCpfAsync("52998224725")).ReturnsAsync(avaliador);
 
-        var result = await _service.LoginAsync("12345678900", "SenhaErrada");
+        var result = await _service.LoginAsync("52998224725", "SenhaErrada");
 
         result.Should().BeNull();
     }
@@ -85,14 +85,14 @@ public class AvaliadorAuthServiceTests
         var avaliador = new Avaliador
         {
             Id = 1,
-            Cpf = "12345678900",
+            Cpf = "52998224725",
             Ativo = false,
             SenhaHash = hash
         };
 
-        _repositoryMock.Setup(r => r.GetByCpfAsync("12345678900")).ReturnsAsync(avaliador);
+        _repositoryMock.Setup(r => r.GetByCpfAsync("52998224725")).ReturnsAsync(avaliador);
 
-        var result = await _service.LoginAsync("12345678900", "Senha123");
+        var result = await _service.LoginAsync("52998224725", "Senha123");
 
         result.Should().BeNull();
     }
