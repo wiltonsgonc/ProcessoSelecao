@@ -281,10 +281,10 @@ Com o seed ativo, voce pode navegar pelo sistema usando:
 
 | Papel | Credencial | Senha |
 |-------|-----------|-------|
-| Avaliador Interno | `joao.silva@universidade.edu.br` ou CPF `98765432100` | `123456` |
-| Avaliador Interno | `maria.santos@universidade.edu.br` ou CPF `12345678900` | `123456` |
-| Avaliador Externo (UFPE) | `carlos.oliveira@ufpe.br` ou CPF `11122233344` | `123456` |
-| Avaliador Externo (UFRPE) | `ana.costa@ufrpe.br` ou CPF `55566677788` | `123456` |
+| Avaliador Interno | `joao.silva@universidade.edu.br` ou CPF `52998224725` | `123456` |
+| Avaliador Interno | `maria.santos@universidade.edu.br` ou CPF `12345678909` | `123456` |
+| Avaliador Externo (UFPE) | `carlos.oliveira@ufpe.br` ou CPF `11122233396` | `123456` |
+| Avaliador Externo (UFRPE) | `ana.costa@ufrpe.br` ou CPF `55566677720` | `123456` |
 
 Rotas disponiveis com dados preenchidos:
 
@@ -432,6 +432,7 @@ podman compose build --no-cache && podman compose up -d
 
 ### Modulo Candidatos
 - Cadastrar candidatos com matricula e email
+- Validacao de CPF (mascara e digitos verificadores) no cadastro e na busca por inscricao
 - Associar candidatos a processos
 - Visualizar pontuacao media e detalhes
 
@@ -443,6 +444,7 @@ podman compose build --no-cache && podman compose up -d
 
 ### Modulo Avaliadores
 - Cadastrar avaliadores internos e externos
+- Validacao de CPF (mascara e digitos verificadores) no cadastro e no login
 - Campos academicos: Link Lattes, Ultima Formacao, Cargo, Nivel CNPq (PQ/DT)
 - Associar avaliadores a processos
 - Login com CPF + senha (JWT)
@@ -468,6 +470,7 @@ podman compose build --no-cache && podman compose up -d
 
 ### Modulo Inscricao (Publico)
 - Formulario multi-step (4 paginas)
+- Validacao de CPF em tempo real (mascara `000.000.000-00` + indicador valido/invalido)
 - Upload de documentos
 - Confirmacao e termos de uso
 
@@ -582,11 +585,13 @@ src/backend/ProcessoSelecao.Tests/
 │   ├── ProcessoSelecaoTests.cs      # 13 testes - máquina de estados
 │   ├── CandidatoTests.cs            # 5 testes - validação documentos e pontuação
 │   ├── BaremaTests.cs               # 6 testes - cálculo de nota e completude
-│   └── AvaliadorTests.cs            # 2 testes - avaliações pendentes
+│   ├── AvaliadorTests.cs            # 5 testes + 1 theory - avaliações pendentes
+│   └── CpfValidatorTests.cs         # 5 testes + 5 theories - validação e formatação de CPF
 └── Application/
-    ├── AvaliadorServiceTests.cs     # 4 testes - CRUD + validação CPF
+    ├── AvaliadorServiceTests.cs     # 8 testes - CRUD + validação CPF
     ├── BaremaServiceTests.cs        # 5 testes - criação, finalização, auto-avaliação
-    └── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definição de senha
+    ├── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definição de senha
+    └── CandidatoServiceTests.cs     # 7 testes - CRUD + validação CPF
 ```
 
 ### Frontend (bUnit + xUnit + FluentAssertions)
