@@ -29,11 +29,19 @@
 
         <div class="campo-obrigatorio">
             <label for="cpf">CPF: <span class="asterisco">*</span></label>
-            <input id="cpf" @bind="cpf" placeholder="000.000.000-00"
+            <input id="cpf" @bind:get="cpf" @bind:set="OnCpfSet" @bind:event="oninput" placeholder="000.000.000-00" maxlength="14"
                    class="@(submitted && string.IsNullOrEmpty(cpf) ? "invalid" : "")" />
             @if (submitted && string.IsNullOrEmpty(cpf))
             {
                 <div class="erro"><span>Campo obrigatório</span></div>
+            }
+            @if (statusCpf == "valido")
+            {
+                <div class="acao valido"><span>CPF válido</span></div>
+            }
+            @if (statusCpf == "invalido")
+            {
+                <div class="acao invalido"><span>CPF inválido</span></div>
             }
         </div>
 
@@ -48,15 +56,31 @@
     private string numeroInscricao = "";
     private string cpf = "";
     private string erro = "";
+    private string statusCpf = "";
     private bool submitted = false;
+
+    private void OnCpfSet(string? value)
+    {
+        cpf = CpfValidator.FormatProgressive(value);
+        var digits = CpfValidator.Clean(cpf);
+        statusCpf = digits.Length == 11 ? (CpfValidator.IsValid(digits) ? "valido" : "invalido") : "";
+    }
 
     private async Task Buscar()
     {
         submitted = true;
         erro = "";
+        statusCpf = "";
 
         if (string.IsNullOrEmpty(numeroInscricao) || string.IsNullOrEmpty(cpf))
             return;
+
+        var cpfDigitos = CpfValidator.Clean(cpf);
+        if (cpfDigitos.Length != 11 || !CpfValidator.IsValid(cpfDigitos))
+        {
+            statusCpf = "invalido";
+            return;
+        }
 
         try
         {

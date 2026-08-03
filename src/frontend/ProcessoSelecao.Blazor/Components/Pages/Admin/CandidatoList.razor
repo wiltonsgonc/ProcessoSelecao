@@ -23,7 +23,15 @@
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">CPF</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind="formData.Cpf" readonly="@(editingId.HasValue)" required />
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind:get="formData.Cpf" @bind:set="OnCpfSet" @bind:event="oninput" readonly="@(editingId.HasValue)" placeholder="000.000.000-00" maxlength="14" required />
+                @if (statusCpf == "valido")
+                {
+                    <div class="text-green-600 text-xs mt-1">CPF válido</div>
+                }
+                @if (statusCpf == "invalido")
+                {
+                    <div class="text-red-600 text-xs mt-1">CPF inválido</div>
+                }
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Email</label>
@@ -150,6 +158,7 @@
     private bool showModalDetail = false;
     private Candidato? selectedCandidato;
     private List<Documento> documentos = new();
+    private string statusCpf = "";
 
     protected override async Task OnInitializedAsync() => await Load();
     private async Task Load() => candidatos = await Service.GetAllAsync();
@@ -163,8 +172,23 @@
         showForm = true;
     }
 
+    private void OnCpfSet(string? value)
+    {
+        formData.Cpf = CpfValidator.FormatProgressive(value);
+        var digits = CpfValidator.Clean(formData.Cpf);
+        statusCpf = digits.Length == 11 ? (CpfValidator.IsValid(digits) ? "valido" : "invalido") : "";
+    }
+
     private async Task Save()
     {
+        statusCpf = "";
+        var cpfDigitos = CpfValidator.Clean(formData.Cpf);
+        if (cpfDigitos.Length != 11 || !CpfValidator.IsValid(cpfDigitos))
+        {
+            statusCpf = "invalido";
+            return;
+        }
+
         if (editingId.HasValue)
             await Service.UpdateAsync(editingId.Value, new UpdateCandidato { Nome = formData.Nome, AreaPesquisa = formData.AreaPesquisa, TituloProjeto = formData.TituloProjeto, Nota1 = formData.Nota1, Nota2 = formData.Nota2 });
         else

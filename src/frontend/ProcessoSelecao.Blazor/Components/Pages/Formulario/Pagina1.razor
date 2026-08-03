@@ -20,7 +20,7 @@
 
     <div>
         <label for="tipoDocumento">Tipo de Documento:</label>
-        <select id="tipoDocumento" @bind="dados.TipoDocumento">
+        <select id="tipoDocumento" @bind:get="dados.TipoDocumento" @bind:set="OnTipoDocumentoSet">
             <option value="">Selecione</option>
             <option value="CPF">CPF</option>
             <option value="RG">RG</option>
@@ -28,9 +28,22 @@
         </select>
     </div>
 
-    <div>
+    <div class="@(dados.TipoDocumento == "CPF" ? "campo-cpf" : "")">
         <label for="numeroDocumento">Número do Documento:</label>
-        <input id="numeroDocumento" @bind="dados.NumeroDocumento" placeholder="Número do Documento" />
+        <input id="numeroDocumento"
+               value="@dados.NumeroDocumento"
+               @oninput="OnNumeroDocumentoInput"
+               @onblur="OnNumeroDocumentoBlur"
+               placeholder="@(dados.TipoDocumento == "CPF" ? "000.000.000-00" : "Número do Documento")"
+               maxlength="@(dados.TipoDocumento == "CPF" ? 14 : 0)" />
+        @if (dados.TipoDocumento == "CPF" && statusCpfDoc == "valido")
+        {
+            <div class="acao valido"><span>CPF válido</span></div>
+        }
+        @if (dados.TipoDocumento == "CPF" && statusCpfDoc == "invalido")
+        {
+            <div class="acao invalido"><span>CPF inválido</span></div>
+        }
     </div>
 
     <div>
@@ -82,6 +95,7 @@
 
     private DadosPagina1 dados = new();
     private bool submitted = false;
+    private string statusCpfDoc = "";
 
     protected override void OnInitialized()
     {
@@ -89,9 +103,62 @@
             dados = FormularioService.DadosPagina1;
     }
 
+    private void OnTipoDocumentoSet(string? value)
+    {
+        dados.TipoDocumento = value;
+        if (dados.TipoDocumento == "CPF")
+        {
+            dados.NumeroDocumento = CpfValidator.FormatProgressive(dados.NumeroDocumento);
+            var digits = CpfValidator.Clean(dados.NumeroDocumento);
+            statusCpfDoc = digits.Length == 11 ? (CpfValidator.IsValid(digits) ? "valido" : "invalido") : "";
+        }
+        else
+        {
+            statusCpfDoc = "";
+        }
+    }
+
+    private void OnNumeroDocumentoInput(ChangeEventArgs e)
+    {
+        if (dados.TipoDocumento == "CPF")
+        {
+            dados.NumeroDocumento = CpfValidator.FormatProgressive(e.Value?.ToString());
+            var digits = CpfValidator.Clean(dados.NumeroDocumento);
+            statusCpfDoc = digits.Length == 11 ? (CpfValidator.IsValid(digits) ? "valido" : "invalido") : "";
+        }
+        else
+        {
+            dados.NumeroDocumento = e.Value?.ToString();
+            statusCpfDoc = "";
+        }
+    }
+
+    private void OnNumeroDocumentoBlur()
+    {
+        if (dados.TipoDocumento != "CPF")
+            return;
+        var digits = CpfValidator.Clean(dados.NumeroDocumento);
+        if (digits.Length == 11)
+            statusCpfDoc = CpfValidator.IsValid(digits) ? "valido" : "invalido";
+        else if (digits.Length > 0)
+            statusCpfDoc = "invalido";
+        else
+            statusCpfDoc = "";
+    }
+
     private async Task OnSubmit()
     {
         submitted = true;
+
+        if (dados.TipoDocumento == "CPF")
+        {
+            var d = CpfValidator.Clean(dados.NumeroDocumento);
+            if (d.Length != 11 || !CpfValidator.IsValid(d))
+            {
+                statusCpfDoc = "invalido";
+                return;
+            }
+        }
 
         if (string.IsNullOrEmpty(dados.DataNascimento) || string.IsNullOrEmpty(dados.Telefone) || !dados.PoliticaPrivacidade)
             return;

@@ -381,3 +381,25 @@
     padding: 0.5rem 0.75rem;
     text-align: center;
 }
+
+/* ---- CPF Validation Feedback ---- */
+.campo-cpf {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.acao {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.valido {
+    color: #16a34a; /* Verde */
+}
+
+.invalido {
+    color: #dc2626; /* Vermelho */
+}
+

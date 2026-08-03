@@ -75,9 +75,17 @@
     </div>
 
     <h2>Documentos</h2>
-    <div>
+    <div class="campo-cpf">
         <label for="cpf">CPF:</label>
-        <input id="cpf" @bind="dados.Cpf" placeholder="Número" />
+        <input id="cpf" value="@dados.Cpf" @oninput="OnCpfInput" @onblur="OnCpfBlur" placeholder="000.000.000-00" maxlength="14" />
+        @if (statusCpf == "valido")
+        {
+            <div class="acao valido"><span>CPF válido</span></div>
+        }
+        @if (statusCpf == "invalido")
+        {
+            <div class="acao invalido"><span>CPF inválido</span></div>
+        }
     </div>
 
     <h2>Endereço</h2>
@@ -146,6 +154,7 @@
 
     private DadosPagina2 dados = new();
     private bool submitted = false;
+    private string statusCpf = "";
 
     protected override void OnInitialized()
     {
@@ -167,9 +176,52 @@
         }
     }
 
+    private void OnCpfInput(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        dados.Cpf = CpfValidator.FormatProgressive(value);
+        var digits = CpfValidator.Clean(dados.Cpf);
+        if (digits.Length == 11)
+        {
+            statusCpf = CpfValidator.IsValid(digits) ? "valido" : "invalido";
+        }
+        else
+        {
+            statusCpf = "";
+        }
+    }
+
+    private void OnCpfBlur()
+    {
+        var digits = CpfValidator.Clean(dados.Cpf);
+        if (digits.Length == 11)
+        {
+            statusCpf = CpfValidator.IsValid(digits) ? "valido" : "invalido";
+        }
+        else if (digits.Length > 0)
+        {
+            statusCpf = "invalido";
+        }
+        else
+        {
+            statusCpf = "";
+        }
+    }
+
     private async Task OnSubmit()
     {
         submitted = true;
+        statusCpf = "";
+
+        if (!string.IsNullOrEmpty(dados.Cpf))
+        {
+            var cpfDigitos = CpfValidator.Clean(dados.Cpf);
+            if (cpfDigitos.Length != 11 || !CpfValidator.IsValid(cpfDigitos))
+            {
+                statusCpf = "invalido";
+                return;
+            }
+        }
 
         if (string.IsNullOrEmpty(dados.Nome) || string.IsNullOrEmpty(dados.DataNascimento) ||
             string.IsNullOrEmpty(dados.Email) || string.IsNullOrEmpty(dados.Sexo) ||
