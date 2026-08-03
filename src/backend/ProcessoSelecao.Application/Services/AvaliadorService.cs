@@ -1,6 +1,7 @@
 using AutoMapper;
 using ProcessoSelecao.Application.DTOs;
 using ProcessoSelecao.Domain.Entities;
+using ProcessoSelecao.Domain.Helpers;
 using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Application.Services;
@@ -60,11 +61,16 @@ public class AvaliadorService : IAvaliadorService
     /// <summary>Cria um novo avaliador</summary>
     public async Task<AvaliadorDto> CreateAsync(CreateAvaliadorDto dto)
     {
-        var existingByCpf = await _repository.GetByCpfAsync(dto.Cpf);
+        var cpfLimpo = CpfValidator.Clean(dto.Cpf);
+        if (!CpfValidator.IsValid(cpfLimpo))
+            throw new ArgumentException("CPF inválido. Informe um CPF com 11 dígitos válidos.");
+
+        var existingByCpf = await _repository.GetByCpfAsync(cpfLimpo);
         if (existingByCpf != null)
             throw new InvalidOperationException("Já existe um avaliador cadastrado com este CPF.");
 
         var entity = _mapper.Map<Avaliador>(dto);
+        entity.Cpf = cpfLimpo;
         entity.Ativo = true;
         var created = await _repository.AddAsync(entity);
         return MapToDto(created);
@@ -74,6 +80,8 @@ public class AvaliadorService : IAvaliadorService
     public async Task<AvaliadorDto> UpdateAsync(long id, UpdateAvaliadorDto dto)
     {
         var entity = await _repository.GetByIdAsync(id) ?? throw new Exception("Avaliador não encontrado");
+        if (!CpfValidator.IsValid(entity.Cpf))
+            throw new ArgumentException("CPF inválido no cadastro existente.");
         _mapper.Map(dto, entity);
         var updated = await _repository.UpdateAsync(entity);
         return MapToDto(updated);

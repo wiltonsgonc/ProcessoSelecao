@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ProcessoSelecao.Application.DTOs;
+using ProcessoSelecao.Domain.Helpers;
 using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Application.Services;
@@ -27,7 +28,8 @@ public class AvaliadorAuthService : IAvaliadorAuthService
 
     public async Task<AvaliadorAuthResponseDto?> LoginAsync(string cpf, string senha)
     {
-        var avaliador = await _repository.GetByCpfAsync(cpf);
+        var cpfLimpo = CpfValidator.Clean(cpf);
+        var avaliador = await _repository.GetByCpfAsync(cpfLimpo);
         if (avaliador == null || !avaliador.Ativo)
             return null;
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ProcessoSelecao.Domain.Entities;
 using ProcessoSelecao.Domain.Enums;
+using ProcessoSelecao.Domain.Helpers;
 using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Infrastructure.Repositories;
@@ -86,7 +87,8 @@ public class CandidatoRepository : ICandidatoRepository
     /// <summary>Busca candidato por matrícula</summary>
     public async Task<Candidato?> GetByCpfAsync(string cpf)
     {
-        return await _context.Candidatos.FirstOrDefaultAsync(c => c.Cpf == cpf);
+        var cleanedCpf = CpfValidator.Clean(cpf);
+        return await _context.Candidatos.FirstOrDefaultAsync(c => c.Cpf == cleanedCpf);
     }
 
     /// <summary>Retorna candidatos por status de validação</summary>

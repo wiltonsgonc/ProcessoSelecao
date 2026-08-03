@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ProcessoSelecao.Application.DTOs;
 using ProcessoSelecao.Application.Services;
+using ProcessoSelecao.Domain.Helpers;
 
 namespace ProcessoSelecao.Api.Controllers;
 
@@ -42,7 +43,8 @@ public class CandidatosController : ControllerBase
         if (string.IsNullOrWhiteSpace(numeroInscricao) || string.IsNullOrWhiteSpace(cpf))
             return BadRequest(new { message = "Número de inscrição e CPF são obrigatórios" });
 
-        var candidato = await _service.GetByInscricaoECPFAsync(numeroInscricao, cpf);
+        var cpfLimpo = CpfValidator.Clean(cpf);
+        var candidato = await _service.GetByInscricaoECPFAsync(numeroInscricao, cpfLimpo);
         if (candidato == null) return NotFound(new { message = "Candidato não encontrado. Verifique o número de inscrição e CPF." });
         return Ok(candidato);
     }

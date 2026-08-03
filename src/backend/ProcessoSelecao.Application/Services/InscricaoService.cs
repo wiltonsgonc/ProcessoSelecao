@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ProcessoSelecao.Application.DTOs;
 using ProcessoSelecao.Domain.Entities;
 using ProcessoSelecao.Domain.Enums;
+using ProcessoSelecao.Domain.Helpers;
 using ProcessoSelecao.Domain.Interfaces;
 using System.Security.Cryptography;
 
@@ -50,13 +51,13 @@ public class InscricaoService : IInscricaoService
             throw new Exception("O prazo para este processo de seleção expirou");
 
         var email = dto.Pagina1?.Email;
-        var cpf = dto.Pagina2?.Cpf;
-        
+        var cpf = CpfValidator.Clean(dto.Pagina2?.Cpf);
+
         if (string.IsNullOrWhiteSpace(email))
             email = $"temp_{Guid.NewGuid()}@temp.com";
-        
-        if (string.IsNullOrWhiteSpace(cpf))
-            cpf = Guid.NewGuid().ToString("N")[..11];
+
+        if (!string.IsNullOrWhiteSpace(cpf) && !CpfValidator.IsValid(cpf))
+            throw new ArgumentException("CPF inválido. Informe um CPF com 11 dígitos válidos.");
 
         var numeroInscricao = await GerarNumeroInscricaoAsync(dto.ProcessoSelecaoId);
         

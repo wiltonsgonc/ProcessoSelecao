@@ -2,6 +2,7 @@ using AutoMapper;
 using ProcessoSelecao.Application.DTOs;
 using ProcessoSelecao.Domain.Entities;
 using ProcessoSelecao.Domain.Enums;
+using ProcessoSelecao.Domain.Helpers;
 using ProcessoSelecao.Domain.Interfaces;
 
 namespace ProcessoSelecao.Application.Services;
@@ -67,9 +68,18 @@ public class CandidatoService : ICandidatoService
     /// <summary>Cria um novo candidato</summary>
     public async Task<CandidatoDto> CreateAsync(CreateCandidatoDto dto)
     {
+        // Verificar se já existe candidato com o mesmo CPF (limpo)
+        var cpfLimpo = CpfValidator.Clean(dto.Cpf);
+        var cpfExistente = await _repository.GetByCpfAsync(cpfLimpo);
+        if (cpfExistente != null)
+        {
+            throw new InscricaoDuplicadaException("Já existe uma inscrição com este CPF. Utilize um CPF diferente.");
+        }
+
         var entity = _mapper.Map<Candidato>(dto);
         entity.DataCadastro = DateTime.UtcNow;
         entity.StatusValidacao = StatusValidacao.Pendente;
+        entity.Cpf = cpfLimpo; // Storage as clean value
         var created = await _repository.AddAsync(entity);
         return MapToDto(created);
     }
@@ -106,8 +116,9 @@ public class CandidatoService : ICandidatoService
     /// <summary>Busca candidato por número de inscrição e CPF</summary>
     public async Task<CandidatoDto?> GetByInscricaoECPFAsync(string numeroInscricao, string cpf)
     {
+        var cpfLimpo = CpfValidator.Clean(cpf);
         var candidatos = await _repository.GetAllAsync();
-        var candidato = candidatos.FirstOrDefault(c => c.NumeroInscricao == numeroInscricao && c.Cpf == cpf);
+        var candidato = candidatos.FirstOrDefault(c => c.NumeroInscricao == numeroInscricao && c.Cpf == cpfLimpo);
         return candidato != null ? MapToDto(candidato) : null;
     }
 
