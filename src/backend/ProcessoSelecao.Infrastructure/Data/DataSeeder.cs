@@ -84,7 +84,7 @@ public class DataSeeder
         var avaliador1 = new Avaliador
         {
             Nome = "Joao Silva",
-            Cpf = "98765432100",
+            Cpf = "52998224725",
             Email = "joao.silva@universidade.edu.br",
             Tipo = TipoAvaliador.Interno,
             AreaEspecializacao = "Ciencia da Computacao",
@@ -101,7 +101,7 @@ public class DataSeeder
         var avaliador2 = new Avaliador
         {
             Nome = "Maria Santos",
-            Cpf = "12345678900",
+            Cpf = "12345678909",
             Email = "maria.santos@universidade.edu.br",
             Tipo = TipoAvaliador.Interno,
             AreaEspecializacao = "Engenharia de Software",
@@ -118,7 +118,7 @@ public class DataSeeder
         var avaliador3 = new Avaliador
         {
             Nome = "Carlos Oliveira",
-            Cpf = "11122233344",
+            Cpf = "11122233396",
             Email = "carlos.oliveira@ufpe.br",
             Tipo = TipoAvaliador.Externo,
             AreaEspecializacao = "Sistemas de Informacao",
@@ -135,7 +135,7 @@ public class DataSeeder
         var avaliador4 = new Avaliador
         {
             Nome = "Ana Costa",
-            Cpf = "55566677788",
+            Cpf = "55566677720",
             Email = "ana.costa@ufrpe.br",
             Tipo = TipoAvaliador.Externo,
             AreaEspecializacao = "Inteligencia Artificial",
@@ -182,7 +182,7 @@ public class DataSeeder
         var candidato2 = new Candidato
         {
             Nome = "Lucia Mendes",
-            Cpf = "12345678901",
+            Cpf = "12345678909",
             Email = "lucia.mendes@email.com",
             Telefone = "(81) 98888-0002",
             NomeSocial = "Lucia",
@@ -207,7 +207,7 @@ public class DataSeeder
         var candidato3 = new Candidato
         {
             Nome = "Roberto Lima",
-            Cpf = "98765432101",
+            Cpf = "11122233396",
             Email = "roberto.lima@email.com",
             Telefone = "(81) 98888-0003",
             DataNascimento = new DateTime(2003, 11, 5, 0, 0, 0, DateTimeKind.Utc),
@@ -230,7 +230,7 @@ public class DataSeeder
         var candidato4 = new Candidato
         {
             Nome = "Fernanda Souza",
-            Cpf = "11122233355",
+            Cpf = "55566677720",
             Email = "fernanda.souza@email.com",
             Telefone = "(81) 98888-0004",
             DataNascimento = new DateTime(2002, 9, 18, 0, 0, 0, DateTimeKind.Utc),
@@ -253,7 +253,7 @@ public class DataSeeder
         var candidato5 = new Candidato
         {
             Nome = "Marcos Paulo",
-            Cpf = "55566677799",
+            Cpf = "98765432109",
             Email = "marcos.paulo@email.com",
             Telefone = "(81) 98888-0005",
             DataNascimento = new DateTime(2000, 12, 30, 0, 0, 0, DateTimeKind.Utc),
@@ -278,7 +278,7 @@ public class DataSeeder
         var candidato6 = new Candidato
         {
             Nome = "Juliana Torres",
-            Cpf = "99988877766",
+            Cpf = "99988877709",
             Email = "juliana.torres@email.com",
             Telefone = "(81) 98888-0006",
             DataNascimento = new DateTime(1999, 5, 10, 0, 0, 0, DateTimeKind.Utc),
