@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Barema PPG MCTI</title>
+    <style>
+        :root {
+            --blue: #003366;
+            --bg: #f7f8fa;
+            --line: #d8dde3
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            font: 15px/1.45 Segoe UI, Tahoma, sans-serif;
+            color: #263238
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px #0002
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: var(--blue)
+        }
+
+        h1 {
+            border-bottom: 2px solid var(--blue);
+            padding-bottom: 12px
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 22px 0
+        }
+
+        button {
+            padding: 10px 22px;
+            border: 1px solid var(--blue);
+            border-radius: 5px;
+            background: #fff;
+            color: var(--blue);
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        button.active {
+            background: var(--blue);
+            color: #fff
+        }
+
+        .panel {
+            display: none
+        }
+
+        .panel.active {
+            display: block
+        }
+
+        .header {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+            margin: 25px 0
+        }
+
+        label {
+            font-weight: 700
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #bcc5ce;
+            border-radius: 4px;
+            margin-top: 5px
+        }
+
+        input[type=number] {
+            max-width: 105px;
+            text-align: center
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 24px
+        }
+
+        th,
+        td {
+            border: 1px solid var(--line);
+            padding: 11px;
+            vertical-align: top
+        }
+
+        th {
+            background: var(--blue);
+            color: #fff;
+            text-align: left
+        }
+
+        th:first-child {
+            width: 49%
+        }
+
+        th:nth-child(2) {
+            width: 35%
+        }
+
+        .score {
+            width: 16%;
+            text-align: center
+        }
+
+        .subtotal {
+            background: #eef2f6;
+            font-weight: 700
+        }
+
+        .subtotal input {
+            background: #e0e7ee;
+            border: 0;
+            font-weight: 700
+        }
+
+        .grand {
+            background: var(--blue);
+            color: #fff;
+            font-size: 1.15em;
+            font-weight: 700
+        }
+
+        .grand input {
+            background: #fff;
+            color: var(--blue);
+            font-weight: 700
+        }
+
+        @media(max-width:700px) {
+            body {
+                padding: 8px
+            }
+
+            .container {
+                padding: 15px
+            }
+
+            .header {
+                grid-template-columns: 1fr
+            }
+
+            th,
+            td {
+                padding: 8px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>BAREMA DE AVALIAÇÃO - PPG MCTI</h1>
+        <div class="tabs"><button class="tab active" data-id="mestrado">Mestrado</button><button class="tab"
+                data-id="doutorado">Doutorado</button></div>
+        <section id="mestrado" class="panel active">
+            <h2>BAREMA DE AVALIAÇÃO - PPG MCTI - MESTRADO</h2>
+            <div class="header"><label>CLASSIFICAÇÃO<input type="text" name="mestrado_classificacao"></label><label>NOME
+                    DO CANDIDATO<input type="text" name="mestrado_nome_candidato"></label></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">1. Títulos Acadêmicos e Profissionais</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Doutorado</td>
+                        <td>30 pontos</td>
+                        <td class="score"><input type="number" name="mestrado_1_1" class="nota mestrado-s1" min="0"
+                                max="30" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Mestrado</td>
+                        <td>15 pontos. Apenas Mestrado.</td>
+                        <td class="score"><input type="number" name="mestrado_1_2" class="nota mestrado-s1" min="0"
+                                max="15" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Especialização (mínimo 360h)</td>
+                        <td>5 pontos por especialização</td>
+                        <td class="score"><input type="number" name="mestrado_1_3" class="nota mestrado-s1" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Cursos (mínimo 12h)</td>
+                        <td>0,5 ponto por curso. Cursos de atualização e aperfeiçoamento em gestão e correlatos. Máximo
+                            de 5 cursos.</td>
+                        <td class="score"><input type="number" name="mestrado_1_4" class="nota mestrado-s1" min="0"
+                                max="2.5" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Atuação Profissional</td>
+                        <td>1 ponto por ano de atuação profissional no setor público/privado como graduado de nível
+                            superior. Máximo de 10 anos.</td>
+                        <td class="score"><input type="number" name="mestrado_1_5" class="nota mestrado-s1" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Títulos Acadêmicos e Profissionais</td>
+                        <td>SOMA 1</td>
+                        <td class="score"><input type="number" id="mestrado_total1" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">2. Títulos Técnicos e Científicos</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Livro Autoral</td>
+                        <td>10 pontos por livro</td>
+                        <td class="score"><input type="number" name="mestrado_2_1" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Organização de Livro</td>
+                        <td>5 pontos por organização</td>
+                        <td class="score"><input type="number" name="mestrado_2_2" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Capítulo de Livro</td>
+                        <td>3 pontos por capítulo</td>
+                        <td class="score"><input type="number" name="mestrado_2_3" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Artigo Publicado Qualis A</td>
+                        <td>10 pontos por artigo em revista Qualis A, área interdisciplinar</td>
+                        <td class="score"><input type="number" name="mestrado_2_4" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Artigo Publicado Qualis B</td>
+                        <td>6 pontos por artigo em revista Qualis B, área interdisciplinar</td>
+                        <td class="score"><input type="number" name="mestrado_2_5" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Artigos Completos Publicados</td>
+                        <td>1 ponto por trabalho completo publicado em anais de congressos. Máximo de 10 trabalhos.</td>
+                        <td class="score"><input type="number" name="mestrado_2_6" class="nota mestrado-s2" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Resumos Expandidos Publicados</td>
+                        <td>0,5 ponto por trabalho. Máximo de 10 trabalhos.</td>
+                        <td class="score"><input type="number" name="mestrado_2_7" class="nota mestrado-s2" min="0"
+                                max="5" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Patente Concedida</td>
+                        <td>10 pontos por patente concedida</td>
+                        <td class="score"><input type="number" name="mestrado_2_8" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Pedido de Patente</td>
+                        <td>5 pontos por pedido de patente</td>
+                        <td class="score"><input type="number" name="mestrado_2_9" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Registro de Software ou Desenho Industrial</td>
+                        <td>5 pontos por registro</td>
+                        <td class="score"><input type="number" name="mestrado_2_10" class="nota mestrado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Participação em Projetos</td>
+                        <td>3 pontos por participação em projetos de pesquisa ou desenvolvimento de produtos/processos
+                            com cunho científico/tecnológico. Máximo de 5 projetos.</td>
+                        <td class="score"><input type="number" name="mestrado_2_11" class="nota mestrado-s2" min="0"
+                                max="15" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Prêmios</td>
+                        <td>2 pontos por prêmio concedido por IES, agências de fomento, empresas ou organizações de
+                            incentivo à ciência. Máximo de 5 prêmios.</td>
+                        <td class="score"><input type="number" name="mestrado_2_12" class="nota mestrado-s2" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Títulos Técnicos e Científicos</td>
+                        <td>SOMA 2</td>
+                        <td class="score"><input type="number" id="mestrado_total2" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">3. Prova</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Prova de Matemática</td>
+                        <td>Nota da prova</td>
+                        <td class="score"><input type="number" name="mestrado_3_1" class="nota mestrado-s3" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Prova de Estatística</td>
+                        <td>Nota da prova</td>
+                        <td class="score"><input type="number" name="mestrado_3_2" class="nota mestrado-s3" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Prova de Lógica</td>
+                        <td>Nota da prova</td>
+                        <td class="score"><input type="number" name="mestrado_3_3" class="nota mestrado-s3" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Prova</td>
+                        <td>SOMA 3</td>
+                        <td class="score"><input type="number" id="mestrado_total3" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">4. Pré-Projeto</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Avaliação do Pré-Projeto</td>
+                        <td>Pontuação de 0 a 10 pontos</td>
+                        <td class="score"><input type="number" name="mestrado_4_1" class="nota mestrado-s4" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Pré-Projeto</td>
+                        <td>SOMA 4</td>
+                        <td class="score"><input type="number" id="mestrado_total4" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">5. Entrevista</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Perfil do Candidato</td>
+                        <td>Avaliação do perfil durante a entrevista. Pontuação de 0 a 10 pontos.</td>
+                        <td class="score"><input type="number" name="mestrado_5_1" class="nota mestrado-s5" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Apresentação do Candidato</td>
+                        <td>Avaliação da apresentação oral do projeto. Pontuação de 0 a 10 pontos.</td>
+                        <td class="score"><input type="number" name="mestrado_5_2" class="nota mestrado-s5" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Entrevista</td>
+                        <td>SOMA 5</td>
+                        <td class="score"><input type="number" id="mestrado_total5" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tbody>
+                    <tr class="grand">
+                        <td>TOTAL GERAL</td>
+                        <td></td>
+                        <td class="score"><input type="number" id="mestrado_geral" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section id="doutorado" class="panel ">
+            <h2>BAREMA DE AVALIAÇÃO - PPG MCTI - DOUTORADO</h2>
+            <div class="header"><label>CLASSIFICAÇÃO<input type="text"
+                        name="doutorado_classificacao"></label><label>NOME DO CANDIDATO<input type="text"
+                        name="doutorado_nome_candidato"></label></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">1. Títulos Acadêmicos e Profissionais</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Doutorado</td>
+                        <td>30 pontos</td>
+                        <td class="score"><input type="number" name="doutorado_1_1" class="nota doutorado-s1" min="0"
+                                max="30" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Mestrado</td>
+                        <td>15 pontos. Apenas Mestrado.</td>
+                        <td class="score"><input type="number" name="doutorado_1_2" class="nota doutorado-s1" min="0"
+                                max="15" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Especialização (mínimo 360h)</td>
+                        <td>5 pontos por especialização</td>
+                        <td class="score"><input type="number" name="doutorado_1_3" class="nota doutorado-s1" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Cursos (mínimo 12h)</td>
+                        <td>0,5 ponto por curso. Cursos de atualização e aperfeiçoamento em gestão e correlatos. Máximo
+                            de 5 cursos.</td>
+                        <td class="score"><input type="number" name="doutorado_1_4" class="nota doutorado-s1" min="0"
+                                max="2.5" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Atuação Profissional</td>
+                        <td>1 ponto por ano de atuação profissional no setor público/privado como graduado de nível
+                            superior. Máximo de 10 anos.</td>
+                        <td class="score"><input type="number" name="doutorado_1_5" class="nota doutorado-s1" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Títulos Acadêmicos e Profissionais</td>
+                        <td>SOMA 1</td>
+                        <td class="score"><input type="number" id="doutorado_total1" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">2. Títulos Técnicos e Científicos</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Livro Autoral</td>
+                        <td>10 pontos por livro</td>
+                        <td class="score"><input type="number" name="doutorado_2_1" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Organização de Livro</td>
+                        <td>5 pontos por organização</td>
+                        <td class="score"><input type="number" name="doutorado_2_2" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Capítulo de Livro</td>
+                        <td>3 pontos por capítulo</td>
+                        <td class="score"><input type="number" name="doutorado_2_3" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Artigo Publicado Qualis A</td>
+                        <td>10 pontos por artigo em revista Qualis A, área interdisciplinar</td>
+                        <td class="score"><input type="number" name="doutorado_2_4" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Artigo Publicado Qualis B</td>
+                        <td>6 pontos por artigo em revista Qualis B, área interdisciplinar</td>
+                        <td class="score"><input type="number" name="doutorado_2_5" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Artigos Completos Publicados</td>
+                        <td>1 ponto por trabalho completo publicado em anais de congressos. Máximo de 10 trabalhos.</td>
+                        <td class="score"><input type="number" name="doutorado_2_6" class="nota doutorado-s2" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Resumos Expandidos Publicados</td>
+                        <td>0,5 ponto por trabalho. Máximo de 10 trabalhos.</td>
+                        <td class="score"><input type="number" name="doutorado_2_7" class="nota doutorado-s2" min="0"
+                                max="5" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Patente Concedida</td>
+                        <td>10 pontos por patente concedida</td>
+                        <td class="score"><input type="number" name="doutorado_2_8" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Pedido de Patente</td>
+                        <td>5 pontos por pedido de patente</td>
+                        <td class="score"><input type="number" name="doutorado_2_9" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Registro de Software ou Desenho Industrial</td>
+                        <td>5 pontos por registro</td>
+                        <td class="score"><input type="number" name="doutorado_2_10" class="nota doutorado-s2" min="0"
+                                step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Participação em Projetos</td>
+                        <td>3 pontos por participação em projetos de pesquisa ou desenvolvimento de produtos/processos
+                            com cunho científico/tecnológico. Máximo de 5 projetos.</td>
+                        <td class="score"><input type="number" name="doutorado_2_11" class="nota doutorado-s2" min="0"
+                                max="15" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Prêmios</td>
+                        <td>2 pontos por prêmio concedido por IES, agências de fomento, empresas ou organizações de
+                            incentivo à ciência. Máximo de 5 prêmios.</td>
+                        <td class="score"><input type="number" name="doutorado_2_12" class="nota doutorado-s2" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Títulos Técnicos e Científicos</td>
+                        <td>SOMA 2</td>
+                        <td class="score"><input type="number" id="doutorado_total2" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">3. Prova</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Prova de Matemática</td>
+                        <td>Nota da prova</td>
+                        <td class="score"><input type="number" name="doutorado_3_1" class="nota doutorado-s3" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Prova de Estatística</td>
+                        <td>Nota da prova</td>
+                        <td class="score"><input type="number" name="doutorado_3_2" class="nota doutorado-s3" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Prova de Lógica</td>
+                        <td>Nota da prova</td>
+                        <td class="score"><input type="number" name="doutorado_3_3" class="nota doutorado-s3" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Prova</td>
+                        <td>SOMA 3</td>
+                        <td class="score"><input type="number" id="doutorado_total3" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">4. Pré-Projeto</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Avaliação do Pré-Projeto</td>
+                        <td>Pontuação de 0 a 10 pontos</td>
+                        <td class="score"><input type="number" name="doutorado_4_1" class="nota doutorado-s4" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Pré-Projeto</td>
+                        <td>SOMA 4</td>
+                        <td class="score"><input type="number" id="doutorado_total4" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="3">5. Entrevista</th>
+                    </tr>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Pontuação</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Perfil do Candidato</td>
+                        <td>Avaliação do perfil durante a entrevista. Pontuação de 0 a 10 pontos.</td>
+                        <td class="score"><input type="number" name="doutorado_5_1" class="nota doutorado-s5" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr>
+                        <td>Apresentação do Candidato</td>
+                        <td>Avaliação da apresentação oral do projeto. Pontuação de 0 a 10 pontos.</td>
+                        <td class="score"><input type="number" name="doutorado_5_2" class="nota doutorado-s5" min="0"
+                                max="10" step="0.5"></td>
+                    </tr>
+                    <tr class="subtotal">
+                        <td>TOTAL - Entrevista</td>
+                        <td>SOMA 5</td>
+                        <td class="score"><input type="number" id="doutorado_total5" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tbody>
+                    <tr class="grand">
+                        <td>TOTAL GERAL</td>
+                        <td></td>
+                        <td class="score"><input type="number" id="doutorado_geral" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script>
+        function sum(c) { return [...document.querySelectorAll('.' + c)].reduce((s, e) => s + (parseFloat(e.value) || 0), 0) }
+        function calc(p) { let g = 0;[1, 2, 3, 4, 5].forEach(n => { let v = sum(p + '-s' + n); document.getElementById(p + '_total' + n).value = v; g += v }); document.getElementById(p + '_geral').value = g }
+        function all() { calc('mestrado'); calc('doutorado') } document.querySelectorAll('input[type=number]').forEach(e => e.addEventListener('input', all)); document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.tab,.panel').forEach(e => e.classList.remove('active')); b.classList.add('active'); document.getElementById(b.dataset.id).classList.add('active') })); all();
+    </script>
+</body>
+
+</html>

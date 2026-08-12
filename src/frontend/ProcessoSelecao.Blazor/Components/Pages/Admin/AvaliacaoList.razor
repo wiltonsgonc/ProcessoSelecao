@@ -1,0 +1,164 @@
+@page "/admin/avaliacoes"
+@using ProcessoSelecao.Blazor.Models
+@layout Layouts.AdminLayout
+@inject BaremaService Service
+@inject IJSRuntime JS
+
+<PageTitle>Avaliações</PageTitle>
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Avaliações</h1>
+    <div class="flex gap-3 items-center">
+        <select class="px-3 py-2 border border-gray-300 rounded text-sm" @bind="filtroStatus">
+            <option value="">Todos os status</option>
+            <option value="Pendente">Pendente</option>
+            <option value="EmPreenchimento">Em Andamento</option>
+            <option value="Concluido">Concluído</option>
+            <option value="Cancelado">Cancelado</option>
+        </select>
+        <span class="text-sm text-gray-500">@baremasFiltrados.Count avaliação(ões)</span>
+    </div>
+</div>
+
+@if (carregando)
+{
+    <div class="text-center py-10">
+        <span class="material-icons text-5xl text-gray-400 animate-spin">refresh</span>
+        <p class="text-gray-500 mt-2">Carregando avaliações...</p>
+    </div>
+}
+else if (!baremasFiltrados.Any())
+{
+    <div class="text-center py-10 bg-white border border-gray-200 rounded-lg">
+        <span class="material-icons text-5xl text-gray-400">assignment</span>
+        <p class="text-gray-500 mt-2">Nenhuma avaliação encontrada.</p>
+    </div>
+}
+else
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidato</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Avaliador</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Originalidade</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Relevância</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Metodologia</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Apresentação</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nota Final</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in baremasFiltrados)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2.5 border-b border-gray-200 font-medium">@(b.CandidatoNome ?? $"Candidato #{b.CandidatoId}")</td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">@(b.AvaliadorNome ?? $"Avaliador #{b.AvaliadorId}")</td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">@GetCriterioValor(b, "originalidade")</td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">@GetCriterioValor(b, "relevancia")</td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">@GetCriterioValor(b, "metodologia")</td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">@GetCriterioValor(b, "apresentacao")</td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">
+                                @if (b.Status == StatusBarema.Concluido)
+                                {
+                                    <span class="font-semibold text-indigo-600">@b.NotaFinal.ToString("F2")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400">-</span>
+                                }
+                            </td>
+                            <td class="px-3 py-2.5 border-b border-gray-200">
+                                <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @GetStatusClass(b.Status)">@GetStatusLabel(b.Status)</span>
+                            </td>
+                            <td class="px-3 py-2.5 border-b border-gray-200 text-sm text-gray-500">@FormatDateTime(b.DataPreenchimento)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (baremasFiltrados.Any(b => b.Status == StatusBarema.Concluido))
+    {
+        <div class="mt-4 bg-white border border-gray-200 rounded-lg p-5">
+            <h2 class="text-lg font-semibold mb-3">Resumo Geral</h2>
+            <div class="grid grid-cols-4 gap-4 text-center">
+                <div class="bg-indigo-50 rounded-lg p-4">
+                    <p class="text-2xl font-bold text-indigo-600">@baremasFiltrados.Count(b => b.Status == StatusBarema.Concluido)</p>
+                    <p class="text-sm text-gray-500">Concluídas</p>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4">
+                    <p class="text-2xl font-bold text-yellow-600">@baremasFiltrados.Count(b => b.Status == StatusBarema.Pendente)</p>
+                    <p class="text-sm text-gray-500">Pendentes</p>
+                </div>
+                <div class="bg-cyan-50 rounded-lg p-4">
+                    <p class="text-2xl font-bold text-cyan-600">@baremasFiltrados.Count(b => b.Status == StatusBarema.EmPreenchimento)</p>
+                    <p class="text-sm text-gray-500">Em Andamento</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <p class="text-2xl font-bold text-green-600">@MediaGeral().ToString("F2")</p>
+                    <p class="text-sm text-gray-500">Média Geral</p>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<Barema> baremas = new();
+    private List<Barema> baremasFiltrados = new();
+    private bool carregando = true;
+    private string filtroStatus = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        baremas = await Service.GetAllAsync();
+        AplicarFiltro();
+        carregando = false;
+    }
+
+    private void AplicarFiltro()
+    {
+        baremasFiltrados = string.IsNullOrEmpty(filtroStatus)
+            ? baremas
+            : baremas.Where(b => b.Status.ToString() == filtroStatus).ToList();
+    }
+
+    private string GetCriterioValor(Barema b, string key)
+    {
+        if (b.Criterios != null && b.Criterios.TryGetValue(key, out var val))
+            return val.ToString("F1");
+        return "-";
+    }
+
+    private double MediaGeral()
+    {
+        var concluidas = baremas.Where(b => b.Status == StatusBarema.Concluido && b.NotaFinal > 0).ToList();
+        return concluidas.Any() ? concluidas.Average(b => b.NotaFinal) : 0;
+    }
+
+    private string GetStatusLabel(StatusBarema s) => s switch
+    {
+        StatusBarema.Pendente => "Pendente",
+        StatusBarema.EmPreenchimento => "Em Andamento",
+        StatusBarema.Concluido => "Concluído",
+        StatusBarema.Cancelado => "Cancelado",
+        _ => "Desconhecido"
+    };
+
+    private string GetStatusClass(StatusBarema s) => s switch
+    {
+        StatusBarema.Pendente => "bg-yellow-500",
+        StatusBarema.EmPreenchimento => "bg-cyan-600",
+        StatusBarema.Concluido => "bg-green-600",
+        StatusBarema.Cancelado => "bg-red-600",
+        _ => "bg-gray-500"
+    };
+
+    private string FormatDateTime(string? dt) => DateTime.TryParse(dt, out var d) ? d.ToString("dd/MM/yyyy HH:mm") : "-";
+}

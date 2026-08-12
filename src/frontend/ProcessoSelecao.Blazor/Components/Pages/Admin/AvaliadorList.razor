@@ -1,0 +1,239 @@
+@page "/admin/avaliadores"
+@using ProcessoSelecao.Blazor.Models
+@layout Layouts.AdminLayout
+@inject AvaliadorService Service
+@inject IJSRuntime JS
+
+<PageTitle>Avaliadores</PageTitle>
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Avaliadores</h1>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="ShowForm">Novo Avaliador</button>
+</div>
+
+@if (showForm)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <h2 class="text-lg font-semibold mb-4">@(editingId.HasValue ? "Editar" : "Novo") Avaliador</h2>
+        <form @onsubmit="Save" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nome</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.Nome" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">CPF</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind:get="formData.Cpf" @bind:set="OnCpfSet" @bind:event="oninput" readonly="@(editingId.HasValue)" placeholder="000.000.000-00" maxlength="14" required />
+                    @if (statusCpf == "valido")
+                    {
+                        <div class="text-green-600 text-xs mt-1">CPF válido</div>
+                    }
+                    @if (statusCpf == "invalido")
+                    {
+                        <div class="text-red-600 text-xs mt-1">CPF inválido</div>
+                    }
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind="formData.Email" readonly="@(editingId.HasValue)" required />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 @(editingId.HasValue ? "bg-gray-100" : "")" @bind="formData.Tipo" disabled="@(editingId.HasValue)">
+                        <option value="1">Interno</option>
+                        <option value="2">Externo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Área de Especialização</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.AreaEspecializacao" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Instituição</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.Instituicao" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Link Currículo Lattes</label>
+                    <input type="url" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.LinkLattes" placeholder="https://lattes.cnpq.br/..." />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Última Formação</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.UltimaFormacao" placeholder="Ex: Doutorado em Ciência da Computação" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Cargo</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.Cargo" placeholder="Ex: Professora Associada" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nível CNPq</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.NivelCnpq">
+                        <option value="0">Não se aplica</option>
+                        <option value="1">PQ-2</option>
+                        <option value="2">PQ-1D</option>
+                        <option value="3">PQ-1C</option>
+                        <option value="4">PQ-1B</option>
+                        <option value="5">PQ-1A</option>
+                        <option value="6">DT-2</option>
+                        <option value="7">DT-1</option>
+                    </select>
+                </div>
+            </div>
+            @if (!editingId.HasValue)
+            {
+                <div>
+                    <label class="block text-sm font-medium mb-1">ID do Processo (opcional)</label>
+                    <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.ProcessoSelecaoId" />
+                </div>
+            }
+            @if (editingId.HasValue)
+            {
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" @bind="editAtivo" class="w-4 h-4" />
+                    <label class="text-sm font-medium">Ativo</label>
+                </div>
+            }
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">Salvar</button>
+                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" @onclick="CancelForm">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+<div class="bg-white border border-gray-200 rounded-lg p-5">
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nome</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">CPF</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Email</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Tipo</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Instituição</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Cargo</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nível CNPq</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Pendentes</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in avaliadores)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Id</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Nome</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Cpf</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.Email</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @(a.Tipo == TipoAvaliador.Interno ? "bg-cyan-600" : "bg-yellow-500")">@(a.Tipo == TipoAvaliador.Interno ? "Interno" : "Externo")</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@(a.Instituicao ?? "-")</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@(a.Cargo ?? "-")</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold @(a.NivelCnpq != NivelCnpq.NaoSeAplica ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-600")">
+                                @(a.NivelCnpq switch
+                                {
+                                    NivelCnpq.Pq2 => "PQ-2",
+                                    NivelCnpq.Pq1D => "PQ-1D",
+                                    NivelCnpq.Pq1C => "PQ-1C",
+                                    NivelCnpq.Pq1B => "PQ-1B",
+                                    NivelCnpq.Pq1A => "PQ-1A",
+                                    NivelCnpq.Dt2 => "DT-2",
+                                    NivelCnpq.Dt1 => "DT-1",
+                                    _ => "Não se aplica"
+                                })
+                            </span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @(a.Ativo ? "bg-green-600" : "bg-red-600")">@(a.Ativo ? "Ativo" : "Inativo")</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@a.AvaliacoesPendentes</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <div class="flex gap-1">
+                                <button class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700" @onclick="() => Edit(a)">Editar</button>
+                                <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Remove(a.Id)">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<Avaliador> avaliadores = new();
+    private bool showForm = false;
+    private int? editingId = null;
+    private CreateAvaliador formData = new() { Tipo = TipoAvaliador.Interno, NivelCnpq = NivelCnpq.NaoSeAplica };
+    private bool editAtivo = true;
+    private string statusCpf = "";
+
+    protected override async Task OnInitializedAsync() => await Load();
+    private async Task Load() => avaliadores = await Service.GetAllAsync();
+
+    private void ShowForm() { showForm = true; editingId = null; formData = new() { Tipo = TipoAvaliador.Interno, NivelCnpq = NivelCnpq.NaoSeAplica }; }
+
+    private void Edit(Avaliador a)
+    {
+        editingId = a.Id;
+        formData = new CreateAvaliador
+        {
+            Nome = a.Nome,
+            Cpf = a.Cpf,
+            Email = a.Email,
+            Tipo = a.Tipo,
+            AreaEspecializacao = a.AreaEspecializacao,
+            Instituicao = a.Instituicao,
+            LinkLattes = a.LinkLattes,
+            UltimaFormacao = a.UltimaFormacao,
+            Cargo = a.Cargo,
+            NivelCnpq = a.NivelCnpq
+        };
+        editAtivo = a.Ativo; showForm = true;
+    }
+
+    private void OnCpfSet(string? value)
+    {
+        formData.Cpf = CpfValidator.FormatProgressive(value);
+        var digits = CpfValidator.Clean(formData.Cpf);
+        statusCpf = digits.Length == 11 ? (CpfValidator.IsValid(digits) ? "valido" : "invalido") : "";
+    }
+
+    private async Task Save()
+    {
+        statusCpf = "";
+        var cpfDigitos = CpfValidator.Clean(formData.Cpf);
+        if (cpfDigitos.Length != 11 || !CpfValidator.IsValid(cpfDigitos))
+        {
+            statusCpf = "invalido";
+            return;
+        }
+
+        if (editingId.HasValue)
+            await Service.UpdateAsync(editingId.Value, new UpdateAvaliador
+            {
+                Nome = formData.Nome,
+                AreaEspecializacao = formData.AreaEspecializacao,
+                Instituicao = formData.Instituicao,
+                Ativo = editAtivo,
+                LinkLattes = formData.LinkLattes,
+                UltimaFormacao = formData.UltimaFormacao,
+                Cargo = formData.Cargo,
+                NivelCnpq = formData.NivelCnpq
+            });
+        else
+            await Service.CreateAsync(formData);
+        CancelForm(); await Load();
+    }
+
+    private void CancelForm() { showForm = false; editingId = null; formData = new() { Tipo = TipoAvaliador.Interno, NivelCnpq = NivelCnpq.NaoSeAplica }; }
+
+    private async Task Remove(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este avaliador?"))
+        { await Service.DeleteAsync(id); await Load(); }
+    }
+}

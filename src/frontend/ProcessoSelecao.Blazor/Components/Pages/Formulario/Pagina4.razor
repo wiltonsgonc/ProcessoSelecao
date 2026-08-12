@@ -1,0 +1,108 @@
+@inject FormularioService FormularioService
+
+<form @onsubmit="OnSubmit">
+    <h2>OPÇÃO DE INTERESSE</h2>
+
+    <h3>Processo seletivo e área ofertada</h3>
+    <div>
+        <label for="processoSeletivo">Processo seletivo:</label>
+        <input id="processoSeletivo" @bind="dados.ProcessoSeletivo" placeholder="Nome do Edital" />
+    </div>
+
+    <div>
+        <label for="areaOfertada">Área ofertada - 1ª opção de curso:</label>
+        <select id="areaOfertada" @bind="dados.AreaOfertada">
+            <option value="">Selecione</option>
+            <option value="area1">Área 1</option>
+            <option value="area2">Área 2</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="formaInscricao">Forma de inscrição:</label>
+        <select id="formaInscricao" @bind="dados.FormaInscricao">
+            <option value="">Selecione</option>
+            <option value="online">Online</option>
+            <option value="presencial">Presencial</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="localProva">Local de realização da prova:</label>
+        <select id="localProva" @bind="dados.LocalProva">
+            <option value="">Selecione</option>
+            <option value="local1">Local 1</option>
+            <option value="local2">Local 2</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="campusProva">Campus de realização da prova:</label>
+        <select id="campusProva" @bind="dados.CampusProva">
+            <option value="">Selecione</option>
+            <option value="campus1">Campus 1</option>
+            <option value="campus2">Campus 2</option>
+        </select>
+    </div>
+
+    <h3>Informações adicionais</h3>
+    <div>
+        <label for="dataInscricao">Data da inscrição:</label>
+        <input id="dataInscricao" type="date" placeholder="Data da inscrição"
+               value="@(string.IsNullOrEmpty(dados.DataInscricao) ? "" : DateTime.Parse(dados.DataInscricao).ToString("yyyy-MM-dd"))"
+               @onchange="e => dados.DataInscricao = e.Value?.ToString()" />
+    </div>
+
+    <div>
+        <label for="valorInscricao">Valor da inscrição:</label>
+        <input id="valorInscricao" @bind="dados.ValorInscricao" type="number" placeholder="Valor da inscrição" />
+    </div>
+
+    <h3>Deficiências</h3>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaFisica" /> Física</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaAuditiva" /> Auditiva</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaFala" /> Fala</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaVisual" /> Visual</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaMental" /> Mental</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaIntelectual" /> Intelectual</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaReabilitado" /> Reabilitado(BR)</label></div>
+    <div><label><input type="checkbox" @bind="dados.DeficienciaMultipla" /> Múltipla</label></div>
+
+    <div>
+        <label for="motivoOutrasNecessidades">Motivo outras necessidades:</label>
+        <input id="motivoOutrasNecessidades" @bind="dados.MotivoOutrasNecessidades" placeholder="Motivo outras necessidades" />
+    </div>
+
+    <div class="botoes">
+        <button type="button" @onclick="OnAnteriorHandler">Anterior</button>
+        <button type="submit">Finalizar</button>
+    </div>
+</form>
+
+@code {
+    [Parameter] public EventCallback OnAnterior { get; set; }
+    [Parameter] public EventCallback OnAbrirConfirmacao { get; set; }
+
+    private DadosPagina4 dados = new();
+
+    protected override void OnInitialized()
+    {
+        if (FormularioService.DadosPagina4 != null)
+        {
+            dados = FormularioService.DadosPagina4;
+        }
+
+        if (string.IsNullOrEmpty(dados.DataInscricao))
+        {
+            dados.DataInscricao = DateTime.Now.ToString("yyyy-MM-dd");
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        FormularioService.SalvarPagina4(dados);
+        await OnAbrirConfirmacao.InvokeAsync();
+    }
+
+    private async Task OnAnteriorHandler() => await OnAnterior.InvokeAsync();
+}

@@ -1,0 +1,16 @@
+@inherits LayoutComponentBase
+
+<div class="flex flex-col min-h-screen">
+    <header class="bg-blue-600 text-white sticky top-0 z-50 shadow-md">
+        <nav class="flex items-center px-5 h-16 max-w-7xl mx-auto w-full">
+            <a href="/" class="text-white no-underline font-bold text-xl">Processo Seletivo</a>
+            <span class="flex-1"></span>
+        </nav>
+    </header>
+    <div class="flex-1 max-w-7xl mx-auto w-full px-5 py-5">
+        @Body
+    </div>
+    <footer class="text-center py-5 bg-gray-100 text-gray-500">
+        <p>2026 Sistema de Processo Seletivo</p>
+    </footer>
+</div>

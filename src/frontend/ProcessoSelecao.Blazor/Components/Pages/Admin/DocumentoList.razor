@@ -1,0 +1,283 @@
+@page "/admin/documentos"
+@using ProcessoSelecao.Blazor.Models
+@layout Layouts.AdminLayout
+@inject DocumentoService Service
+@inject IJSRuntime JS
+
+<PageTitle>Documentos</PageTitle>
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Documentos</h1>
+    <div class="flex gap-2">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="ShowUploadForm">Upload Documento</button>
+    </div>
+</div>
+
+@if (showUploadForm)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <h2 class="text-lg font-semibold mb-4">Upload de Documento</h2>
+        <form @onsubmit="Upload" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Arquivo</label>
+                <InputFile OnChange="OnFileSelected" class="w-full px-3 py-2 border border-gray-300 rounded" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Tipo</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="uploadTipo">
+                    <option value="1">Histórico Escolar</option>
+                    <option value="2">Comprovante de Matrícula</option>
+                    <option value="3">Carta de Intenção</option>
+                    <option value="4">Curriculum Lattes</option>
+                    <option value="5">Carta de Recomendação</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">ID do Candidato</label>
+                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="uploadCandidatoId" required />
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
+                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showUploadForm = false">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+@if (showValidateModal && selectedDocumento != null)
+{
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @onclick="() => showValidateModal = false">
+        <div class="bg-white rounded-lg w-full max-w-md p-6" @onclick:stopPropagation="true">
+            <h2 class="text-lg font-semibold mb-4">Validar Documento</h2>
+            <form @onsubmit="Validate" class="space-y-4">
+                <div><label class="block text-sm font-medium mb-1">Documento: @selectedDocumento.NomeArquivo</label></div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" @bind="validateValidado" class="w-4 h-4" />
+                    <label class="text-sm font-medium">Aprovado</label>
+                </div>
+                @if (!validateValidado)
+                {
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Motivo da Rejeição</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded min-h-[80px]" @bind="validateMotivo"></textarea>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(validateError))
+                {
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">@validateError</div>
+                }
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
+                    <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showValidateModal = false">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (showViewModal && !string.IsNullOrEmpty(viewUrl))
+{
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @onclick="() => showViewModal = false">
+        <div class="bg-white rounded-lg w-11/12 h-5/6 flex flex-col" @onclick:stopPropagation="true">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">@viewDocNome</h2>
+                <button class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600" @onclick="() => showViewModal = false">Fechar</button>
+            </div>
+            <iframe src="@viewUrl" class="w-full flex-1 border-0" title="Visualização do documento"></iframe>
+        </div>
+    </div>
+}
+
+@foreach (var grupo in documentosAgrupados)
+{
+    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <div class="flex justify-between items-center cursor-pointer" @onclick="() => grupo.Expandido = !grupo.Expandido">
+            <h3 class="font-semibold">@(grupo.CandidatoNome ?? $"Candidato #{grupo.CandidatoId}") (@grupo.Documentos.Count documentos)</h3>
+            <div class="flex items-center gap-2">
+                <button class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors" @onclick:stopPropagation="true" @onclick="() => DownloadGroupDocuments(grupo)">
+                    @GetGroupDownloadButtonText(grupo)
+                </button>
+                <button class="px-3 py-1 rounded text-xs @(grupo.Expandido ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700")">@(grupo.Expandido ? "Recolher" : "Expandir")</button>
+            </div>
+        </div>
+        @if (grupo.Expandido)
+        {
+            <div class="overflow-x-auto mt-4">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200"><input type="checkbox" @onchange="e => ToggleSelectAll(grupo, (bool)e.Value!)" /></th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">ID</th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">Arquivo</th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">Tipo</th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">Data</th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">Status</th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">Motivo</th>
+                            <th class="px-3 py-2 text-left text-sm font-semibold border-b border-gray-200">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in grupo.Documentos)
+                        {
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm"><input type="checkbox" checked="@selectedIds.Contains(doc.Id)" @onchange="e => ToggleSelect(doc.Id, (bool)e.Value!)" /></td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">@doc.Id</td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">
+                                    @doc.NomeArquivo
+                                    @if (!string.IsNullOrEmpty(doc.LinkUrl)) { <a href="@doc.LinkUrl" target="_blank" class="ml-1 text-blue-600 text-xs">Link</a> }
+                                </td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">@GetTipoLabel(doc.Tipo)</td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">@FormatDateTime(doc.DataUpload)</td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm"><span class="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white @GetDocStatusClass(doc)">@GetDocStatusLabel(doc)</span></td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">@(doc.MotivoRejeicao ?? "-")</td>
+                                <td class="px-3 py-2 border-b border-gray-100 text-sm">
+                                    <div class="flex gap-1">
+                                        <button class="bg-cyan-600 text-white px-2 py-0.5 rounded text-xs hover:bg-cyan-700" @onclick="() => ViewDocument(doc)">Visualizar</button>
+                                        <button class="bg-blue-600 text-white px-2 py-0.5 rounded text-xs hover:bg-blue-700" @onclick="() => OpenValidate(doc)">Validar</button>
+                                        <button class="bg-red-600 text-white px-2 py-0.5 rounded text-xs hover:bg-red-700" @onclick="() => Remove(doc.Id)">Excluir</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Documento> documentos = new();
+    private List<DocGrupo> documentosAgrupados = new();
+    private bool showUploadForm = false;
+    private bool showValidateModal = false;
+    private bool showViewModal = false;
+    private string? viewUrl;
+    private string? viewDocNome;
+    private IBrowserFile? selectedFile;
+    private string uploadTipo = "1";
+    private int uploadCandidatoId;
+    private Documento? selectedDocumento;
+    private bool validateValidado;
+    private string? validateMotivo;
+    private HashSet<int> selectedIds = new();
+
+    class DocGrupo
+    {
+        public int CandidatoId { get; set; }
+        public string? CandidatoNome { get; set; }
+        public List<Documento> Documentos { get; set; } = new();
+        public bool Expandido { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        documentos = await Service.GetAllAsync();
+        documentosAgrupados = documentos.GroupBy(d => d.CandidatoId)
+            .Select(g => new DocGrupo { CandidatoId = g.Key, CandidatoNome = g.First().CandidatoNome, Documentos = g.ToList() }).ToList();
+    }
+
+    private void ShowUploadForm() { showUploadForm = true; selectedFile = null; uploadTipo = "1"; uploadCandidatoId = 0; }
+    private void OnFileSelected(InputFileChangeEventArgs e) => selectedFile = e.File;
+
+    private async Task Upload()
+    {
+        if (selectedFile == null) return;
+        await Service.UploadAsync(selectedFile, new CreateDocumento { Tipo = Enum.Parse<TipoDocumento>(uploadTipo), NomeArquivo = selectedFile.Name, CandidatoId = uploadCandidatoId });
+        showUploadForm = false; await Load();
+    }
+
+    private string? validateError;
+
+    private void OpenValidate(Documento doc)
+    {
+        selectedDocumento = doc; validateValidado = doc.Validado; validateMotivo = doc.MotivoRejeicao; showValidateModal = true; validateError = null;
+    }
+
+    private async Task Validate()
+    {
+        if (selectedDocumento == null) return;
+        try
+        {
+            await Service.ValidateAsync(selectedDocumento.Id, new ValidateDocumento { Validado = validateValidado, MotivoRejeicao = validateMotivo });
+            showValidateModal = false; await Load();
+        }
+        catch (Exception ex)
+        {
+            validateError = ex.Message;
+        }
+    }
+
+    private void ViewDocument(Documento doc)
+    {
+        if (!string.IsNullOrEmpty(doc.LinkUrl))
+        {
+            viewUrl = doc.LinkUrl;
+        }
+        else
+        {
+            viewUrl = Service.GetViewUrl(doc.Id);
+        }
+        viewDocNome = doc.NomeArquivo;
+        showViewModal = true;
+    }
+
+    private async Task Remove(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este documento?"))
+        { await Service.DeleteAsync(id); await Load(); }
+    }
+
+    private void ToggleSelect(int id, bool isChecked) { if (isChecked) selectedIds.Add(id); else selectedIds.Remove(id); }
+
+    private void ToggleSelectAll(DocGrupo grupo, bool isChecked)
+    {
+        foreach (var doc in grupo.Documentos) { if (isChecked) selectedIds.Add(doc.Id); else selectedIds.Remove(doc.Id); }
+    }
+
+    private string GetGroupDownloadButtonText(DocGrupo grupo)
+    {
+        var grupoIds = grupo.Documentos.Select(d => d.Id).ToList();
+        var selectedInGroup = grupoIds.Count(id => selectedIds.Contains(id));
+        if (selectedInGroup == 0 || selectedInGroup == grupo.Documentos.Count)
+            return $"Baixar Todos ({grupo.Documentos.Count})";
+        return $"Baixar Selecionados ({selectedInGroup})";
+    }
+
+    private async Task DownloadGroupDocuments(DocGrupo grupo)
+    {
+        var grupoIds = grupo.Documentos.Select(d => d.Id).ToList();
+        var selectedInGroup = grupoIds.Where(id => selectedIds.Contains(id)).ToList();
+        var safeName = string.Join("_", (grupo.CandidatoNome ?? $"Candidato_{grupo.CandidatoId}").Split(Path.GetInvalidFileNameChars()));
+        List<int> ids;
+        string fileName;
+        if (selectedInGroup.Count == 0 || selectedInGroup.Count == grupo.Documentos.Count)
+        {
+            ids = grupoIds;
+            fileName = $"documentos_{safeName}.zip";
+        }
+        else
+        {
+            ids = selectedInGroup;
+            fileName = $"documentos_{safeName}_selecionados.zip";
+        }
+
+        var bytes = await Service.DownloadMultipleAsync(ids);
+        await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, Convert.ToBase64String(bytes));
+    }
+
+    private string FormatDateTime(string? dt) => DateTime.TryParse(dt, out var d) ? d.ToString("dd/MM/yyyy HH:mm") : "-";
+    private string GetTipoLabel(TipoDocumento tipo) => tipo switch
+    {
+        TipoDocumento.HistoricoEscolar => "Historico",
+        TipoDocumento.ComprovanteMatricula => "Comprovante",
+        TipoDocumento.CartaIntencao => "Carta Intencao",
+        TipoDocumento.CurriculumLatte => "Curriculo Lattes",
+        TipoDocumento.CartaRecomendacao => "Carta Recomendacao",
+        _ => tipo.ToString()
+    };
+    private string GetDocStatusLabel(Documento d) => d.Validado ? "Validado" : !string.IsNullOrEmpty(d.MotivoRejeicao) ? "Rejeitado" : "Pendente";
+    private string GetDocStatusClass(Documento d) => d.Validado ? "bg-green-600" : !string.IsNullOrEmpty(d.MotivoRejeicao) ? "bg-red-600" : "bg-yellow-500";
+}

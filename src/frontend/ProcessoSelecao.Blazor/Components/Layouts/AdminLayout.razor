@@ -1,0 +1,50 @@
+@inherits LayoutComponentBase
+
+<div class="flex min-h-screen">
+    <nav class="w-64 bg-gray-800 text-white flex flex-col">
+        <div class="p-5 bg-gray-900 text-lg font-bold">
+            <a href="/admin" class="text-white no-underline">Painel Admin</a>
+        </div>
+        <ul class="list-none p-0 m-0 flex-1">
+            <li>
+                <NavLink class="flex items-center gap-3 px-5 py-4 text-gray-400 no-underline hover:bg-gray-700 hover:text-white transition-colors border-l-3 border-transparent" href="admin/processos" Match="NavLinkMatch.All" ActiveClass="!bg-gray-700 !text-white !border-blue-500">
+                    <span class="material-icons text-xl">assignment</span>
+                    Processos
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="flex items-center gap-3 px-5 py-4 text-gray-400 no-underline hover:bg-gray-700 hover:text-white transition-colors border-l-3 border-transparent" href="admin/candidatos" ActiveClass="!bg-gray-700 !text-white !border-blue-500">
+                    <span class="material-icons text-xl">people</span>
+                    Candidatos
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="flex items-center gap-3 px-5 py-4 text-gray-400 no-underline hover:bg-gray-700 hover:text-white transition-colors border-l-3 border-transparent" href="admin/documentos" ActiveClass="!bg-gray-700 !text-white !border-blue-500">
+                    <span class="material-icons text-xl">folder</span>
+                    Documentos
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="flex items-center gap-3 px-5 py-4 text-gray-400 no-underline hover:bg-gray-700 hover:text-white transition-colors border-l-3 border-transparent" href="admin/avaliadores" ActiveClass="!bg-gray-700 !text-white !border-blue-500">
+                    <span class="material-icons text-xl">rate_review</span>
+                    Avaliadores
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="flex items-center gap-3 px-5 py-4 text-gray-400 no-underline hover:bg-gray-700 hover:text-white transition-colors border-l-3 border-transparent" href="admin/baremas" ActiveClass="!bg-gray-700 !text-white !border-blue-500">
+                    <span class="material-icons text-xl">grade</span>
+                    Baremas
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="flex items-center gap-3 px-5 py-4 text-gray-400 no-underline hover:bg-gray-700 hover:text-white transition-colors border-l-3 border-transparent" href="admin/avaliacoes" ActiveClass="!bg-gray-700 !text-white !border-blue-500">
+                    <span class="material-icons text-xl">assessment</span>
+                    Avaliação
+                </NavLink>
+            </li>
+        </ul>
+    </nav>
+    <div class="flex-1 p-6 overflow-y-auto">
+        @Body
+    </div>
+</div>

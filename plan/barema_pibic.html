@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barema - Qualificação do Projeto e do Orientador</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .header-grid label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .header-grid input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #003366;
+            color: white;
+            font-size: 1.1em;
+        }
+        .col-desc { width: 55%; }
+        .col-pont { width: 25%; font-size: 0.9em; color: #666; }
+        .col-nota { width: 20%; text-align: center; }
+        
+        input[type="number"] {
+            width: 70px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .radio-group label {
+            display: block;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        
+        .total-row {
+            background-color: #f1f5f9;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .total-row input {
+            background-color: #e2e8f0;
+            font-weight: bold;
+            border: none;
+        }
+        
+        .final-total {
+            background-color: #003366;
+            color: white;
+            font-size: 1.2em;
+        }
+        .final-total input {
+            background-color: #fff;
+            color: #003366;
+            font-size: 1.1em;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>BAREMA PIBIC- QUALIFICAÇÃO DO PROJETO E DO ORIENTADOR</h2>
+
+    <!-- CABEÇALHO -->
+    <div class="header-grid">
+        <div>
+            <label for="orientador">NOME DO ORIENTADOR</label>
+            <input type="text" id="orientador" name="orientador">
+        </div>
+        <div>
+            <label for="estudante">NOME DO ESTUDANTE</label>
+            <input type="text" id="estudante" name="estudante">
+        </div>
+        <div>
+            <label for="curso">CURSO DE GRADUAÇÃO</label>
+            <input type="text" id="curso" name="curso">
+        </div>
+        <div>
+            <label for="avaliador">AVALIADOR</label>
+            <input type="text" id="avaliador" name="avaliador">
+        </div>
+    </div>
+
+    <!-- ANÁLISE DOCUMENTAL -->
+    <table>
+        <thead>
+            <tr>
+                <th colspan="3">ANÁLISE DOCUMENTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="col-desc">Todos os documentos foram entregues de acordo com o EDITAL.</td>
+                <td class="col-pont">
+                    <div class="radio-group">
+                        <label><input type="radio" name="analise_doc" value="classificado"> CLASSIFICADO (sim)</label>
+                        <label><input type="radio" name="analise_doc" value="eliminado"> ELIMINADO (não)</label>
+                    </div>
+                </td>
+                <td class="col-nota">-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 1. PROJETO -->
+    <table>
+        <thead>
+            <tr>
+                <th colspan="3">1. PROJETO</th>
+            </tr>
+            <tr>
+                <th class="col-desc">Critério</th>
+                <th class="col-pont">Pontuação</th>
+                <th class="col-nota">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1.1. O projeto cita e comprova relação com outro já em execução no SENAI CIMATEC (Projetos de Pesquisa, financiados por empresas, Agências ou outros órgãos, ou ainda projeto de mestrado/doutorado stricto sensu).</td>
+                <td>10 (cita e comprova)<br>5 (apenas cita)<br>0 (não)</td>
+                <td class="col-nota"><input type="number" class="nota soma1" min="0" max="10" step="1"></td>
+            </tr>
+            <tr>
+                <td>1.2. Resumo do projeto (apresenta objetivo, metodologia e resultados esperados)</td>
+                <td>00 à 05</td>
+                <td class="col-nota"><input type="number" class="nota soma1" min="0" max="5" step="0.5"></td>
+            </tr>
+            <tr>
+                <td>1.3. Objetivos (claros e bem definidos)</td>
+                <td>00 à 05</td>
+                <td class="col-nota"><input type="number" class="nota soma1" min="0" max="5" step="0.5"></td>
+            </tr>
+            <tr>
+                <td>1.4. Metodologia (clara, bem definida no cronograma apresentado)</td>
+                <td>00 à 05</td>
+                <td class="col-nota"><input type="number" class="nota soma1" min="0" max="5" step="0.5"></td>
+            </tr>
+            <tr>
+                <td>1.5. Relevância do projeto (de acordo com justificativa e resultados esperados)</td>
+                <td>00 à 05</td>
+                <td class="col-nota"><input type="number" class="nota soma1" min="0" max="5" step="0.5"></td>
+            </tr>
+            <tr>
+                <td>1.6. Exequibilidade do projeto (recursos necessários e cronograma apresentado)</td>
+                <td>00 à 05</td>
+                <td class="col-nota"><input type="number" class="nota soma1" min="0" max="5" step="0.5"></td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL (máximo 35 pts)</td>
+                <td>SOMA 1</td>
+                <td class="col-nota"><input type="number" id="total1" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 2. ORIENTADOR DO PROJETO -->
+    <table>
+        <thead>
+            <tr>
+                <th colspan="3">2. ORIENTADOR DO PROJETO</th>
+            </tr>
+            <tr>
+                <th class="col-desc">Critério</th>
+                <th class="col-pont">Pontuação</th>
+                <th class="col-nota">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2.1. Grau de titulação (Orientador com Doutorado / Orientador com Mestrado)</td>
+                <td>Doutor (05)<br>Mestre (03)</td>
+                <td class="col-nota"><input type="number" class="nota soma2" min="0" max="5" step="1"></td>
+            </tr>
+            <tr>
+                <td>2.2. Projeto de Orientador (possui relação com a proposta de projeto IC)</td>
+                <td>Sim (05)<br>Não (00)</td>
+                <td class="col-nota"><input type="number" class="nota soma2" min="0" max="5" step="5"></td>
+            </tr>
+            <tr>
+                <td>2.3. Experiência como docente da instituição nos últimos 12 (doze) meses</td>
+                <td>Sim (05)<br>Não (00)</td>
+                <td class="col-nota"><input type="number" class="nota soma2" min="0" max="5" step="5"></td>
+            </tr>
+            <tr>
+                <td>2.4. Experiência em atividades de coordenação de Projetos de pesquisa (incluindo orientações anteriores de IC/IT)</td>
+                <td>≥ 10 projetos (10)<br>5 a 10 projetos (07)<br>< 5 projetos (03)</td>
+                <td class="col-nota"><input type="number" class="nota soma2" min="0" max="10" step="1"></td>
+            </tr>
+            <tr>
+                <td>2.5. Produção técnico-científica nos últimos 24 (vinte e quatro) meses (artigos, capítulos, patentes, processos, produtos e outros)</td>
+                <td>0 a 10</td>
+                <td class="col-nota"><input type="number" class="nota soma2" min="0" max="10" step="1"></td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL (máximo 35 pts)</td>
+                <td>SOMA 2</td>
+                <td class="col-nota"><input type="number" id="total2" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 3. CANDIDATO (BOLSISTA) -->
+    <table>
+        <thead>
+            <tr>
+                <th colspan="3">3. CANDIDATO (BOLSISTA)</th>
+            </tr>
+            <tr>
+                <th class="col-desc">Critério</th>
+                <th class="col-pont">Pontuação</th>
+                <th class="col-nota">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>3.1. Participação como IC/IT (bolsista ou voluntário)</td>
+                <td>Sim (05)<br>Não (00)</td>
+                <td class="col-nota"><input type="number" class="nota soma3" min="0" max="5" step="5"></td>
+            </tr>
+            <tr>
+                <td>3.2. Publicação e afins (trabalho apresentado ou publicado em congressos ou workshop, artigos técnicos e científicos) 02 (dois) pontos por item</td>
+                <td>Até 05</td>
+                <td class="col-nota"><input type="number" class="nota soma3" min="0" max="5" step="2"></td>
+            </tr>
+            <tr>
+                <td>3.3. Participação em congressos, seminários técnicos ou científicos 01 (um) ponto por item</td>
+                <td>Até 05</td>
+                <td class="col-nota"><input type="number" class="nota soma3" min="0" max="5" step="1"></td>
+            </tr>
+            <tr>
+                <td>3.4. Desempenho acadêmico do candidato (Média Global do Histórico)</td>
+                <td>6,0 ≤ x < 7,0 (03)<br>7,0 ≤ x < 8,5 (06)<br>≥ 8,5 (15)</td>
+                <td class="col-nota"><input type="number" class="nota soma3" min="0" max="15" step="3"></td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL (máximo 30 pts)</td>
+                <td>SOMA 3</td>
+                <td class="col-nota"><input type="number" id="total3" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- SOMATÓRIO TOTAL -->
+    <table>
+        <tbody>
+            <tr class="total-row final-total">
+                <td>SOMATÓRIO TOTAL (SOMA 1 + SOMA 2 + SOMA 3)</td>
+                <td></td>
+                <td class="col-nota"><input type="number" id="totalGeral" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function calculateTotals() {
+        let soma1 = 0, soma2 = 0, soma3 = 0;
+
+        document.querySelectorAll('.soma1').forEach(input => { soma1 += parseFloat(input.value) || 0; });
+        document.querySelectorAll('.soma2').forEach(input => { soma2 += parseFloat(input.value) || 0; });
+        document.querySelectorAll('.soma3').forEach(input => { soma3 += parseFloat(input.value) || 0; });
+
+        document.getElementById('total1').value = soma1;
+        document.getElementById('total2').value = soma2;
+        document.getElementById('total3').value = soma3;
+        document.getElementById('totalGeral').value = soma1 + soma2 + soma3;
+    }
+
+    // Adiciona o listener de cálculo em todos os campos de nota
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', calculateTotals);
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+@page "/admin"
+@inject NavigationManager Nav
+
+<PageTitle>Processos</PageTitle>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/admin/processos", replace: true);
+    }
+}
