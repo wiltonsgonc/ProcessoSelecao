@@ -19,6 +19,9 @@ x86/
 
 # VS Code
 .vscode/
+.kilo/
+.kilocode
+.rtk/
 
 # User-specific files
 *.rsuser
