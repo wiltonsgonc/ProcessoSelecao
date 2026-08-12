@@ -11,7 +11,6 @@ rectangle "Sistema de Seleção IC/Pesquisa" {
   (Enviar documentos na inscrição) as UC2
   (Acompanhar inscrição) as UC3
   (Editar dados do cadastro) as UC4
-  (Alterar documentos) as UC5
 
   ' --- Avaliador ---
   (Fazer login com CPF e senha) as UC6
