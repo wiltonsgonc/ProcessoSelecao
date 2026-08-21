@@ -78,6 +78,12 @@ public class AvaliadorRepository : IAvaliadorRepository
         return await _context.Avaliadores.FirstOrDefaultAsync(a => a.Email == email);
     }
 
+    /// <summary>Busca avaliador por CPF</summary>
+    public async Task<Avaliador?> GetByCpfAsync(string cpf)
+    {
+        return await _context.Avaliadores.FirstOrDefaultAsync(a => a.Cpf == cpf);
+    }
+
     /// <summary>Retorna apenas avaliadores ativos</summary>
     public async Task<IEnumerable<Avaliador>> GetAtivosAsync()
     {
