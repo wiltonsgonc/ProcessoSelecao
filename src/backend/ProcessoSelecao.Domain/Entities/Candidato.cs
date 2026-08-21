@@ -25,6 +25,9 @@ public class Candidato : BaseEntity
     /// <summary>Área de pesquisa escolhida</summary>
     public string? AreaPesquisa { get; set; }
     
+    /// <summary>Título do projeto de pesquisa</summary>
+    public string? TituloProjeto { get; set; }
+    
     /// <summary>Status de validação dos documentos</summary>
     public StatusValidacao StatusValidacao { get; set; } = StatusValidacao.Pendente;
     
