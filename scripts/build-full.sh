@@ -254,7 +254,7 @@ echo "  Build concluido com sucesso!"
 echo "========================================"
 echo ""
 echo "Acessos:"
-echo "  Frontend:   http://localhost:4200"
+echo "  Frontend:   http://localhost:5119"
 echo "  Backend:    http://localhost:5002"
 echo "  Swagger:    http://localhost:5002/swagger"
 if [ "$DEV_MODE" = true ]; then

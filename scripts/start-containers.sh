@@ -258,9 +258,7 @@ if [ "$DEV_MODE" = true ]; then
     --name processo-selecao-frontend \
     --network processo-selecao-network \
     --env-file "$ENV_FILE" \
-    -e NG_HMR=1 \
-    -e NG_CLI_ANALYTICS=false \
-    -p 4200:80 \
+    -p 5119:80 \
     -v "$(pwd)/src/frontend:/app:Z" \
     -v /app/node_modules \
     "$FRONTEND_IMAGE" \
@@ -275,7 +273,7 @@ else
   ${RUNTIME} run -d --pull never \
     --name processo-selecao-frontend \
     --network processo-selecao-network \
-    -p 4200:80 \
+    -p 5119:80 \
     "$FRONTEND_IMAGE"
 fi
 
@@ -285,7 +283,7 @@ echo "  Containers iniciados com sucesso!"
 echo "========================================"
 echo ""
 echo "Acessos:"
-echo "  Frontend:   http://localhost:4200"
+echo "  Frontend:   http://localhost:5119"
 echo "  Backend:    http://localhost:5002"
 echo "  Swagger:    http://localhost:5002/swagger"
 if [ "$DEV_MODE" = true ]; then
