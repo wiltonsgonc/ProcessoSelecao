@@ -1,18 +1,16 @@
 # ==============================================
-# Frontend - Angular 19
+# Frontend - Blazor Server
 # Dockerfile.dev — ambiente de desenvolvimento
-# Executa ng serve com hot-reload
 # ==============================================
 
-FROM node:24-alpine
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 WORKDIR /app
 
-COPY package*.json ./
-# Fallback: npm ci primeiro; se falhar (memoria, cache), usa npm install
-RUN npm ci || npm install
+COPY *.csproj ./
+RUN dotnet restore
 
 COPY . .
 
 EXPOSE 80
 
-CMD ["sh", "-c", "npm run start -- --port 80 --disable-host-check"]
+CMD ["dotnet", "watch", "--urls", "http://0.0.0.0:80"]
