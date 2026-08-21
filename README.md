@@ -5,7 +5,7 @@ Sistema para gerenciamento de processos de selecao de Iniciacao Cientifica e Pes
 ## Arquitetura
 
 - **Backend**: .NET 10 Web API com Entity Framework Core
-- **Frontend**: Angular 19 com Angular Material
+- **Frontend**: Blazor Web App (Server-Side) com Tailwind CSS
 - **Banco de Dados**: SQL Server 2022
 - **Container**: Docker ou Podman (compativel com ambos)
 - **Autenticacao**: JWT
@@ -19,28 +19,38 @@ ProcessoSelecao/
 │   │   ├── ProcessoSelecao.Domain/        # Entidades e Interfaces
 │   │   ├── ProcessoSelecao.Infrastructure/ # DbContext e Repositorios
 │   │   ├── ProcessoSelecao.Application/   # DTOs e Services
-│   │   └── ProcessoSelecao.Api/           # Controllers e Configuracao
-│   │       ├── Dockerfile.dev             # Dev: dotnet watch (single-stage)
-│   │       └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
-│   ├── Directory.Build.props              # NuGetAudit habilitado
-│   └── ProcessoSelecao.sln               # Solucao .NET
-│   └── frontend/                          # Angular App
-│       ├── .npmrc                         # Configuracao npm (audit habilitado)
-│       ├── Dockerfile.dev                 # Dev: ng serve (node)
-│       ├── Dockerfile.prod                # Prod: build + nginx
-│       └── nginx.conf                     # Configuracao nginx (producao)
-├── docker/
-│   ├── nginx/conf.d/                      # Configuracoes Nginx (dev/prod)
-│   └── crontab                            # Cron para supercronic
+│   │   ├── ProcessoSelecao.Api/           # Controllers e Configuracao
+│   │   │   ├── Dockerfile                 # Dev: dotnet watch (single-stage)
+│   │   │   └── Dockerfile.prod            # Prod: build + runtime (multi-stage)
+│   │   └── ProcessoSelecao.Tests/         # Testes unitarios (xUnit + Moq)
+│   │       ├── Domain/                    # Testes de regras de negocio
+│   │       └── Application/               # Testes de services com mocks
+│   ├── frontend/
+│   │   └── ProcessoSelecao.Blazor/        # Frontend Blazor
+│   │       ├── Components/
+│   │       │   ├── App.razor              # Shell HTML
+│   │       │   ├── Routes.razor           # Router
+│   │       │   ├── Layouts/               # AdminLayout, AvaliadorLayout e PublicLayout
+│   │       │   └── Pages/
+│   │       │       ├── Public/            # Home, ProcessoPublicList
+│   │       │       ├── Formulario/        # Wizard de inscricao (4 paginas)
+│   │       │       ├── Admin/             # CRUD + Avaliacao
+│   │       │       └── Avaliador/         # Portal do avaliador (login, painel, avaliacao)
+│   │       ├── Models/                    # DTOs C# (ProcessoSelecao, Candidato, etc.)
+│   │       ├── Services/                  # HTTP clients para a API
+│   │       ├── wwwroot/css/app.css        # Estilos
+│   │       ├── Dockerfile                 # Dev: dotnet watch
+│   │       └── Dockerfile.prod            # Prod: build + runtime
+│   └── Directory.Build.props              # NuGetAudit habilitado
 ├── scripts/
 │   ├── build-full.sh                      # Build completo (backend + frontend)
 │   ├── build-backend.sh                   # Build apenas do backend
 │   ├── build-frontend.sh                  # Build apenas do frontend
 │   ├── start-containers.sh               # Iniciar containers sem rebuild
 │   ├── down-containers.sh                # Parar e remover containers
-│   └── reset-db.sh                        # Reset do banco de dados
-├── docker-compose.yml                     # Compose base (prod)
-├── docker-compose.dev.yml                 # Override para desenvolvimento
+│   ├── reset-db.sh                        # Reset do banco de dados
+│   └── apply-migrations.sh                # Aplicar migrations no container
+├── docker-compose.yml                     # Compose base (dev padrao)
 ├── docker-compose.prod.yml                # Override para producao
 ├── .env.dev                               # Variaveis de ambiente (dev)
 ├── .env.prod                              # Variaveis de ambiente (prod)
@@ -53,7 +63,6 @@ ProcessoSelecao/
 - **Docker** (Docker Desktop ou Docker Engine + Docker Compose) **OU**
 - **Podman** (Podman + podman-compose)
 - .NET 10 SDK (para desenvolvimento local sem containers)
-- Node.js 24+ e npm (para desenvolvimento local sem containers)
 - Bash (Linux, macOS, ou WSL/Git Bash no Windows)
 
 
@@ -111,36 +120,56 @@ Edite `.env.dev` (desenvolvimento) e `.env.prod` (producao) com seus valores.
 Para desenvolver fora de containers, apenas o SQL Server roda em container.
 O backend e frontend rodam nativamente no sistema host.
 
-**1. SQL Server via Docker:**
+**1. SQL Server via Docker ou Podman:**
+
+> **IMPORTANTE - Complexidade da senha:** o SQL Server exige que a senha do `sa`
+> tenha no minimo 8 caracteres e contenha caracteres de **pelo menos 3 dos 4**
+> conjuntos: maiusculas, minusculas, digitos e simbolos. Placeholders como
+> `YOUR_STRONG_PASSWORD` **nao passam** na politica (o container sobe e cai com
+> `Exited (255)` e a mensagem `Password validation failed ... not complex enough`).
+> Defina uma senha forte propria e substitua `sua_senha` nos comandos abaixo.
 
 ```bash
-docker run -d --name processo-selecao-sqlserver \
+# Substitua 'sua_senha' pela mesma senha definida em SA_PASSWORD no .env (raiz do repo)
+podman run -d --name processo-selecao-sqlserver \
   -e ACCEPT_EULA=Y \
-  -e 'MSSQL_SA_PASSWORD=YOUR_STRONG_PASSWORD' \
+  -e 'MSSQL_SA_PASSWORD=sua_senha' \
   -e MSSQL_PID=Developer \
-  -p 1433:1433 \
+  -p 14330:1433 \
+  -v mssql_data:/var/opt/mssql \
   mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-Aguardar ~60 segundos para inicializacao. Verificar:
+> Com `podman`, basta trocar `docker` por `podman` no comando acima. O volume
+> nomeado `mssql_data` mantem os dados entre recriacoes do container.
+
+Aguardar ~60 segundos para inicializacao. Verificar que o container permanece `Up`
+(e nao `Exited`) e que aceita conexao:
 
 ```bash
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P 'YOUR_STRONG_PASSWORD' -C -Q "SELECT 1"
+podman ps   # STATUS deve ser "Up" e PORTS deve mostrar 0.0.0.0:14330->1433/tcp
+
+podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'sua_senha' -C -Q "SELECT 1"
 ```
 
-**2. Inicializar banco de dados:**
+**2. Inicializar banco de dados (opcional):**
+
+> O backend executa `db.Database.Migrate()` na inicializacao, criando o banco
+> `ProcessoSelecaoDb` e todas as tabelas automaticamente usando o usuario `sa`.
+> O `init.sql` so e necessario se voce quiser provisionar o usuario externo
+> `db_user` (para acesso via DBeaver/SSMS).
 
 ```bash
 # Copiar init.sql para dentro do container
-docker cp init.sql processo-selecao-sqlserver:/tmp/init.sql
+podman cp init.sql processo-selecao-sqlserver:/tmp/init.sql
 
 # Executar o script
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P 'YOUR_STRONG_PASSWORD' -C \
+podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P 'sua_senha' -C \
   -d master -i /tmp/init.sql \
   -v DB_EXTERNAL_USER='db_user' \
-  -v DB_EXTERNAL_PASSWORD='YOUR_STRONG_PASSWORD' \
+  -v DB_EXTERNAL_PASSWORD='sua_senha' \
   -v DB_NAME='ProcessoSelecaoDb'
 ```
 
@@ -164,44 +193,108 @@ curl http://localhost:5002/api/health → OK
 
 > **Nota:** O `Properties/launchSettings.json` define automaticamente `ASPNETCORE_ENVIRONMENT=Development` e a porta 5002. O `ConfigureKestrel` no `Program.cs` tambem escuta na porta 5000.
 
-# Para
-curl http://localhost:5002/api/health → OK
-
-Se tudo estiver correto deve aparecer no termninal:
-Now listening on: http://[::]:5002
-Now listening on: http://[::]:5000
-Application started.
-Hosting environment: Development
-
-**4. Frontend (Angular):**
+**4. Frontend (Blazor):**
 
 ```bash
 cd src/frontend
 
-# Instalar dependencias
-npm install
+# Executar com hot-reload
+dotnet watch --project ProcessoSelecao.Blazor
+# Acessa: http://localhost:5119
 
-# Iniciar servidor de desenvolvimento
-npm start
-# Acessa: http://localhost:4200
+# Executar sem hot-reload
+dotnet run --project ProcessoSelecao.Blazor
 ```
 
-**5. Variaveis de ambiente:**
+> **Nota:** O Blazor roda em http://localhost:5119 (HTTP) ou https://localhost:7209 (HTTPS).
 
-Edite `src/backend/ProcessoSelecao.Api/appsettings.Development.json`:
+**5. Variaveis de ambiente (connection string):**
+
+O backend carrega automaticamente um arquivo **`.env` na raiz do repositorio**
+(via `DotNetEnv`). Esse carregamento acontece **antes** de `WebApplication.CreateBuilder`,
+para que `ConnectionStrings__DefaultConnection` seja lido pela configuracao e
+**sobrescreva** o valor de `appsettings.Development.json`. O `Program.cs` procura o
+`.env` subindo a partir do diretorio da aplicacao ate encontra-lo, entao funciona
+tanto no Windows quanto no WSL/Linux, independente do diretorio de trabalho.
+
+Crie/edite o arquivo `.env` na **raiz do repositorio** com, no minimo:
+
+```env
+SA_PASSWORD=sua_senha
+# A senha na connection string DEVE ser identica ao SA_PASSWORD do container
+ConnectionStrings__DefaultConnection=Server=localhost,14330;Database=ProcessoSelecaoDb;User Id=sa;Password=sua_senha;TrustServerCertificate=True;
+```
+
+> **Atencao:** se a senha na connection string nao bater com a senha `sa` do
+> container, o backend falha na migration com `Login failed for user 'sa'`
+> (SQL error 18456) e o `dotnet watch` fica em "Waiting for a file to change".
+> Nesse caso, o frontend Blazor mostra `Connection refused (localhost:5002)`.
+
+O `appsettings.Development.json` mantem a connection string com senha vazia
+(placeholder) de proposito -- o valor real vem do `.env` (nunca versionado):
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=ProcessoSelecaoDb;User Id=sa;Password=YOUR_STRONG_PASSWORD;TrustServerCertificate=True;"
-  },
-  "JwtSettings": {
-    "SecretKey": "SUA_CHAVE_SECRETA_MINIMO_32_CARACTERES",
-    "Issuer": "ProcessoSelecaoApi",
-    "Audience": "ProcessoSelecaoWeb"
+    "DefaultConnection": "Server=localhost,14330;Database=ProcessoSelecaoDb;User Id=sa;Password=;TrustServerCertificate=True;"
   }
 }
 ```
+
+### Preenchimento automatico de dados (Data Seed)
+
+O projeto inclui um **DataSeeder** que popula automaticamente o banco com dados
+realistas para desenvolvimento. Ao iniciar o backend, o seed e executado **apos**
+as migrations e preenche:
+
+| Entidade | Quantidade | Detalhes |
+|----------|-----------|----------|
+| ProcessosSelecao | 3 | PIBIC (aberto), PIBITI (aberto), Mestrado 2025 (finalizado) |
+| Avaliadores | 4 | 2 internos, 2 externos (UFPE, UFRPE) -- senha padrao `123456` |
+| Candidatos | 6 | Distribuidos entre os 3 processos, com status variados |
+| Documentos | 15 | 2-3 por candidato (historicos, cartas, curriculos Lattes) |
+| Baremas | 4 | Avaliacoes em diferentes estados (concluido, pendente, etc.) |
+
+#### Controles
+
+| Controle | Local | Efeito |
+|----------|-------|--------|
+| `"SeedData": { "Enabled": true/false }` | `appsettings.Development.json` | Liga/desliga o seed |
+| Banco ja populado | (automatico) | Seed e ignorado (idempotente) |
+
+Para **desativar** o seed sem alterar o codigo, mude no
+`appsettings.Development.json`:
+
+```json
+"SeedData": {
+  "Enabled": false
+}
+```
+
+Para **forcar um novo seed** (re-popular), limpe as tabelas e reinicie o backend.
+Use o endpoint `POST /api/admin/reset-identities` (remove os dados) e reinicie
+a aplicacao -- o seed sera executado novamente no banco vazio.
+
+#### Acessos para teste (modo Development)
+
+Com o seed ativo, voce pode navegar pelo sistema usando:
+
+| Papel | Credencial | Senha |
+|-------|-----------|-------|
+| Avaliador Interno | `joao.silva@universidade.edu.br` ou CPF `52998224725` | `123456` |
+| Avaliador Interno | `maria.santos@universidade.edu.br` ou CPF `12345678909` | `123456` |
+| Avaliador Externo (UFPE) | `carlos.oliveira@ufpe.br` ou CPF `11122233396` | `123456` |
+| Avaliador Externo (UFRPE) | `ana.costa@ufrpe.br` ou CPF `55566677720` | `123456` |
+
+Rotas disponiveis com dados preenchidos:
+
+| Rota | O que ve |
+|------|----------|
+| `/` | Lista de processos publicos (PIBIC, PIBITI abertos) |
+| `/inscricao/1` | Formulario de inscricao multi-step |
+| `/avaliador/login` | Login com CPF + `123456` |
+| `/avaliador/painel` | Baremas atribuidos ao avaliador logado |
+| `/avaliador/avaliacao/{id}` | Formulario de avaliacao com criterios pre-preenchidos |
 
 ### Usando os scripts (recomendado)
 
@@ -215,53 +308,26 @@ Os scripts detectam automaticamente se voce tem Docker ou Podman instalado.
 ./scripts/build-full.sh
 ```
 
-### Comando manual - Docker
+### Comando manual para contêiner
 
 ```bash
-# Desenvolvimento
-docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+# Desenvolvimento (com rebuild)
+podman compose -f docker-compose.yml --env-file .env.dev up -d --build
 
-# Producao
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
-```
-
-### Comando manual - Podman
-
-```bash
-# Desenvolvimento
-podman compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
-
-# Producao
+# Producao (com rebuild)
 podman compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-### Comando manual - docker-compose (standalone)
-
-```bash
-# Desenvolvimento
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
-
-# Producao
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
-```
-
-### Comando manual - podman-compose (standalone)
-
-```bash
-# Desenvolvimento
-podman-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
-
-# Producao
-podman-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
-```
+> Substitua `podman compose` por `docker compose` se estiver usando Docker.
+> Para rebuild sem cache, substitua `up -d --build` por `build --no-cache` seguido de `up -d`.
 
 ### Modo Desenvolvimento
 
 Neste modo:
-- **Backend**: usa `Dockerfile.dev` com `dotnet watch run` -- alteracoes no codigo reiniciam o servidor automaticamente
-- **Frontend**: usa `target: development` com `ng serve --poll 2000` -- alteracoes refletem em tempo real (HMR)
+- **Backend**: usa `Dockerfile` com `dotnet watch run` -- alteracoes no codigo reiniciam o servidor automaticamente
+- **Frontend**: usa `Dockerfile` com `dotnet run` -- Blazor Server com SignalR
 - **Volumes**: montam o codigo fonte diretamente, sem necessidade de rebuild a cada alteracao
-- **SQL Server**: porta 1433 exposta externamente para acesso via DBeaver/SSMS
+- **SQL Server**: porta 14330 exposta externamente para acesso via DBeaver/SSMS
 
 ### Build individual
 
@@ -317,6 +383,13 @@ O script:
 ./scripts/reset-db.sh
 ```
 
+### Aplicar migrations
+
+```bash
+# Aplica migrations pendentes no banco de dados dentro do container
+./scripts/apply-migrations.sh
+```
+
 Acessos do banco:
 - **Admin (sa)**: senha definida em `SA_PASSWORD` no `.env.dev` ou `.env.prod`
 - **App (db_user)**: senha definida em `DB_EXTERNAL_PASSWORD` no `.env.dev` ou `.env.prod`
@@ -324,27 +397,28 @@ Acessos do banco:
 ## Comandos Uteis
 
 ```bash
-# Ver status dos containers
-docker ps          # ou: podman ps
+# Ver status dos contêineres
+podman ps
 
 # Logs
-docker logs processo-selecao-backend      # ou: podman logs ...
-docker logs processo-selecao-frontend
-docker logs processo-selecao-sqlserver
+podman logs processo-selecao-backend
+podman logs processo-selecao-frontend
+podman logs processo-selecao-sqlserver
 
 # Parar tudo
-docker compose down          # ou: podman compose down
+podman compose down
 
 # Reconstruir do zero (sem cache)
-docker compose build --no-cache && docker compose up -d
+podman compose build --no-cache && podman compose up -d
 ```
 
 ## Acessos
 
-- **Frontend**: http://localhost:4200
+- **Frontend (local)**: http://localhost:5119
+- **Frontend (Docker)**: http://localhost:4200
 - **Backend API**: http://localhost:5002
 - **Swagger**: http://localhost:5002/swagger
-- **SQL Server**: localhost:1433
+- **SQL Server**: localhost:14330
   - **Admin**: sa / definido no `.env`
   - **App**: db_user / definido no `.env`
   - **Database**: ProcessoSelecaoDb
@@ -354,32 +428,58 @@ docker compose build --no-cache && docker compose up -d
 ### Modulo Processo de Selecao
 - Criar, editar, iniciar e finalizar processos
 - Definir numero de vagas disponiveis
+- Copiar link de inscricao
 
 ### Modulo Candidatos
 - Cadastrar candidatos com matricula e email
+- Validacao de CPF (mascara e digitos verificadores) no cadastro e na busca por inscricao
 - Associar candidatos a processos
-- Visualizar pontuacao media
+- Visualizar pontuacao media e detalhes
 
 ### Modulo Documentos
 - Upload de documentos (Historico, Comprovante, Cartas, etc.)
-- Validacao de documentos
-- Download de arquivos
+- Validacao de documentos (aprovar/rejeitar com motivo)
+- Visualizacao de PDF inline
+- Download multiplo (ZIP)
 
 ### Modulo Avaliadores
 - Cadastrar avaliadores internos e externos
+- Validacao de CPF (mascara e digitos verificadores) no cadastro e no login
+- Campos academicos: Link Lattes, Ultima Formacao, Cargo, Nivel CNPq (PQ/DT)
 - Associar avaliadores a processos
+- Login com CPF + senha (JWT)
+- Prevencao de auto-avaliação (CPF do avaliador != CPF do candidato)
+
+### Modulo Portal do Avaliador
+- Login autenticado via CPF + senha
+- Lista de baremas atribuídos ao avaliador
+- Visualização de dados do candidato
+- Visualização e download de documentos (PDF inline)
+- Avaliação com 4 critérios (Originalidade, Relevancia, Metodologia, Apresentacao)
+- Finalização da avaliação com nota final calculada
 
 ### Modulo Baremas
 - Criar baremas de avaliacao
-- Definir criterios e notas
+- Definir criterios (Originalidade, Relevancia, Metodologia, Apresentacao)
 - Calcular nota final
+
+### Modulo Avaliacao (Admin)
+- Visualização consolidada de todas as avaliações
+- Filtro por status (Pendente, Em Andamento, Concluido, Cancelado)
+- Resumo geral com contagem e média das notas
+
+### Modulo Inscricao (Publico)
+- Formulario multi-step (4 paginas)
+- Validacao de CPF em tempo real (mascara `000.000.000-00` + indicador valido/invalido)
+- Upload de documentos
+- Confirmacao e termos de uso
 
 ## Acesso ao Banco de Dados
 
 ### Conexao via DBeaver ou SSMS
 
 **Configuracoes de conexao:**
-- **Servidor**: localhost,1433
+- **Servidor**: localhost,14330
 - **Autenticacao**: SQL Server Authentication
 - **Usuario**: db_user
 - **Senha**: definida em `DB_EXTERNAL_PASSWORD` no `.env`
@@ -388,11 +488,6 @@ docker compose build --no-cache && docker compose up -d
 ### Conexao via Command Line
 
 ```bash
-# Docker
-docker exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U db_user -P "$(grep DB_EXTERNAL_PASSWORD .env.dev | cut -d= -f2)" -C \
-  -d ProcessoSelecaoDb
-
 # Podman
 podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U db_user -P "$(grep DB_EXTERNAL_PASSWORD .env.dev | cut -d= -f2)" -C \
@@ -403,25 +498,33 @@ podman exec -it processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 
 ```bash
 # Criar backup (substitua .env.dev por .env.prod em producao)
-docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "$(grep SA_PASSWORD .env.dev | cut -d= -f2)" -C \
   -Q "BACKUP DATABASE [ProcessoSelecaoDb] TO DISK = '/var/opt/mssql/backup/backup.bak' WITH COMPRESSION"
 
 # Restaurar backup
-docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "$(grep SA_PASSWORD .env.dev | cut -d= -f2)" -C \
   -Q "RESTORE DATABASE [ProcessoSelecaoDb] FROM DISK = '/var/opt/mssql/backup/backup.bak' WITH REPLACE"
 ```
 
 ## APIs Disponiveis
 
-| Endpoint | Descricao |
-|----------|-----------|
-| GET/POST/PUT/DELETE /api/candidatos | Gestao de candidatos |
-| GET/POST/PUT/DELETE /api/documentos | Gestao de documentos |
-| GET/POST/PUT/DELETE /api/avaliadores | Gestao de avaliadores |
-| GET/POST/PUT/DELETE /api/baremas | Gestao de baremas |
-| GET/POST/PUT/DELETE /api/processosselecao | Gestao de processos |
+| Endpoint | Descricao | Autenticacao |
+|----------|-----------|--------------|
+| GET/POST/PUT/DELETE /api/candidatos | Gestao de candidatos | Admin |
+| GET/POST/PUT/DELETE /api/documentos | Gestao de documentos | Admin |
+| GET/POST/PUT/DELETE /api/avaliadores | Gestao de avaliadores | Admin |
+| GET/POST/PUT/DELETE /api/baremas | Gestao de baremas | Admin |
+| GET/POST/PUT/DELETE /api/processosselecao | Gestao de processos | Admin |
+| POST /api/formulario/completa | Inscricao publica | Nao |
+| POST /api/avaliador-auth/login | Login do avaliador (CPF + senha) | Nao |
+| POST /api/avaliador-auth/definir-senha | Definir senha do avaliador | Nao |
+| GET /api/avaliador-painel/baremas | Baremas do avaliador autenticado | JWT |
+| GET /api/avaliador-painel/candidato/{id} | Dados do candidato | JWT |
+| GET /api/avaliador-painel/documentos/{id} | Documentos do candidato | JWT |
+| GET /api/avaliador-painel/documentos/{id}/download | Download de documento | JWT |
+| POST /api/avaliador-painel/baremas/{id}/finalizar | Finalizar avaliação | JWT |
 
 ## Variaveis de Ambiente
 
@@ -470,6 +573,63 @@ cp .env.example .env.prod
 | `FROM_EMAIL` | Email remetente | noreply@processoselecao.com |
 | `ASPNETCORE_ENVIRONMENT` | Ambiente .NET | Development/Production |
 
+## Testes Automatizados
+
+O projeto possui testes unitários nas camadas backend e frontend.
+
+### Backend (xUnit + Moq + FluentAssertions)
+
+```
+src/backend/ProcessoSelecao.Tests/
+├── Domain/
+│   ├── ProcessoSelecaoTests.cs      # 13 testes - máquina de estados
+│   ├── CandidatoTests.cs            # 5 testes - validação documentos e pontuação
+│   ├── BaremaTests.cs               # 6 testes - cálculo de nota e completude
+│   ├── AvaliadorTests.cs            # 5 testes + 1 theory - avaliações pendentes
+│   └── CpfValidatorTests.cs         # 5 testes + 5 theories - validação e formatação de CPF
+└── Application/
+    ├── AvaliadorServiceTests.cs     # 8 testes - CRUD + validação CPF
+    ├── BaremaServiceTests.cs        # 5 testes - criação, finalização, auto-avaliação
+    ├── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definição de senha
+    └── CandidatoServiceTests.cs     # 7 testes - CRUD + validação CPF
+```
+
+### Frontend (bUnit + xUnit + FluentAssertions)
+
+```
+src/frontend/ProcessoSelecao.Blazor.Tests/
+└── Components/
+    ├── AvaliadorLoginTests.cs       # 2 testes - renderização, erro de login
+    ├── AvaliadorAvaliacaoTests.cs   # 1 teste  - redirect sem token
+    ├── AvaliacaoListTests.cs        # 5 testes - renderização, filtro, vazio, tabela, resumo
+    ├── ProcessoListTests.cs         # 3 testes - headers, vazio, botão novo
+    └── CandidatoListTests.cs        # 3 testes - título, botão novo, colunas da tabela
+```
+
+### Executar os testes
+
+```bash
+# Rodar todos os testes (backend + frontend)
+dotnet test src/backend/ProcessoSelecao.Tests
+dotnet test src/frontend/ProcessoSelecao.Blazor.Tests
+
+# Rodar com verbosity
+dotnet test src/backend/ProcessoSelecao.Tests --verbosity normal
+
+# Rodar testes de uma classe específica
+dotnet test src/backend/ProcessoSelecao.Tests --filter "FullyQualifiedName~ProcessoSelecaoTests"
+```
+
+### Pacotes de teste
+
+| Pacote | Versão | Uso |
+|--------|--------|-----|
+| xUnit | 2.9.3 | Framework de testes |
+| Moq | 4.20.72 | Mocking de interfaces |
+| FluentAssertions | 8.10.0 | Assertions legíveis |
+| BCrypt.Net-Next | 4.0.3 | Testes de autenticação |
+| bUnit | 1.38.5 | Testes de componentes Blazor |
+
 ## Compatibilidade
 
 Este projeto foi testado e funciona com:
@@ -487,7 +647,6 @@ Este projeto foi testado e funciona com:
 - Suporta `docker compose` (plugin), `docker-compose` (standalone), `podman compose` (plugin) e `podman-compose` (standalone)
 - Mounts usam `:Z` para compatibilidade com SELinux (Podman) -- Docker ignora silenciosamente
 - Nomes de imagens usam FQIN (`docker.io/library/...`) para compatibilidade com Podman
-- User no container usa `appuser` (UID 1000) para compatibilidade com Podman rootless
 
 ## Auditoria de Seguranca
 
@@ -506,23 +665,6 @@ dotnet build
 
 # Corrigir pacote vulneravel (exemplo: atualizar Swashbuckle)
 dotnet add ProcessoSelecao.Api/ProcessoSelecao.Api.csproj package <nome-do-pacote>
-```
-
-### Frontend (Angular)
-
-O arquivo `.npmrc` habilita auditoria automatica a cada `npm install`.
-
-```bash
-cd src/frontend
-
-# Listar vulnerabilidades
-npm audit
-
-# Corrigir automaticamente (sem breaking changes)
-npm audit fix
-
-# Corrigir incluindo breaking changes (cuidado)
-npm audit fix --force
 ```
 
 ## Troubleshooting
@@ -578,11 +720,11 @@ podman system migrate
 podman run --rm docker.io/library/alpine echo "funcionou"
 ```
 
-Se ainda falhar, use `podman-compose` (standalone Python) diretamente:
+Se ainda falhar, use `podman compose` (standalone Python) diretamente:
 
 ```bash
 # O standalone nao usa netavark/aardvark-dns
-podman-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
+podman compose --env-file .env.dev up -d
 ```
 
 Ou instale o Docker no WSL Ubuntu e use-o no lugar do Podman no Alma.
@@ -595,8 +737,6 @@ df -h
 
 # Limpar imagens e containers nao utilizados
 podman system prune -a
-# ou
-docker system prune -a
 ```
 
 ### Erro: Containers nao iniciam apos rebuild
@@ -607,8 +747,8 @@ podman logs processo-selecao-backend
 podman logs processo-selecao-sqlserver
 
 # Limpar volumes e reconstruir
-podman compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev down -v
-podman compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d --build
+podman compose --env-file .env.dev down -v
+podman compose --env-file .env.dev up -d --build
 ```
 
 ### Erro: SQL Server nao fica pronto (healthcheck timeout)
@@ -617,10 +757,10 @@ O SQL Server 2022 precisa de no minimo 2GB de RAM. Em WSL ou VPS com pouca memor
 
 ```bash
 # Verificar logs do SQL Server
-docker logs processo-selecao-sqlserver
+podman logs processo-selecao-sqlserver
 
 # Verificar memoria disponivel
-docker stats
+podman stats
 ```
 
 **Solucoes:**
@@ -642,3 +782,79 @@ healthcheck:
 ```env
 MSSQL_MEMORY_LIMIT_MB=1024
 ```
+
+### WSL2: "inotify" limit reached (hot reload nao funciona)
+
+O WSL2 tem limite padrao de 128 instancias inotify. Para aumentar:
+
+```bash
+# No terminal WSL:
+sudo sh -c 'echo "fs.inotify.max_user_watches=524288" > /etc/sysctl.d/60-inotify.conf'
+sudo sh -c 'echo "fs.inotify.max_user_instances=512" >> /etc/sysctl.d/60-inotify.conf'
+sudo sysctl -p /etc/sysctl.d/60-inotify.conf
+```
+
+### Erro: "Login failed for user 'sa'" (SQL error 18456) / backend cai na migration
+
+O backend nao consegue autenticar no SQL Server. Causas comuns:
+
+1. **Senha divergente**: a senha em `ConnectionStrings__DefaultConnection` (no `.env`
+   da raiz) esta diferente da senha `sa` do container. Confirme:
+   ```bash
+   # Senha real gravada no container:
+   docker inspect processo-selecao-sqlserver \
+     --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -i PASSWORD
+
+   # Testar login com a senha esperada:
+   docker exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+     -S localhost -U sa -P 'sua_senha' -C -Q "SELECT name FROM sys.databases"
+   ```
+2. **`.env` nao carregado**: garanta que existe um `.env` na **raiz do repositorio**
+   com `ConnectionStrings__DefaultConnection`. O `Program.cs` carrega esse arquivo
+   antes de montar a configuracao.
+3. Apos corrigir a senha, **reinicie o backend** -- o `dotnet watch` nao reinicia
+   sozinho um processo que ja crashou; ele fica em "Waiting for a file to change".
+   Pressione `Ctrl+R` no terminal do watch ou reinicie o `dotnet watch run`.
+
+### Frontend Blazor: "Connection refused (localhost:5002)"
+
+O Blazor Server faz as chamadas HTTP para a API **no lado do servidor**. Esse erro
+significa que a API nao esta escutando na porta 5002 -- normalmente porque o backend
+crashou (veja o erro de `sa` acima) ou nao foi iniciado. Verifique:
+
+```bash
+ss -tlnp | grep 5002        # deve listar o processo ProcessoSelecao
+curl http://localhost:5002/api/health   # deve responder "OK"
+```
+
+### WSL2: acessar a aplicacao pelo navegador do Windows
+
+Quando o backend e o frontend rodam **dentro do WSL2** (modo NAT), o navegador do
+Windows pode nao alcancar `localhost:5119` automaticamente. Se `http://localhost:5119`
+nao abrir no Windows, crie um portproxy (PowerShell como administrador):
+
+```powershell
+$wslIp = (wsl -d <distro> hostname -I).Trim().Split(' ')[0]
+netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5119 connectaddress=$wslIp connectport=5119
+# opcional, para acessar Swagger/API direto do Windows:
+netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=5002 connectaddress=$wslIp connectport=5002
+```
+
+> No modo NAT o IP do WSL muda a cada reinicio; recrie o portproxy quando isso ocorrer.
+> A porta 14330 nao precisa de portproxy (o backend acessa o SQL Server dentro do WSL).
+> Evite o modo `networkingMode=mirrored` no `.wslconfig`: ele quebra o DNAT do
+> Docker/Podman (`Unable to enable DNAT rule: No chain/target/match`).
+
+## Tecnologias
+
+| Componente | Tecnologia |
+|------------|------------|
+| Backend | .NET 10, Entity Framework Core, ASP.NET Core Web API |
+| Frontend | Blazor Web App (Server-Side), .NET 10 |
+| CSS | Tailwind CSS (via CDN) |
+| Banco de Dados | SQL Server 2022 |
+| Autenticacao | JWT + BCrypt |
+| Containers | Docker / Podman |
+| Testes Backend | xUnit, Moq, FluentAssertions |
+| Testes Frontend | bUnit, xUnit, FluentAssertions |
+| CI/CD | GitHub Actions (opcional) |
