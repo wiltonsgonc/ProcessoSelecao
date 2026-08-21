@@ -22,6 +22,12 @@ public class ProcessoSelecao : BaseEntity
     /// <summary>Número de vagas disponíveis</summary>
     public int VagasDisponiveis { get; set; }
     
+    /// <summary>Agência de fomento</summary>
+    public string? AgenciaFomento { get; set; }
+    
+    /// <summary>Nível da bolsa (IC, ITI, Mestrado, Doutorado)</summary>
+    public string? NivelBolsa { get; set; }
+    
     /// <summary>Status atual do processo</summary>
     public StatusProcesso Status { get; set; } = StatusProcesso.Rascunho;
     
