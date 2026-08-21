@@ -415,7 +415,7 @@ podman compose build --no-cache && podman compose up -d
 ## Acessos
 
 - **Frontend (local)**: http://localhost:5119
-- **Frontend (Docker)**: http://localhost:4200
+- **Frontend (Docker)**: http://localhost:5119
 - **Backend API**: http://localhost:5002
 - **Swagger**: http://localhost:5002/swagger
 - **SQL Server**: localhost:14330
