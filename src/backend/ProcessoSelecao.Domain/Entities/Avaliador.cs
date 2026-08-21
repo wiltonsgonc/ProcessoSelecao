@@ -25,6 +25,24 @@ public class Avaliador : BaseEntity
     /// <summary>Indica se o avaliador está ativo no sistema</summary>
     public bool Ativo { get; set; } = true;
     
+    /// <summary>CPF do avaliador</summary>
+    public string? Cpf { get; set; }
+    
+    /// <summary>Hash da senha do avaliador</summary>
+    public string? SenhaHash { get; set; }
+    
+    /// <summary>Link do currículo Lattes</summary>
+    public string? LinkLattes { get; set; }
+    
+    /// <summary>Última formação acadêmica</summary>
+    public string? UltimaFormacao { get; set; }
+    
+    /// <summary>Cargo/função</summary>
+    public string? Cargo { get; set; }
+    
+    /// <summary>Nível CNPq</summary>
+    public NivelCnpq? NivelCnpq { get; set; }
+    
     /// <summary>ID do processo de seleção (opcional)</summary>
     public long? ProcessoSelecaoId { get; set; }
     
