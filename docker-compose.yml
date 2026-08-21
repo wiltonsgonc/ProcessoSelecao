@@ -106,7 +106,7 @@ services:
       dockerfile: Dockerfile.prod
     container_name: processo-selecao-frontend
     ports:
-      - "4200:80"
+      - "5119:80"
     depends_on:
       - backend
     restart: unless-stopped
