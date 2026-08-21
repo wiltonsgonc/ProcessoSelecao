@@ -64,9 +64,8 @@ npm-debug.log
 yarn-error.log
 .tool-version
 
-# Angular
+# Build output
 dist/
-.angular/
 
 # Environment files (contem credenciais - NUNCA versionar)
 .env
@@ -116,3 +115,6 @@ log.txt
 
 # Plano
 /plan/*
+
+# Docs
+/docs/*

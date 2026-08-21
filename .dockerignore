@@ -39,7 +39,6 @@ docker/
 /obj
 /dist
 /node_modules
-/.angular
 /.dotnet
 
 # Documentacao
