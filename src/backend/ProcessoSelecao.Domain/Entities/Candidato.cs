@@ -22,6 +22,9 @@ public class Candidato : BaseEntity
     /// <summary>E-mail do candidato</summary>
     public string Email { get; set; } = string.Empty;
     
+    /// <summary>Hash da senha do candidato</summary>
+    public string? SenhaHash { get; set; }
+    
     /// <summary>Área de pesquisa escolhida</summary>
     public string? AreaPesquisa { get; set; }
     
