@@ -60,6 +60,7 @@ builder.Services.AddScoped<ICandidatoService, CandidatoService>();
 builder.Services.AddScoped<IDocumentoService, DocumentoService>();
 builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
 builder.Services.AddScoped<IAvaliadorAuthService, AvaliadorAuthService>();
+builder.Services.AddScoped<ICandidatoAuthService, CandidatoAuthService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
