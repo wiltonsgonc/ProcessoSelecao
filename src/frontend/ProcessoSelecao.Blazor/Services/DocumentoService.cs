@@ -19,7 +19,7 @@ public class DocumentoService
     public virtual async Task<Documento?> GetByIdAsync(int id)
         => await _api.GetAsync<Documento>($"{Endpoint}/{id}");
 
-    public virtual async Task<List<Documento>> GetByCandidatoIdAsync(int candidatoId)
+    public virtual async Task<List<Documento>> GetByCandidatoIdAsync(long candidatoId)
         => await _api.GetAsync<List<Documento>>($"{Endpoint}/candidato/{candidatoId}") ?? new();
 
     public virtual async Task<Documento?> UploadAsync(IBrowserFile file, CreateDocumento data)
