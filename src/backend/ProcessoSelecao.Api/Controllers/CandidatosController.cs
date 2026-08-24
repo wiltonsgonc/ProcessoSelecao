@@ -51,6 +51,24 @@ public class CandidatosController : ControllerBase
         return Ok(pontuacao);
     }
 
+    /// <summary>Busca candidato por número de inscrição e/ou CPF</summary>
+    [HttpGet("buscar")]
+    public async Task<ActionResult<CandidatoDto>> Buscar([FromQuery] string? numeroInscricao, [FromQuery] string? cpf)
+    {
+        if (string.IsNullOrWhiteSpace(numeroInscricao) && string.IsNullOrWhiteSpace(cpf))
+            return BadRequest(new { message = "Informe o número de inscrição ou CPF." });
+
+        var candidatos = await _service.GetAllAsync();
+        var candidato = candidatos.FirstOrDefault(c =>
+            (!string.IsNullOrWhiteSpace(numeroInscricao) && c.NumeroInscricao == numeroInscricao) ||
+            (!string.IsNullOrWhiteSpace(cpf) && c.Cpf == cpf));
+
+        if (candidato == null)
+            return NotFound(new { message = "Candidato não encontrado." });
+
+        return Ok(candidato);
+    }
+
     /// <summary>Cria um novo candidato</summary>
     [HttpPost]
     public async Task<ActionResult<CandidatoDto>> Create([FromBody] CreateCandidatoDto dto)
