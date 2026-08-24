@@ -16,6 +16,9 @@ public interface ICandidatoRepository : IRepository<Candidato>
     /// <summary>Busca candidato pelo CPF</summary>
     Task<Candidato?> GetByCpfAsync(string cpf);
     
+    /// <summary>Busca candidato por e-mail e data de nascimento</summary>
+    Task<Candidato?> GetByEmailAndDataNascimentoAsync(string email, DateTime dataNascimento);
+    
     /// <summary>Retorna candidatos por status de validação</summary>
     Task<IEnumerable<Candidato>> GetByStatusValidacaoAsync(Domain.Enums.StatusValidacao status);
     

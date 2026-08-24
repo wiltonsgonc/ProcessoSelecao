@@ -89,6 +89,13 @@ public class CandidatoRepository : ICandidatoRepository
         return await _context.Candidatos.FirstOrDefaultAsync(c => c.Cpf == cpf);
     }
 
+    /// <summary>Busca candidato por e-mail e data de nascimento</summary>
+    public async Task<Candidato?> GetByEmailAndDataNascimentoAsync(string email, DateTime dataNascimento)
+    {
+        return await _context.Candidatos.FirstOrDefaultAsync(c => 
+            c.Email == email && c.DataNascimento == dataNascimento);
+    }
+
     /// <summary>Retorna candidatos por status de validação</summary>
     public async Task<IEnumerable<Candidato>> GetByStatusValidacaoAsync(StatusValidacao status)
     {
