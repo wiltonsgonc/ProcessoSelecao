@@ -1,63 +1,136 @@
 @page "/candidato/login"
 @layout Layouts.PublicLayout
 @inject HttpClient Http
-@inject NavigationManager Navigation
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 @inject IConfiguration Configuration
+@using ProcessoSelecao.Blazor.Models
 
-<PageTitle>Acompanhamento de Inscrição</PageTitle>
+<PageTitle>Login - Candidato</PageTitle>
 
-<div class="formulario-container" style="max-width: 480px; margin: 2rem auto;">
-    <div class="conteudo-pagina">
-    <h2>Acompanhamento da Inscrição</h2>
-    <p>Informe seu número de inscrição e CPF para acessar o acompanhamento.</p>
-
-    @if (!string.IsNullOrEmpty(erro))
-    {
-        <div class="erro" style="margin-bottom: 1rem; text-align: center;">@erro</div>
-    }
-
-    <form @onsubmit="Buscar">
-        <div class="campo-obrigatorio">
-            <label for="numeroInscricao">Número de Inscrição: <span class="asterisco">*</span></label>
-            <input id="numeroInscricao" @bind="numeroInscricao" placeholder="Ex: 202600100001"
-                   class="@(submitted && string.IsNullOrEmpty(numeroInscricao) ? "invalid" : "")" />
-            @if (submitted && string.IsNullOrEmpty(numeroInscricao))
-            {
-                <div class="erro"><span>Campo obrigatório</span></div>
-            }
+<div class="flex items-center justify-center min-h-[80vh]">
+    <div class="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
+        <div class="text-center mb-6">
+            <span class="material-icons text-5xl text-indigo-600">person</span>
+            <h1 class="text-2xl font-bold text-gray-800 mt-2">Área do Candidato</h1>
+            <p class="text-sm text-gray-500">Acesse para acompanhar sua inscrição</p>
         </div>
 
-        <div class="campo-obrigatorio">
-            <label for="cpf">CPF: <span class="asterisco">*</span></label>
-            <input id="cpf" @bind:get="cpf" @bind:set="OnCpfSet" @bind:event="oninput" placeholder="000.000.000-00" maxlength="14"
-                   class="@(submitted && string.IsNullOrEmpty(cpf) ? "invalid" : "")" />
-            @if (submitted && string.IsNullOrEmpty(cpf))
-            {
-                <div class="erro"><span>Campo obrigatório</span></div>
-            }
-            @if (statusCpf == "valido")
-            {
-                <div class="acao valido"><span>CPF válido</span></div>
-            }
-            @if (statusCpf == "invalido")
-            {
-                <div class="acao invalido"><span>CPF inválido</span></div>
-            }
-        </div>
+        @if (!string.IsNullOrEmpty(erro))
+        {
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">@erro</div>
+        }
 
-        <div class="botoes">
-            <button type="submit">Buscar Inscrição</button>
+        @if (!string.IsNullOrEmpty(sucesso))
+        {
+            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm">@sucesso</div>
+        }
+
+        <!-- Step 1: Verificar identidade -->
+        @if (etapa == 1)
+        {
+            <form @onsubmit="VerificarCandidato" class="space-y-4">
+                <div class="text-sm text-gray-600 mb-2">Informe seu CPF <strong>ou</strong> e-mail + data de nascimento:</div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">CPF</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" @bind:get="cpf" @bind:set="OnCpfSet" @bind:event="oninput" placeholder="000.000.000-00" maxlength="14" />
+                    @if (statusCpf == "valido")
+                    {
+                        <div class="text-green-600 text-xs mt-1">CPF válido</div>
+                    }
+                    @if (statusCpf == "invalido")
+                    {
+                        <div class="text-red-600 text-xs mt-1">CPF inválido</div>
+                    }
+                </div>
+
+                <div class="text-center text-sm text-gray-400">— ou —</div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">E-mail</label>
+                    <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" @bind="email" placeholder="seu@email.com" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Data de Nascimento</label>
+                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" @bind="dataNascimento" />
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors font-medium" disabled="@carregando">
+                    @if (carregando) { <span>Verificando...</span> } else { <span>Continuar</span> }
+                </button>
+            </form>
+        }
+
+        <!-- Step 2: Definir senha (primeiro acesso) -->
+        @if (etapa == 2)
+        {
+            <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
+                Primeiro acesso! Defina uma senha para sua conta.
+            </div>
+
+            <form @onsubmit="DefinirSenha" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nova Senha</label>
+                    <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" @bind="novaSenha" required minlength="6" />
+                    <div class="text-xs text-gray-500 mt-1">Mínimo de 6 caracteres</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Confirmar Senha</label>
+                    <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" @bind="confirmarSenha" required />
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors font-medium" disabled="@carregando">
+                    @if (carregando) { <span>Salvando...</span> } else { <span>Definir Senha</span> }
+                </button>
+            </form>
+        }
+
+        <!-- Step 3: Digitar senha para login -->
+        @if (etapa == 3)
+        {
+            <form @onsubmit="Login" class="space-y-4">
+                <div class="text-sm text-gray-600">Bem-vindo(a), <strong>@candidatoNome</strong>!</div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Senha</label>
+                    <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" @bind="senha" required />
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors font-medium" disabled="@carregando">
+                    @if (carregando) { <span>Entrando...</span> } else { <span>Entrar</span> }
+                </button>
+            </form>
+        }
+
+        <div class="mt-6 text-center">
+            <a href="/inscricao" class="text-sm text-indigo-600 hover:text-indigo-800">Realizar inscrição</a>
         </div>
-    </form>
     </div>
 </div>
 
 @code {
-    private string numeroInscricao = "";
+    private int etapa = 1;
     private string cpf = "";
+    private string email = "";
+    private DateTime? dataNascimento;
+    private string novaSenha = "";
+    private string confirmarSenha = "";
+    private string senha = "";
     private string erro = "";
+    private string sucesso = "";
     private string statusCpf = "";
-    private bool submitted = false;
+    private bool carregando = false;
+    private long candidatoId;
+    private string candidatoNome = "";
+    private string candidatoEmail = "";
+
+    private string baseUrl = "";
+
+    protected override void OnInitialized()
+    {
+        baseUrl = Configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api";
+    }
 
     private void OnCpfSet(string? value)
     {
@@ -66,54 +139,167 @@
         statusCpf = digits.Length == 11 ? (CpfValidator.IsValid(digits) ? "valido" : "invalido") : "";
     }
 
-    private async Task Buscar()
+    private async Task VerificarCandidato()
     {
-        submitted = true;
+        carregando = true;
         erro = "";
-        statusCpf = "";
-
-        if (string.IsNullOrEmpty(numeroInscricao) || string.IsNullOrEmpty(cpf))
-            return;
+        sucesso = "";
+        StateHasChanged();
 
         var cpfDigitos = CpfValidator.Clean(cpf);
-        if (cpfDigitos.Length != 11 || !CpfValidator.IsValid(cpfDigitos))
+        var hasCpf = !string.IsNullOrWhiteSpace(cpf) && cpfDigitos.Length == 11 && CpfValidator.IsValid(cpfDigitos);
+        var hasEmail = !string.IsNullOrWhiteSpace(email) && dataNascimento.HasValue;
+
+        if (!hasCpf && !hasEmail)
         {
-            statusCpf = "invalido";
+            erro = "Informe um CPF válido ou e-mail + data de nascimento.";
+            carregando = false;
             return;
         }
 
         try
         {
-            var baseUrl = Configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api";
-            var response = await Http.GetAsync($"{baseUrl}/candidatos/buscar?numeroInscricao={Uri.EscapeDataString(numeroInscricao)}&cpf={Uri.EscapeDataString(cpf)}");
+            var dto = new VerificarCandidato
+            {
+                Cpf = hasCpf ? cpf : null,
+                Email = hasEmail ? email : null,
+                DataNascimento = hasEmail ? dataNascimento : null
+            };
+
+            var response = await Http.PostAsJsonAsync($"{baseUrl}/candidato-auth/verificar", dto);
 
             if (!response.IsSuccessStatusCode)
             {
-                erro = "Candidato não encontrado. Verifique o número de inscrição e CPF.";
+                erro = "Candidato não encontrado. Realize a inscrição.";
+                carregando = false;
                 return;
             }
 
-            var candidato = await response.Content.ReadFromJsonAsync<CandidatoInfo>(
-                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (candidato != null)
+            var result = await response.Content.ReadFromJsonAsync<CandidatoAuthResponse>();
+            if (result != null)
             {
-                Navigation.NavigateTo($"/candidato/acompanhamento/{candidato.Id}");
-            }
-            else
-            {
-                erro = "Candidato não encontrado.";
+                candidatoId = result.CandidatoId;
+                candidatoNome = result.Nome;
+                candidatoEmail = result.Email;
+
+                if (result.PrimeiroAcesso)
+                {
+                    etapa = 2;
+                }
+                else
+                {
+                    etapa = 3;
+                }
             }
         }
         catch (Exception ex)
         {
             erro = $"Erro ao conectar: {ex.Message}";
         }
+        finally
+        {
+            carregando = false;
+        }
     }
 
-    private class CandidatoInfo
+    private async Task DefinirSenha()
     {
-        public long Id { get; set; }
-        public string Nome { get; set; } = "";
-        public string NumeroInscricao { get; set; } = "";
+        carregando = true;
+        erro = "";
+        StateHasChanged();
+
+        if (novaSenha.Length < 6)
+        {
+            erro = "A senha deve ter pelo menos 6 caracteres.";
+            carregando = false;
+            return;
+        }
+
+        if (novaSenha != confirmarSenha)
+        {
+            erro = "As senhas não conferem.";
+            carregando = false;
+            return;
+        }
+
+        try
+        {
+            var dto = new DefinirSenhaCandidato
+            {
+                CandidatoId = candidatoId,
+                Senha = novaSenha
+            };
+
+            var response = await Http.PostAsJsonAsync($"{baseUrl}/candidato-auth/definir-senha", dto);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                erro = "Erro ao definir senha.";
+                carregando = false;
+                return;
+            }
+
+            sucesso = "Senha definida com sucesso! Redirecionando...";
+            StateHasChanged();
+            await Task.Delay(1500);
+
+            etapa = 3;
+            sucesso = "";
+        }
+        catch (Exception ex)
+        {
+            erro = $"Erro ao conectar: {ex.Message}";
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private async Task Login()
+    {
+        carregando = true;
+        erro = "";
+        StateHasChanged();
+
+        try
+        {
+            var cpfDigitos = CpfValidator.Clean(cpf);
+            var hasCpf = !string.IsNullOrWhiteSpace(cpf) && cpfDigitos.Length == 11 && CpfValidator.IsValid(cpfDigitos);
+
+            var dto = new LoginCandidato
+            {
+                Cpf = hasCpf ? cpf : null,
+                Email = !hasCpf ? email : null,
+                DataNascimento = !hasCpf ? dataNascimento : null,
+                Senha = senha
+            };
+
+            var response = await Http.PostAsJsonAsync($"{baseUrl}/candidato-auth/login", dto);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                erro = "Senha inválida.";
+                carregando = false;
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<CandidatoAuthResponse>();
+            if (result != null && result.Token != null)
+            {
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "candidato_token", result.Token);
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "candidato_id", result.CandidatoId.ToString());
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "candidato_nome", result.Nome);
+                Nav.NavigateTo("/candidato/painel");
+            }
+        }
+        catch (Exception ex)
+        {
+            erro = $"Erro ao conectar: {ex.Message}";
+        }
+        finally
+        {
+            carregando = false;
+        }
     }
 }
