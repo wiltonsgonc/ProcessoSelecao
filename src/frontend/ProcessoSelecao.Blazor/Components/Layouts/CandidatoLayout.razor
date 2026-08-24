@@ -1,0 +1,23 @@
+@inherits LayoutComponentBase
+
+<div class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14">
+                <div class="flex items-center gap-3">
+                    <span class="material-icons text-indigo-600">person</span>
+                    <span class="font-bold text-gray-800">Área do Candidato</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-600" id="candidato-nome"></span>
+                    <button class="text-sm text-red-600 hover:text-red-800" onclick="sessionStorage.clear(); window.location.href='/candidato/login';">
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        @Body
+    </main>
+</div>
