@@ -153,7 +153,7 @@
 @code {
     private List<Candidato> candidatos = new();
     private bool showForm = false;
-    private int? editingId = null;
+    private long? editingId = null;
     private CreateCandidato formData = new();
     private bool showModalDetail = false;
     private Candidato? selectedCandidato;
@@ -198,7 +198,7 @@
 
     private void CancelForm() { showForm = false; editingId = null; formData = new(); }
 
-    private async Task Remove(int id)
+    private async Task Remove(long id)
     {
         if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este candidato?"))
         { await Service.DeleteAsync(id); await Load(); }
