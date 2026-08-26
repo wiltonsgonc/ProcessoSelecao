@@ -5,7 +5,6 @@ public class Candidato
     public long Id { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Cpf { get; set; } = string.Empty;
-    public string? Rg { get; set; }
     public string? Telefone { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
@@ -25,7 +24,6 @@ public class CreateCandidato
 {
     public string Nome { get; set; } = string.Empty;
     public string Cpf { get; set; } = string.Empty;
-    public string? Rg { get; set; }
     public string? Telefone { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
