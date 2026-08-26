@@ -138,7 +138,6 @@ public class FormularioController : ControllerBase
         var nome = nomeCampo.ToLower().Replace("-", "").Replace("_", "");
         return nome switch
         {
-            "rgcpfcandidato" => Domain.Enums.TipoDocumento.HistoricoEscolar,
             "anexoi" => Domain.Enums.TipoDocumento.ComprovanteMatricula,
             "curriculolattescandidato" => Domain.Enums.TipoDocumento.CurriculumLatte,
             "curriculolattesorientador" => Domain.Enums.TipoDocumento.CartaRecomendacao,
