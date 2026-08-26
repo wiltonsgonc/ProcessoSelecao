@@ -18,7 +18,5 @@ namespace ProcessoSelecao.Application.DTOs
         public string CorRaca { get; set; }
         public string AutorizacaoDados { get; set; }
         public string TipoVisto { get; set; }
-        public string NumeroRegistroGeral { get; set; }
-        public string? DataVencimentoRG { get; set; }
     }
 }
