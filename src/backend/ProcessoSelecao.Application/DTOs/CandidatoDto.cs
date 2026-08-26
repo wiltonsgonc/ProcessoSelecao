@@ -10,7 +10,6 @@ public class CandidatoDto
     public long Id { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Cpf { get; set; } = string.Empty;
-    public string? RG { get; set; }
     public string? Telefone { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
@@ -32,7 +31,6 @@ public class CandidatoDto
     public string? Sexo { get; set; }
     public string? Telefone2 { get; set; }
     public string? CorRaca { get; set; }
-    public DateTime? DataVencimentoRG { get; set; }
     public string? TipoVisto { get; set; }
     public string? FormaInscricao { get; set; }
     public string? LocalProva { get; set; }
@@ -56,7 +54,6 @@ public class CreateCandidatoDto
 {
     public string Nome { get; set; } = string.Empty;
     public string Cpf { get; set; } = string.Empty;
-    public string? RG { get; set; }
     public string? Telefone { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
