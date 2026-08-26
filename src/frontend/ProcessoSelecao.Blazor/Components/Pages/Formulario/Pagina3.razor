@@ -4,16 +4,6 @@
     <h2>Documentos</h2>
 
     <div class="campo-obrigatorio">
-        <label>RG e CPF Candidato (PDF): <span class="asterisco">*</span></label>
-        <InputFile OnChange="e => OnFileChange(e, v => dados.RgCpfCandidatoArquivo = v, n => dados.RgCpfCandidatoNome = n)"
-                   class="@(dados.RgCpfCandidatoArquivo == null && submitted ? "invalid" : "")" />
-        @if (dados.RgCpfCandidatoArquivo == null && submitted)
-        {
-            <div class="erro"><span>Arquivo obrigatório</span></div>
-        }
-    </div>
-
-    <div class="campo-obrigatorio">
         <label>Anexo I do edital: <span class="asterisco">*</span></label>
         <InputFile OnChange="e => OnFileChange(e, v => dados.AnexoIArquivo = v, n => dados.AnexoINome = n)"
                    class="@(dados.AnexoIArquivo == null && submitted ? "invalid" : "")" />
@@ -109,7 +99,7 @@
     {
         submitted = true;
 
-        if (dados.RgCpfCandidatoArquivo == null || dados.AnexoIArquivo == null || dados.AnexoIIArquivo == null ||
+        if (dados.AnexoIArquivo == null || dados.AnexoIIArquivo == null ||
             dados.ComprovanteMatriculaArquivo == null || dados.HistoricoEscolarArquivo == null ||
             string.IsNullOrEmpty(dados.CurriculoLattesCandidato) || string.IsNullOrEmpty(dados.CurriculoLattesOrientador))
             return;
