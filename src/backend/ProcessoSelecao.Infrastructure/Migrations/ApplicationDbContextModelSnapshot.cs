@@ -173,9 +173,6 @@ namespace ProcessoSelecao.Infrastructure.Migrations
                     b.Property<DateTime?>("DataNascimento")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DataVencimentoRG")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("DeficienciaAuditiva")
                         .HasColumnType("bit");
 
@@ -253,10 +250,6 @@ namespace ProcessoSelecao.Infrastructure.Migrations
 
                     b.Property<long>("ProcessoSelecaoId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("RG")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("SenhaHash")
                         .HasColumnType("nvarchar(max)");
