@@ -62,10 +62,6 @@ public class InscricaoService : IInscricaoService
             if (!string.IsNullOrEmpty(dto.Pagina1?.DataNascimento) && DateTime.TryParse(dto.Pagina1.DataNascimento, out var parsedData))
                 dataNascimento = parsedData;
             
-            DateTime? dataVencimentoRG = null;
-            if (!string.IsNullOrEmpty(dto.Pagina2?.DataVencimentoRG) && DateTime.TryParse(dto.Pagina2.DataVencimentoRG, out var parsedVenc))
-                dataVencimentoRG = parsedVenc;
-            
             decimal? valorInscricao = null;
             if (!string.IsNullOrEmpty(dto.Pagina4?.ValorInscricao) && decimal.TryParse(dto.Pagina4.ValorInscricao, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var valorParsed))
                 valorInscricao = valorParsed;
@@ -75,7 +71,6 @@ public class InscricaoService : IInscricaoService
                 Nome = dto.Pagina1?.Nome ?? "Nome não informado",
                 Email = email,
                 Cpf = cpf,
-                RG = dto.Pagina2?.NumeroRegistroGeral,
                 Telefone = dto.Pagina1?.Telefone ?? dto.Pagina2?.Telefone1,
                 AreaPesquisa = dto.Pagina1?.AreaOfertada ?? string.Empty,
                 ProcessoSelecaoId = dto.ProcessoSelecaoId,
@@ -92,7 +87,6 @@ public class InscricaoService : IInscricaoService
                 Sexo = dto.Pagina2?.Sexo,
                 Telefone2 = dto.Pagina2?.Telefone2,
                 CorRaca = dto.Pagina2?.CorRaca,
-                DataVencimentoRG = dataVencimentoRG,
                 TipoVisto = dto.Pagina2?.TipoVisto,
                 FormaInscricao = dto.Pagina4?.FormaInscricao,
                 LocalProva = dto.Pagina4?.LocalProva,
