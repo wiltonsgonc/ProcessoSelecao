@@ -69,8 +69,7 @@ public class FormularioService
         if (DadosPagina3 == null)
             throw new Exception("Dados da página 3 (documentos) não preenchidos. Preencha os documentos antes de enviar.");
 
-        var hasAnyFile = DadosPagina3.RgCpfCandidatoArquivo != null
-            || DadosPagina3.AnexoIArquivo != null
+        var hasAnyFile = DadosPagina3.AnexoIArquivo != null
             || DadosPagina3.AnexoIIArquivo != null
             || DadosPagina3.ComprovanteMatriculaArquivo != null
             || DadosPagina3.HistoricoEscolarArquivo != null;
@@ -80,8 +79,6 @@ public class FormularioService
         if (!hasAnyFile && !hasAnyLink)
             throw new Exception("Nenhum arquivo ou link foi preenchido na página 3. Anexe os documentos obrigatórios antes de enviar.");
 
-        if (DadosPagina3.RgCpfCandidatoArquivo != null)
-            formData.Add(new ByteArrayContent(DadosPagina3.RgCpfCandidatoArquivo), "rgCpfCandidato", DadosPagina3.RgCpfCandidatoNome ?? "arquivo.pdf");
         if (DadosPagina3.AnexoIArquivo != null)
             formData.Add(new ByteArrayContent(DadosPagina3.AnexoIArquivo), "anexoI", DadosPagina3.AnexoINome ?? "arquivo.pdf");
         if (!string.IsNullOrEmpty(DadosPagina3.CurriculoLattesCandidato))
@@ -171,14 +168,10 @@ public class DadosPagina2
     public string? CorRaca { get; set; }
     public string? AutorizacaoDados { get; set; }
     public string? TipoVisto { get; set; }
-    public string? NumeroRegistroGeral { get; set; }
-    public string? DataVencimentoRG { get; set; }
 }
 
 public class DadosPagina3
 {
-    public byte[]? RgCpfCandidatoArquivo { get; set; }
-    public string? RgCpfCandidatoNome { get; set; }
     public byte[]? AnexoIArquivo { get; set; }
     public string? AnexoINome { get; set; }
     public string? CurriculoLattesCandidato { get; set; }
