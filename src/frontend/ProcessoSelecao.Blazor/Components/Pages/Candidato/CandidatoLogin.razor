@@ -5,6 +5,7 @@
 @inject IJSRuntime JS
 @inject IConfiguration Configuration
 @using ProcessoSelecao.Blazor.Models
+@using System.Web
 
 <PageTitle>Login - Candidato</PageTitle>
 
@@ -104,7 +105,14 @@
         }
 
         <div class="mt-6 text-center">
-            <a href="/inscricao" class="text-sm text-indigo-600 hover:text-indigo-800">Realizar inscrição</a>
+            @if (processoId.HasValue)
+            {
+                <a href="/inscricao/@processoId" class="text-sm text-indigo-600 hover:text-indigo-800">Realizar inscrição</a>
+            }
+            else
+            {
+                <a href="/inscricao" class="text-sm text-indigo-600 hover:text-indigo-800">Realizar inscrição</a>
+            }
         </div>
     </div>
 </div>
@@ -126,10 +134,18 @@
     private string candidatoEmail = "";
 
     private string baseUrl = "";
+    private long? processoId = null;
 
     protected override void OnInitialized()
     {
         baseUrl = Configuration["Backend:BaseUrl"] ?? "http://localhost:5002/api";
+
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("processo", out var processoIdStr)
+            && long.TryParse(processoIdStr, out var parsedId))
+        {
+            processoId = parsedId;
+        }
     }
 
     private void OnCpfSet(string? value)
@@ -290,7 +306,11 @@
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "candidato_token", result.Token);
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "candidato_id", result.CandidatoId.ToString());
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "candidato_nome", result.Nome);
-                Nav.NavigateTo("/candidato/painel");
+
+                if (processoId.HasValue)
+                    Nav.NavigateTo($"/inscricao/{processoId.Value}");
+                else
+                    Nav.NavigateTo("/candidato/painel");
             }
         }
         catch (Exception ex)
