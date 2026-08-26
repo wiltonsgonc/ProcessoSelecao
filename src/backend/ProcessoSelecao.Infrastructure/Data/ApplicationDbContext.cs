@@ -37,7 +37,6 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Cpf).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.RG).HasMaxLength(50);
             entity.Property(e => e.Telefone).HasMaxLength(30);
             entity.Property(e => e.Telefone2).HasMaxLength(30);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
@@ -52,7 +51,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Nacionalidade).HasMaxLength(100);
             entity.Property(e => e.Sexo).HasMaxLength(20);
             entity.Property(e => e.CorRaca).HasMaxLength(50);
-            entity.Property(e => e.DataVencimentoRG).HasColumnType("datetime2");
             entity.Property(e => e.TipoVisto).HasMaxLength(50);
             entity.Property(e => e.FormaInscricao).HasMaxLength(100);
             entity.Property(e => e.LocalProva).HasMaxLength(200);
