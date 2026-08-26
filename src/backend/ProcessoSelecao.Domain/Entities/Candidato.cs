@@ -13,9 +13,6 @@ public class Candidato : BaseEntity
     /// <summary>Matrícula do candidato na instituição</summary>
     public string Cpf { get; set; } = string.Empty;
     
-    /// <summary>RG do candidato</summary>
-    public string? RG { get; set; }
-    
     /// <summary>Telefone do candidato</summary>
     public string? Telefone { get; set; }
     
@@ -72,9 +69,6 @@ public class Candidato : BaseEntity
     
     /// <summary>Cor/Raça</summary>
     public string? CorRaca { get; set; }
-    
-    /// <summary>Data de vencimento do RG</summary>
-    public DateTime? DataVencimentoRG { get; set; }
     
     /// <summary>Tipo de visto</summary>
     public string? TipoVisto { get; set; }
