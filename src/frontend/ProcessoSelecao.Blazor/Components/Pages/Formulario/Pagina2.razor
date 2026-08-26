@@ -130,18 +130,6 @@
         <input id="tipoVisto" @bind="dados.TipoVisto" placeholder="Tipo de Visto" />
     </div>
 
-    <div>
-        <label for="numeroRegistroGeral">Número registro geral:</label>
-        <input id="numeroRegistroGeral" @bind="dados.NumeroRegistroGeral" placeholder="Número registro geral" />
-    </div>
-
-    <div>
-        <label for="dataVencimentoRG">Data vencimento RG:</label>
-        <input id="dataVencimentoRG" type="date" placeholder="Data vencimento RG"
-               value="@(string.IsNullOrEmpty(dados.DataVencimentoRG) ? "" : DateTime.Parse(dados.DataVencimentoRG).ToString("yyyy-MM-dd"))"
-               @onchange="e => dados.DataVencimentoRG = e.Value?.ToString()" />
-    </div>
-
     <div class="botoes">
         <button type="button" @onclick="OnAnteriorHandler">Anterior</button>
         <button type="submit">Próximo</button>
