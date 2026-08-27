@@ -30,12 +30,13 @@ ProcessoSelecao/
 │   │       ├── Components/
 │   │       │   ├── App.razor              # Shell HTML
 │   │       │   ├── Routes.razor           # Router
-│   │       │   ├── Layouts/               # AdminLayout, AvaliadorLayout e PublicLayout
+│   │       │   ├── Layouts/               # AdminLayout, AvaliadorLayout, CandidatoLayout e PublicLayout
 │   │       │   └── Pages/
 │   │       │       ├── Public/            # Home, ProcessoPublicList
 │   │       │       ├── Formulario/        # Wizard de inscricao (4 paginas)
 │   │       │       ├── Admin/             # CRUD + Avaliacao
-│   │       │       └── Avaliador/         # Portal do avaliador (login, painel, avaliacao)
+│   │       │       ├── Avaliador/         # Portal do avaliador (login, painel, avaliacao)
+│   │       │       └── Candidato/         # Portal do candidato (login, painel)
 │   │       ├── Models/                    # DTOs C# (ProcessoSelecao, Candidato, etc.)
 │   │       ├── Services/                  # HTTP clients para a API
 │   │       ├── wwwroot/css/app.css        # Estilos
@@ -286,6 +287,14 @@ Com o seed ativo, voce pode navegar pelo sistema usando:
 | Avaliador Externo (UFPE) | `carlos.oliveira@ufpe.br` ou CPF `11122233396` | `123456` |
 | Avaliador Externo (UFRPE) | `ana.costa@ufrpe.br` ou CPF `55566677720` | `123456` |
 
+#### Candidatos (modo Development)
+
+| Papel | Credencial | Acesso |
+|-------|-----------|--------|
+| Candidato 1 | CPF `52998224725` ou email `pedro.alves@email.com` + data nasc. 15/03/2002 | Primeiro acesso (definir senha) |
+| Candidato 2 | CPF `12345678909` ou email `lucia.mendes@email.com` + data nasc. 22/07/2001 | Primeiro acesso (definir senha) |
+| Candidato 3 | CPF `11122233396` ou email `roberto.lima@email.com` + data nasc. 05/11/2003 | Primeiro acesso (definir senha) |
+
 Rotas disponiveis com dados preenchidos:
 
 | Rota | O que ve |
@@ -295,6 +304,8 @@ Rotas disponiveis com dados preenchidos:
 | `/avaliador/login` | Login com CPF + `123456` |
 | `/avaliador/painel` | Baremas atribuidos ao avaliador logado |
 | `/avaliador/avaliacao/{id}` | Formulario de avaliacao com criterios pre-preenchidos |
+| `/candidato/login` | Login do candidato (CPF ou email + data nascimento + senha) |
+| `/candidato/painel` | Painel do candidato (dados pessoais, status inscricao, documentos) |
 
 ### Usando os scripts (recomendado)
 
@@ -436,6 +447,12 @@ podman compose build --no-cache && podman compose up -d
 - Associar candidatos a processos
 - Visualizar pontuacao media e detalhes
 
+### Modulo Portal do Candidato
+- Login autenticado via CPF (ou e-mail + data de nascimento) + senha
+- Definicao de senha no primeiro acesso
+- Painel com dados pessoais, status da inscricao e resumo de documentos
+- Acesso direto para inscricao via link `/candidato/login?processo={id}`
+
 ### Modulo Documentos
 - Upload de documentos (Historico, Comprovante, Cartas, etc.)
 - Validacao de documentos (aprovar/rejeitar com motivo)
@@ -520,6 +537,9 @@ podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 | POST /api/formulario/completa | Inscricao publica | Nao |
 | POST /api/avaliador-auth/login | Login do avaliador (CPF + senha) | Nao |
 | POST /api/avaliador-auth/definir-senha | Definir senha do avaliador | Nao |
+| POST /api/candidato-auth/verificar | Verificar identidade do candidato (CPF ou email+data nascimento) | Nao |
+| POST /api/candidato-auth/login | Login do candidato (CPF/email + senha) | Nao |
+| POST /api/candidato-auth/definir-senha | Definir senha do candidato (primeiro acesso) | Nao |
 | GET /api/avaliador-painel/baremas | Baremas do avaliador autenticado | JWT |
 | GET /api/avaliador-painel/candidato/{id} | Dados do candidato | JWT |
 | GET /api/avaliador-painel/documentos/{id} | Documentos do candidato | JWT |
