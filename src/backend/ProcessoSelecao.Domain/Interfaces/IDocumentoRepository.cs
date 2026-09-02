@@ -12,4 +12,7 @@ public interface IDocumentoRepository : IRepository<Documento>
     
     /// <summary>Retorna documentos pendentes de validação</summary>
     Task<IEnumerable<Documento>> GetPendentesValidacaoAsync();
+
+    /// <summary>Retorna todos os documentos de candidatos de um processo seletivo</summary>
+    Task<IEnumerable<Documento>> GetByProcessoIdAsync(long processoId);
 }
