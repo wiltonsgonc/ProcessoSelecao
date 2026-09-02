@@ -1,0 +1,443 @@
+@page "/admin/definir-avaliador"
+@using ProcessoSelecao.Blazor.Models
+@using ProcessoSelecao.Blazor.Services
+@layout Layouts.AdminLayout
+@inject ProcessoSelecaoService ProcessoService
+@inject CandidatoService CandidatoService
+@inject AvaliadorService AvaliadorService
+@inject BaremaService BaremaService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Definir Avaliadores</PageTitle>
+
+<h1 class="text-2xl font-bold mb-5">Definir Avaliadores</h1>
+
+@if (!string.IsNullOrEmpty(mensagem))
+{
+    <div class="p-4 rounded mb-5 @(sucesso ? "bg-green-100 border border-green-300 text-green-800" : "bg-red-100 border border-red-300 text-red-800")">
+        @((MarkupString)mensagem)
+    </div>
+}
+
+<!-- Passo 1: Processo -->
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full @(processoSelecionado != null ? "bg-green-600 text-white" : "bg-blue-600 text-white") text-sm font-bold">1</span>
+        Selecionar Processo
+    </h2>
+    <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="processoSelecionadoId" @bind:after="OnProcessoChanged">
+        <option value="">-- Selecione um processo --</option>
+        @foreach (var p in processos)
+        {
+            <option value="@p.Id">@p.Nome (@p.TipoProcesso) - @p.Status</option>
+        }
+    </select>
+</div>
+
+<!-- Passo 2: Candidato -->
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((processoSelecionado == null) ? "opacity-50 pointer-events-none" : "")">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full @(candidatoSelecionado != null ? "bg-green-600 text-white" : "bg-blue-600 text-white") text-sm font-bold">2</span>
+        Selecionar Candidato
+    </h2>
+    @if (carregandoCandidatos)
+    {
+        <p class="text-gray-500">Carregando candidatos...</p>
+    }
+    else if (candidatos.Count == 0)
+    {
+        <p class="text-gray-500">Nenhum candidato encontrado para este processo.</p>
+    }
+    else
+    {
+        <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="candidatoSelecionadoId" @bind:after="OnCandidatoChanged">
+            <option value="">-- Selecione um candidato --</option>
+            @foreach (var c in candidatos)
+            {
+                <option value="@c.Id">@c.Nome - @c.NumeroInscricao</option>
+            }
+        </select>
+
+        @if (candidatoSelecionado != null)
+        {
+            <div class="mt-3 p-3 bg-gray-50 rounded text-sm space-y-1">
+                <p><strong>Orientador:</strong> @(candidatoSelecionado.Orientador ?? "Não informado")</p>
+                <p><strong>Área de Pesquisa:</strong> @(candidatoSelecionado.AreaPesquisa ?? "Não informada")</p>
+                <p><strong>Projeto:</strong> @(candidatoSelecionado.TituloProjeto ?? "Não informado")</p>
+                @if (progressoCandidato != null)
+                {
+                    <div class="mt-2 pt-2 border-t border-gray-200">
+                        <p><strong>Avaliadores:</strong> @progressoCandidato.AvaliadoresAtribuidos de @progressoCandidato.AvaliadoresNecessarios atribuídos</p>
+                        @if (progressoCandidato.AvaliadoresAtribuidos >= progressoCandidato.AvaliadoresNecessarios)
+                        {
+                            <p class="text-green-600 font-semibold mt-1">Este candidato já possui o número máximo de avaliadores.</p>
+                        }
+                        else if (progressoCandidato.AvaliadoresAtribuidos > 0)
+                        {
+                            <p class="text-yellow-600 font-semibold mt-1">Falta definir @(progressoCandidato.AvaliadoresNecessarios - progressoCandidato.AvaliadoresAtribuidos) avaliador(es).</p>
+                            @foreach (var b in progressoCandidato.Baremas)
+                            {
+                                <p class="text-xs text-gray-500">- @b.AvaliadorNome: @GetStatusLabel(b.Status)</p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-blue-600 font-semibold mt-1">Nenhum avaliador definido. Selecione os 2 avaliadores abaixo.</p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+<!-- Passo 3: Avaliadores -->
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((candidatoSelecionado == null) ? "opacity-50 pointer-events-none" : "")">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full @(avaliador1 != null && avaliador2 != null ? "bg-green-600 text-white" : "bg-blue-600 text-white") text-sm font-bold">3</span>
+        Selecionar 2 Avaliadores
+    </h2>
+
+    @if (carregandoAvaliadores)
+    {
+        <p class="text-gray-500">Carregando avaliadores...</p>
+    }
+    else if (avaliadores.Count == 0)
+    {
+        <p class="text-gray-500">Nenhum avaliador encontrado para este processo.</p>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Avaliador 1 -->
+            <div class="border border-gray-200 rounded-lg p-4">
+                <label class="block text-sm font-semibold mb-2 text-gray-700">Avaliador 1</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded text-sm" @bind="avaliador1Id" @bind:after="OnAvaliador1Changed">
+                    <option value="">-- Selecione --</option>
+                    @foreach (var a in avaliadores.Where(a => a.Ativo))
+                    {
+                        <option value="@a.Id">@a.Nome</option>
+                    }
+                </select>
+                @if (avaliador1 != null)
+                {
+                    <div class="mt-2 p-2 bg-gray-50 rounded text-xs space-y-0.5">
+                        <p><strong>Email:</strong> @avaliador1.Email</p>
+                        <p><strong>Área:</strong> @(avaliador1.AreaEspecializacao ?? "-")</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Avaliador 2 -->
+            <div class="border border-gray-200 rounded-lg p-4">
+                <label class="block text-sm font-semibold mb-2 text-gray-700">Avaliador 2</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded text-sm" @bind="avaliador2Id" @bind:after="OnAvaliador2Changed">
+                    <option value="">-- Selecione --</option>
+                    @foreach (var a in avaliadores.Where(a => a.Ativo && a.Id.ToString() != avaliador1Id))
+                    {
+                        <option value="@a.Id">@a.Nome</option>
+                    }
+                </select>
+                @if (avaliador2 != null)
+                {
+                    <div class="mt-2 p-2 bg-gray-50 rounded text-xs space-y-0.5">
+                        <p><strong>Email:</strong> @avaliador2.Email</p>
+                        <p><strong>Área:</strong> @(avaliador2.AreaEspecializacao ?? "-")</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Ação -->
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((avaliador1 == null || avaliador2 == null) ? "opacity-50 pointer-events-none" : "")">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold">4</span>
+        Confirmar Atribuição
+    </h2>
+
+    @if (erroValidacao != null)
+    {
+        <div class="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700 mb-4">
+            @erroValidacao
+        </div>
+    }
+
+    @if (candidatoSelecionado != null && avaliador1 != null && avaliador2 != null)
+    {
+        <div class="p-4 bg-gray-50 rounded mb-4 text-sm">
+            <p>Os avaliadores <strong>@avaliador1.Nome</strong> e <strong>@avaliador2.Nome</strong> serão designados para avaliar o candidato <strong>@candidatoSelecionado.Nome</strong> no processo <strong>@processoSelecionado?.Nome</strong>.</p>
+        </div>
+    }
+
+    <div class="flex gap-2">
+        <button class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled="@(avaliador1 == null || avaliador2 == null || criando)"
+                @onclick="CriarBaremas">
+            @if (criando)
+            {
+                <span>Criando...</span>
+            }
+            else
+            {
+                <span>Criar 2 Baremas</span>
+            }
+        </button>
+        <button class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600 transition-colors" @onclick="Limpar">Limpar</button>
+    </div>
+</div>
+
+@code {
+    private List<ProcessoSelecao> processos = new();
+    private List<Candidato> candidatos = new();
+    private List<Avaliador> avaliadores = new();
+    private ProgressoCandidato? progressoCandidato;
+
+    private ProcessoSelecao? processoSelecionado;
+    private Candidato? candidatoSelecionado;
+    private Avaliador? avaliador1;
+    private Avaliador? avaliador2;
+
+    private string? processoSelecionadoId;
+    private string? candidatoSelecionadoId;
+    private string? avaliador1Id;
+    private string? avaliador2Id;
+
+    private bool carregandoCandidatos;
+    private bool carregandoAvaliadores;
+    private bool criando;
+
+    private string? mensagem;
+    private bool sucesso;
+    private string? erroValidacao;
+
+    protected override async Task OnInitializedAsync()
+    {
+        processos = await ProcessoService.GetAllAsync();
+    }
+
+    private async Task OnProcessoChanged()
+    {
+        candidatoSelecionado = null;
+        avaliador1 = null;
+        avaliador2 = null;
+        candidatoSelecionadoId = null;
+        avaliador1Id = null;
+        avaliador2Id = null;
+        erroValidacao = null;
+        mensagem = null;
+        progressoCandidato = null;
+
+        if (string.IsNullOrEmpty(processoSelecionadoId) || !int.TryParse(processoSelecionadoId, out var pid))
+        {
+            processoSelecionado = null;
+            candidatos = new();
+            avaliadores = new();
+            return;
+        }
+
+        processoSelecionado = processos.FirstOrDefault(p => p.Id == pid);
+
+        carregandoCandidatos = true;
+        carregandoAvaliadores = true;
+        StateHasChanged();
+
+        candidatos = await CandidatoService.GetByProcessoIdAsync(pid);
+        avaliadores = await AvaliadorService.GetByProcessoIdAsync(pid);
+
+        carregandoCandidatos = false;
+        carregandoAvaliadores = false;
+    }
+
+    private async Task OnCandidatoChanged()
+    {
+        avaliador1 = null;
+        avaliador2 = null;
+        avaliador1Id = null;
+        avaliador2Id = null;
+        erroValidacao = null;
+        mensagem = null;
+        progressoCandidato = null;
+
+        if (string.IsNullOrEmpty(candidatoSelecionadoId) || !long.TryParse(candidatoSelecionadoId, out var cid))
+        {
+            candidatoSelecionado = null;
+            return;
+        }
+
+        candidatoSelecionado = candidatos.FirstOrDefault(c => c.Id == cid);
+
+        if (candidatoSelecionado != null && processoSelecionado != null)
+        {
+            var progresso = await BaremaService.GetProgressoAsync(processoSelecionado.Id);
+            progressoCandidato = progresso.FirstOrDefault(p => p.CandidatoId == cid);
+        }
+    }
+
+    private void OnAvaliador1Changed()
+    {
+        erroValidacao = null;
+        avaliador1 = string.IsNullOrEmpty(avaliador1Id) || !int.TryParse(avaliador1Id, out var aid)
+            ? null
+            : avaliadores.FirstOrDefault(a => a.Id == aid);
+
+        ValidarAvaliadores();
+    }
+
+    private void OnAvaliador2Changed()
+    {
+        erroValidacao = null;
+        avaliador2 = string.IsNullOrEmpty(avaliador2Id) || !int.TryParse(avaliador2Id, out var aid)
+            ? null
+            : avaliadores.FirstOrDefault(a => a.Id == aid);
+
+        ValidarAvaliadores();
+    }
+
+    private void ValidarAvaliadores()
+    {
+        if (avaliador1 == null || avaliador2 == null || candidatoSelecionado == null) return;
+
+        if (avaliador1.Id == avaliador2.Id)
+        {
+            erroValidacao = "Os dois avaliadores devem ser diferentes.";
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(candidatoSelecionado.Orientador))
+        {
+            if (string.Equals(avaliador1.Nome.Trim(), candidatoSelecionado.Orientador.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                erroValidacao = $"O Avaliador 1 ({avaliador1.Nome}) é o orientador do candidato. Não é permitido.";
+                return;
+            }
+            if (string.Equals(avaliador2.Nome.Trim(), candidatoSelecionado.Orientador.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                erroValidacao = $"O Avaliador 2 ({avaliador2.Nome}) é o orientador do candidato. Não é permitido.";
+                return;
+            }
+        }
+
+        if (progressoCandidato != null && progressoCandidato.Baremas.Any(b => b.AvaliadorId == avaliador1.Id))
+        {
+            erroValidacao = $"O Avaliador 1 ({avaliador1.Nome}) já está atribuído a este candidato.";
+            return;
+        }
+        if (progressoCandidato != null && progressoCandidato.Baremas.Any(b => b.AvaliadorId == avaliador2.Id))
+        {
+            erroValidacao = $"O Avaliador 2 ({avaliador2.Nome}) já está atribuído a este candidato.";
+            return;
+        }
+
+        if (progressoCandidato != null && progressoCandidato.AvaliadoresAtribuidos >= progressoCandidato.AvaliadoresNecessarios)
+        {
+            erroValidacao = "Este candidato já possui o número máximo de avaliadores.";
+            return;
+        }
+
+        erroValidacao = null;
+    }
+
+    private async Task CriarBaremas()
+    {
+        if (candidatoSelecionado == null || avaliador1 == null || avaliador2 == null) return;
+        if (erroValidacao != null) return;
+
+        criando = true;
+        mensagem = null;
+        StateHasChanged();
+
+        try
+        {
+            var tipoBarema = processoSelecionado?.TipoProcesso ?? "PIBIC";
+
+            var dto1 = new CreateBarema
+            {
+                CandidatoId = (int)candidatoSelecionado.Id,
+                AvaliadorId = avaliador1.Id,
+                TipoBarema = tipoBarema
+            };
+
+            var dto2 = new CreateBarema
+            {
+                CandidatoId = (int)candidatoSelecionado.Id,
+                AvaliadorId = avaliador2.Id,
+                TipoBarema = tipoBarema
+            };
+
+            var result1 = await BaremaService.CreateAsync(dto1);
+            var result2 = await BaremaService.CreateAsync(dto2);
+
+            if (result1 != null && result2 != null)
+            {
+                var baseUrl = Nav.BaseUri.TrimEnd('/');
+                var linkPainel = $"{baseUrl}/avaliador/painel";
+                var link1 = $"{baseUrl}/avaliador/avaliacao/{result1.Id}";
+                var link2 = $"{baseUrl}/avaliador/avaliacao/{result2.Id}";
+
+                sucesso = true;
+                mensagem = $@"<strong>2 baremas criados com sucesso!</strong><br/>
+                    <strong>Candidato:</strong> {candidatoSelecionado.Nome}<br/><br/>
+
+                    <strong>Avaliador 1:</strong> {avaliador1.Nome}<br/>
+                    <code class='bg-gray-100 px-2 py-1 rounded text-sm block mb-1'>{link1}</code>
+                    <button class='bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 mb-3' @onclick=""() => CopiarLink(""{link1}"")"">Copiar Link</button><br/>
+
+                    <strong>Avaliador 2:</strong> {avaliador2.Nome}<br/>
+                    <code class='bg-gray-100 px-2 py-1 rounded text-sm block mb-1'>{link2}</code>
+                    <button class='bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 mb-3' @onclick=""() => CopiarLink(""{link2}"")"">Copiar Link</button><br/>
+
+                    <small class='text-gray-600'>Os avaliadores devem acessar <a href='{linkPainel}' target='_blank' class='text-blue-600 underline'>{linkPainel}</a> e fazer login com CPF e senha.</small>";
+
+                Limpar();
+            }
+            else
+            {
+                sucesso = false;
+                mensagem = "Erro ao criar baremas. Verifique se os avaliadores já não estão atribuídos a este candidato.";
+            }
+        }
+        catch
+        {
+            sucesso = false;
+            mensagem = "Erro ao criar baremas. Verifique se os avaliadores já não estão atribuídos a este candidato.";
+        }
+        finally
+        {
+            criando = false;
+        }
+    }
+
+    private async Task CopiarLink(string link)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", link);
+        await JS.InvokeVoidAsync("alert", $"Link copiado!\n\n{link}");
+    }
+
+    private void Limpar()
+    {
+        processoSelecionadoId = null;
+        candidatoSelecionadoId = null;
+        avaliador1Id = null;
+        avaliador2Id = null;
+        processoSelecionado = null;
+        candidatoSelecionado = null;
+        avaliador1 = null;
+        avaliador2 = null;
+        progressoCandidato = null;
+        candidatos = new();
+        avaliadores = new();
+        erroValidacao = null;
+    }
+
+    private string GetStatusLabel(StatusBarema s) => s switch
+    {
+        StatusBarema.Pendente => "Pendente",
+        StatusBarema.EmPreenchimento => "Em Preenchimento",
+        StatusBarema.Concluido => "Concluído",
+        StatusBarema.Cancelado => "Cancelado",
+        _ => "Desconhecido"
+    };
+}
