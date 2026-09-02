@@ -8,6 +8,7 @@ public class Candidato
     public string? Telefone { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? AreaPesquisa { get; set; }
+    public string? Orientador { get; set; }
     public StatusValidacao StatusValidacao { get; set; }
     public DateTime DataCadastro { get; set; }
     public long ProcessoSelecaoId { get; set; }

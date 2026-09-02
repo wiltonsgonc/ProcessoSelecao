@@ -37,3 +37,18 @@ public class AvaliadorCandidatoInfo
     public string? Email { get; set; }
     public string? Telefone { get; set; }
 }
+
+public class BaremaDadosDto
+{
+    public long BaremaId { get; set; }
+    public string? NomeOrientador { get; set; }
+    public string? NomeEstudante { get; set; }
+    public string? CursoGraduacao { get; set; }
+    public string? NomeAvaliador { get; set; }
+    public string TipoBarema { get; set; } = "PIBIC";
+    public StatusBarema Status { get; set; }
+    public string? CriteriosJson { get; set; }
+    public float NotaFinal { get; set; }
+    public string? Observacoes { get; set; }
+    public List<Models.Documento>? Documentos { get; set; }
+}

@@ -10,6 +10,7 @@ public class ProcessoSelecao
     public int VagasDisponiveis { get; set; }
     public string? AgenciaFomento { get; set; }
     public string? NivelBolsa { get; set; }
+    public string TipoProcesso { get; set; } = "PIBIC";
     public StatusProcesso Status { get; set; }
     public int TotalCandidatos { get; set; }
     public int TotalAvaliadores { get; set; }
@@ -22,6 +23,7 @@ public class CreateProcessoSelecao
     public int VagasDisponiveis { get; set; }
     public string? AgenciaFomento { get; set; }
     public string? NivelBolsa { get; set; }
+    public string TipoProcesso { get; set; } = "PIBIC";
     public string? DataInicio { get; set; }
     public string? DataFim { get; set; }
 }
@@ -33,6 +35,7 @@ public class UpdateProcessoSelecao
     public int VagasDisponiveis { get; set; }
     public string? AgenciaFomento { get; set; }
     public string? NivelBolsa { get; set; }
+    public string TipoProcesso { get; set; } = "PIBIC";
     public string? DataInicio { get; set; }
     public string? DataFim { get; set; }
 }
