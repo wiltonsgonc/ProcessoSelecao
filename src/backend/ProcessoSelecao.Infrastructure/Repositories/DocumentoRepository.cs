@@ -79,4 +79,13 @@ public class DocumentoRepository : IDocumentoRepository
             .Where(d => !d.Validado)
             .ToListAsync();
     }
+
+    /// <summary>Retorna todos os documentos de candidatos de um processo seletivo</summary>
+    public async Task<IEnumerable<Documento>> GetByProcessoIdAsync(long processoId)
+    {
+        return await _context.Documentos
+            .Include(d => d.Candidato)
+            .Where(d => d.Candidato != null && d.Candidato.ProcessoSelecaoId == processoId)
+            .ToListAsync();
+    }
 }
