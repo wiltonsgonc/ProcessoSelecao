@@ -37,6 +37,17 @@
                 <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.NivelBolsa" placeholder="Ex: Graduação, Mestrado, Doutorado" />
             </div>
             <div>
+                <label class="block text-sm font-medium mb-1">Tipo do Processo</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" @bind="formData.TipoProcesso">
+                    <option value="PIBIC">PIBIC</option>
+                    <option value="PIBIT">PIBIT</option>
+                    <option value="PRH27">PRH 2.7</option>
+                    <option value="MCTI">MCTI</option>
+                    <option value="GETEC">GETEC</option>
+                    <option value="MPDS">MPDS</option>
+                </select>
+            </div>
+            <div>
                 <label class="block text-sm font-medium mb-1">Data de Início</label>
                 <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                        value="@(string.IsNullOrEmpty(formData.DataInicio) ? "" : DateTime.Parse(formData.DataInicio).ToString("yyyy-MM-dd"))"
@@ -63,6 +74,7 @@
                 <tr class="bg-gray-50">
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nome</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Tipo</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Agência</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nível Bolsa</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Vagas</th>
@@ -79,6 +91,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-3 py-2.5 border-b border-gray-200">@p.Id</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@p.Nome</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@p.TipoProcesso</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@(p.AgenciaFomento ?? "-")</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@(p.NivelBolsa ?? "-")</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@p.VagasDisponiveis</td>

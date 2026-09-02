@@ -1,7 +1,11 @@
 @page "/admin/baremas"
 @using ProcessoSelecao.Blazor.Models
+@using ProcessoSelecao.Blazor.Services
 @layout Layouts.AdminLayout
 @inject BaremaService Service
+@inject CandidatoService CandidatoService
+@inject ProcessoSelecaoService ProcessoService
+@inject NavigationManager Nav
 @inject IJSRuntime JS
 
 <PageTitle>Baremas</PageTitle>
@@ -74,6 +78,7 @@
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidato</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Avaliador</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Processo</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nota Final</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Data</th>
@@ -87,19 +92,23 @@
                         <td class="px-3 py-2.5 border-b border-gray-200">@b.Id</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@(b.CandidatoNome ?? b.CandidatoId.ToString())</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@(b.AvaliadorNome ?? b.AvaliadorId.ToString())</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">@GetProcessoNome(b.CandidatoId)</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@b.NotaFinal.ToString("F2")</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">
                             <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @GetStatusClass(b.Status)">@GetStatusLabel(b.Status)</span>
                         </td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@FormatDateTime(b.DataPreenchimento)</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">
-                            @if (b.Status != StatusBarema.Concluido)
-                            {
-                                <div class="flex gap-1">
+                            <div class="flex gap-1 flex-wrap">
+                                <button class="bg-gray-600 text-white px-2.5 py-1 rounded text-xs hover:bg-gray-700" @onclick="() => CopiarLink(b.Id)" title="Copiar link do avaliador">
+                                    <span class="material-icons text-sm align-middle">link</span>
+                                </button>
+                                @if (b.Status != StatusBarema.Concluido)
+                                {
                                     <button class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700" @onclick="() => OpenFinalizar(b)">Avaliar</button>
                                     <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Remove(b.Id)">Excluir</button>
-                                </div>
-                            }
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
@@ -110,6 +119,9 @@
 
 @code {
     private List<Barema> baremas = new();
+    private List<Candidato> candidatos = new();
+    private List<ProcessoSelecao> processos = new();
+    private Dictionary<long, string> processoPorCandidato = new();
     private bool showForm = false;
     private bool showFinalizarModal = false;
     private Barema? selectedBarema;
@@ -126,7 +138,32 @@
     }
 
     protected override async Task OnInitializedAsync() => await Load();
-    private async Task Load() => baremas = await Service.GetAllAsync();
+
+    private async Task Load()
+    {
+        baremas = await Service.GetAllAsync();
+        candidatos = await CandidatoService.GetAllAsync();
+        processos = await ProcessoService.GetAllAsync();
+
+        processoPorCandidato = candidatos.ToDictionary(
+            c => c.Id,
+            c => processos.FirstOrDefault(p => p.Id == c.ProcessoSelecaoId)?.Nome ?? $"Processo #{c.ProcessoSelecaoId}");
+    }
+
+    private string GetProcessoNome(int candidatoId)
+    {
+        if (processoPorCandidato.TryGetValue(candidatoId, out var nome)) return nome;
+        var c = candidatos.FirstOrDefault(x => x.Id == candidatoId);
+        return c != null ? $"Processo #{c.ProcessoSelecaoId}" : "-";
+    }
+
+    private async Task CopiarLink(int baremaId)
+    {
+        var baseUrl = Nav.BaseUri.TrimEnd('/');
+        var link = $"{baseUrl}/avaliador/avaliacao/{baremaId}";
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", link);
+        await JS.InvokeVoidAsync("alert", $"Link copiado!\n\n{link}");
+    }
 
     private async Task Create()
     {
