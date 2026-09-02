@@ -35,6 +35,15 @@ public interface IBaremaService
     
     /// <summary>Retorna baremas de um avaliador</summary>
     Task<IEnumerable<BaremaDto>> GetByAvaliadorIdAsync(long avaliadorId);
+    
+    /// <summary>Retorna dados para preenchimento automático do barema</summary>
+    Task<BaremaDadosDto?> GetDadosBaremaAsync(long baremaId);
+    
+    /// <summary>Finaliza automaticamente por eliminação na análise documental</summary>
+    Task<BaremaDto> FinalizarPorEliminacaoAsync(long baremaId);
+    
+    /// <summary>Retorna progresso de avaliação por candidato em um processo</summary>
+    Task<IEnumerable<ProgressoCandidatoDto>> GetProgressoAsync(long processoId);
 }
 
 /// <summary>
@@ -43,11 +52,17 @@ public interface IBaremaService
 public class BaremaService : IBaremaService
 {
     private readonly IBaremaRepository _repository;
+    private readonly ICandidatoRepository _candidatoRepository;
+    private readonly IAvaliadorRepository _avaliadorRepository;
+    private readonly IDocumentoRepository _documentoRepository;
     private readonly IMapper _mapper;
 
-    public BaremaService(IBaremaRepository repository, IMapper mapper)
+    public BaremaService(IBaremaRepository repository, ICandidatoRepository candidatoRepository, IAvaliadorRepository avaliadorRepository, IDocumentoRepository documentoRepository, IMapper mapper)
     {
         _repository = repository;
+        _candidatoRepository = candidatoRepository;
+        _avaliadorRepository = avaliadorRepository;
+        _documentoRepository = documentoRepository;
         _mapper = mapper;
     }
 
@@ -68,10 +83,26 @@ public class BaremaService : IBaremaService
     /// <summary>Cria um novo barema</summary>
     public async Task<BaremaDto> CreateAsync(CreateBaremaDto dto)
     {
+        var candidato = await _candidatoRepository.GetByIdAsync(dto.CandidatoId);
+        if (candidato == null)
+            throw new Exception("Candidato não encontrado");
+
+        var avaliador = await _avaliadorRepository.GetByIdAsync(dto.AvaliadorId);
+        if (avaliador == null)
+            throw new Exception("Avaliador não encontrado");
+
+        if (!string.IsNullOrEmpty(candidato.Orientador) &&
+            !string.IsNullOrEmpty(avaliador.Nome) &&
+            candidato.Orientador.Equals(avaliador.Nome, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("O avaliador não pode avaliar um candidato que ele é o orientador");
+        }
+
         var entity = new Barema
         {
             CandidatoId = dto.CandidatoId,
             AvaliadorId = dto.AvaliadorId,
+            TipoBarema = dto.TipoBarema,
             Status = StatusBarema.Pendente
         };
         var created = await _repository.AddAsync(entity);
@@ -100,7 +131,16 @@ public class BaremaService : IBaremaService
         var entity = await _repository.GetByIdAsync(id) ?? throw new Exception("Barema não encontrado");
         
         entity.CriteriosJson = JsonSerializer.Serialize(dto.Criterios);
-        entity.NotaFinal = entity.CalcularNotaFinal(dto.Criterios);
+        
+        if (entity.TipoBarema == "PIBIC")
+        {
+            entity.NotaFinal = entity.CalcularNotaFinalPibic(entity.CriteriosJson);
+        }
+        else
+        {
+            entity.NotaFinal = entity.CalcularNotaFinal(dto.Criterios);
+        }
+        
         entity.Observacoes = dto.Observacoes;
         entity.DataPreenchimento = DateTime.UtcNow;
         entity.Status = StatusBarema.Concluido;
@@ -129,11 +169,97 @@ public class BaremaService : IBaremaService
         return baremas.Select(MapToDto);
     }
 
+    /// <summary>Retorna dados para preenchimento automático do barema</summary>
+    public async Task<BaremaDadosDto?> GetDadosBaremaAsync(long baremaId)
+    {
+        var barema = await _repository.GetByIdAsync(baremaId);
+        if (barema == null) return null;
+
+        var candidato = await _candidatoRepository.GetByIdAsync(barema.CandidatoId);
+        var documentos = await _documentoRepository.GetByCandidatoIdAsync(barema.CandidatoId);
+
+        return new BaremaDadosDto
+        {
+            BaremaId = barema.Id,
+            NomeOrientador = candidato?.Orientador,
+            NomeEstudante = candidato?.Nome,
+            CursoGraduacao = candidato?.AreaPesquisa,
+            NomeAvaliador = barema.Avaliador?.Nome,
+            TipoBarema = barema.TipoBarema,
+            Status = barema.Status,
+            CriteriosJson = barema.CriteriosJson,
+            NotaFinal = barema.NotaFinal,
+            Observacoes = barema.Observacoes,
+            Documentos = documentos.Select(d => _mapper.Map<DocumentoDto>(d))
+        };
+    }
+
+    /// <summary>Finaliza automaticamente por eliminação na análise documental</summary>
+    public async Task<BaremaDto> FinalizarPorEliminacaoAsync(long baremaId)
+    {
+        var entity = await _repository.GetByIdAsync(baremaId) ?? throw new Exception("Barema não encontrado");
+        
+        entity.NotaFinal = 0;
+        entity.DataPreenchimento = DateTime.UtcNow;
+        entity.Status = StatusBarema.Concluido;
+        entity.Observacoes = "Candidato eliminado na Análise Documental";
+        
+        var dados = new Dictionary<string, object>
+        {
+            { "analiseDocumental", "eliminado" }
+        };
+        entity.CriteriosJson = JsonSerializer.Serialize(dados);
+        
+        var updated = await _repository.UpdateAsync(entity);
+        return MapToDto(updated);
+    }
+
+    /// <summary>Retorna progresso de avaliação por candidato em um processo</summary>
+    public async Task<IEnumerable<ProgressoCandidatoDto>> GetProgressoAsync(long processoId)
+    {
+        var candidatos = await _candidatoRepository.GetByProcessoIdAsync(processoId);
+        var resultado = new List<ProgressoCandidatoDto>();
+
+        foreach (var candidato in candidatos)
+        {
+            var baremas = await _repository.GetByCandidatoIdAsync(candidato.Id);
+            var baremasAtivas = baremas.Where(b => b.Status != StatusBarema.Cancelado).ToList();
+
+            var notasConcluidas = baremasAtivas
+                .Where(b => b.Status == StatusBarema.Concluido)
+                .Select(b => b.NotaFinal)
+                .ToList();
+
+            resultado.Add(new ProgressoCandidatoDto
+            {
+                CandidatoId = candidato.Id,
+                CandidatoNome = candidato.Nome,
+                NumeroInscricao = candidato.NumeroInscricao,
+                AvaliadoresAtribuidos = baremasAtivas.Count,
+                AvaliadoresConcluidos = notasConcluidas.Count,
+                AvaliadoresNecessarios = 2,
+                NotaFinal = notasConcluidas.Any() ? notasConcluidas.Average() : 0,
+                Baremas = baremasAtivas.Select(b => new BaremaProgressoDto
+                {
+                    BaremaId = b.Id,
+                    AvaliadorId = b.AvaliadorId,
+                    AvaliadorNome = b.Avaliador?.Nome,
+                    NotaFinal = b.NotaFinal,
+                    Status = b.Status,
+                    DataPreenchimento = b.DataPreenchimento
+                }).ToList()
+            });
+        }
+
+        return resultado;
+    }
+
     private BaremaDto MapToDto(Barema barema)
     {
         var dto = _mapper.Map<BaremaDto>(barema);
         dto.CandidatoNome = barema.Candidato?.Nome;
         dto.AvaliadorNome = barema.Avaliador?.Nome;
+        dto.TipoBarema = barema.TipoBarema;
         
         if (!string.IsNullOrEmpty(barema.CriteriosJson))
         {

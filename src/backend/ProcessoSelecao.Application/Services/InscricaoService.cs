@@ -73,6 +73,7 @@ public class InscricaoService : IInscricaoService
                 Cpf = cpf,
                 Telefone = dto.Pagina1?.Telefone ?? dto.Pagina2?.Telefone1,
                 AreaPesquisa = dto.Pagina1?.AreaOfertada ?? string.Empty,
+                Orientador = dto.Pagina1?.Orientador,
                 ProcessoSelecaoId = dto.ProcessoSelecaoId,
                 NumeroInscricao = numeroInscricao,
                 DataCadastro = DateTime.UtcNow,
