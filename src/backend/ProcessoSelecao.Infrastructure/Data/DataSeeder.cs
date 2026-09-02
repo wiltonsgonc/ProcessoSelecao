@@ -48,6 +48,7 @@ public class DataSeeder
             VagasDisponiveis = 20,
             AgenciaFomento = "CNPq",
             NivelBolsa = "IC",
+            TipoProcesso = TipoProcesso.PIBIC,
             Status = StatusProcesso.Aberto
         };
 
@@ -60,22 +61,37 @@ public class DataSeeder
             VagasDisponiveis = 15,
             AgenciaFomento = "CNPq",
             NivelBolsa = "ITI",
+            TipoProcesso = TipoProcesso.PIBIT,
             Status = StatusProcesso.Aberto
         };
 
         var processo3 = new ProcessoSelecao.Domain.Entities.ProcessoSelecao
         {
-            Nome = "Edital Mestrado 2025",
-            Descricao = "Processo seletivo para ingresso no Programa de Pos-Graduacao - Turma 2025.",
+            Nome = "Edital Mestrado MCTI 2025",
+            Descricao = "Processo seletivo para ingresso no Programa de Pos-Graduacao em Modelagem Computacional e Tecnologia Industrial - Turma 2025.",
             DataInicio = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             DataFim = new DateTime(2025, 6, 30, 23, 59, 59, DateTimeKind.Utc),
             VagasDisponiveis = 10,
             AgenciaFomento = "CAPES",
             NivelBolsa = "Mestrado",
+            TipoProcesso = TipoProcesso.MCTI,
             Status = StatusProcesso.Finalizado
         };
 
-        _context.ProcessosSelecao.AddRange(processo1, processo2, processo3);
+        var processo4 = new ProcessoSelecao.Domain.Entities.ProcessoSelecao
+        {
+            Nome = "Edital Doutorado GETEC 2026",
+            Descricao = "Processo seletivo para ingresso no Programa de Pos-Graduacao em Gestao e Tecnologia Industrial - Doutorado - Turma 2026.",
+            DataInicio = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+            DataFim = new DateTime(2026, 5, 31, 23, 59, 59, DateTimeKind.Utc),
+            VagasDisponiveis = 5,
+            AgenciaFomento = "CAPES",
+            NivelBolsa = "Doutorado",
+            TipoProcesso = TipoProcesso.GETEC,
+            Status = StatusProcesso.Aberto
+        };
+
+        _context.ProcessosSelecao.AddRange(processo1, processo2, processo3, processo4);
         await _context.SaveChangesAsync();
 
         // ============================================================
@@ -168,7 +184,8 @@ public class DataSeeder
             EstadoCivil = "Solteiro",
             Sexo = "Masculino",
             CorRaca = "Parda",
-            AreaPesquisa = "Inteligencia Artificial",
+            AreaPesquisa = "Ciencia da Computacao",
+            Orientador = "Joao Silva",
             TituloProjeto = "Aplicacoes de Machine Learning na Saude",
             LocalProva = "Campus Recife",
             CampusProva = "Recife",
@@ -194,6 +211,7 @@ public class DataSeeder
             CorRaca = "Branca",
             DeficienciaVisual = true,
             AreaPesquisa = "Engenharia de Software",
+            Orientador = "Maria Santos",
             TituloProjeto = "Testes Automatizados em Microsservicos",
             LocalProva = "Campus Recife",
             CampusProva = "Recife",
@@ -216,7 +234,8 @@ public class DataSeeder
             EstadoCivil = "Solteiro",
             Sexo = "Masculino",
             CorRaca = "Preta",
-            AreaPesquisa = "Banco de Dados",
+            AreaPesquisa = "Ciencia da Computacao",
+            Orientador = "Joao Silva",
             TituloProjeto = "Otimizacao de Consultas em Big Data",
             LocalProva = "Campus Caruaru",
             CampusProva = "Caruaru",
@@ -239,7 +258,8 @@ public class DataSeeder
             EstadoCivil = "Casada",
             Sexo = "Feminino",
             CorRaca = "Branca",
-            AreaPesquisa = "Desenvolvimento Web",
+            AreaPesquisa = "Sistemas de Informacao",
+            Orientador = "Carlos Oliveira",
             TituloProjeto = "Framework para Acessibilidade em Aplicacoes Web",
             LocalProva = "Campus Recife",
             CampusProva = "Recife",
@@ -264,7 +284,8 @@ public class DataSeeder
             CorRaca = "Amarela",
             DeficienciaAuditiva = true,
             DeficienciaFala = true,
-            AreaPesquisa = "Redes de Computadores",
+            AreaPesquisa = "Sistemas de Informacao",
+            Orientador = "Ana Costa",
             TituloProjeto = "Seguranca em Redes IoT",
             LocalProva = "Campus Recife",
             CampusProva = "Recife",
@@ -287,7 +308,8 @@ public class DataSeeder
             EstadoCivil = "Solteira",
             Sexo = "Feminino",
             CorRaca = "Indigena",
-            AreaPesquisa = "Educacao e Tecnologia",
+            AreaPesquisa = "Modelagem Computacional",
+            Orientador = "Carlos Oliveira",
             TituloProjeto = "Plataforma de Ensino Adaptativo",
             LocalProva = "Campus Recife",
             CampusProva = "Recife",
@@ -298,10 +320,34 @@ public class DataSeeder
             DataCadastro = new DateTime(2025, 1, 15, 8, 0, 0, DateTimeKind.Utc)
         };
 
-        _context.Candidatos.AddRange(candidato1, candidato2, candidato3, candidato4, candidato5, candidato6);
+        var candidato7 = new Candidato
+        {
+            Nome = "Rafael Gomes",
+            Cpf = "44455566677",
+            Email = "rafael.gomes@email.com",
+            Telefone = "(81) 98888-0007",
+            DataNascimento = new DateTime(1998, 2, 25, 0, 0, 0, DateTimeKind.Utc),
+            Nacionalidade = "Brasileiro",
+            Naturalidade = "Recife",
+            EstadoCivil = "Casado",
+            Sexo = "Masculino",
+            CorRaca = "Branca",
+            AreaPesquisa = "Gestao e Tecnologia Industrial",
+            Orientador = "Ana Costa",
+            TituloProjeto = "Otimizacao de Processos Produtivos com IA",
+            LocalProva = "Campus Recife",
+            CampusProva = "Recife",
+            ValorInscricao = 100.00m,
+            ProcessoSelecaoId = processo4.Id,
+            NumeroInscricao = "202600400001",
+            StatusValidacao = StatusValidacao.Validado,
+            DataCadastro = new DateTime(2026, 3, 10, 9, 0, 0, DateTimeKind.Utc)
+        };
+
+        _context.Candidatos.AddRange(candidato1, candidato2, candidato3, candidato4, candidato5, candidato6, candidato7);
         await _context.SaveChangesAsync();
 
-        await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Candidatos', RESEED, 6)");
+        await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Candidatos', RESEED, 7)");
 
         // ============================================================
         // Documentos
@@ -331,14 +377,18 @@ public class DataSeeder
 
             new() { Tipo = TipoDocumento.HistoricoEscolar, NomeArquivo = "historico_juliana_torres.pdf", CaminhoLocal = Path.Combine(caminhoSeed, "historico_juliana_torres.pdf"), DataUpload = new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc), Validado = true, CandidatoId = candidato6.Id },
             new() { Tipo = TipoDocumento.CartaIntencao, NomeArquivo = "carta_juliana_torres.pdf", CaminhoLocal = Path.Combine(caminhoSeed, "carta_juliana_torres.pdf"), DataUpload = new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc), Validado = true, CandidatoId = candidato6.Id },
-            new() { Tipo = TipoDocumento.CartaRecomendacao, NomeArquivo = "recomendacao_juliana_torres.pdf", CaminhoLocal = Path.Combine(caminhoSeed, "recomendacao_juliana_torres.pdf"), DataUpload = new DateTime(2025, 1, 16, 0, 0, 0, DateTimeKind.Utc), Validado = true, CandidatoId = candidato6.Id }
+            new() { Tipo = TipoDocumento.CartaRecomendacao, NomeArquivo = "recomendacao_juliana_torres.pdf", CaminhoLocal = Path.Combine(caminhoSeed, "recomendacao_juliana_torres.pdf"), DataUpload = new DateTime(2025, 1, 16, 0, 0, 0, DateTimeKind.Utc), Validado = true, CandidatoId = candidato6.Id },
+
+            new() { Tipo = TipoDocumento.HistoricoEscolar, NomeArquivo = "historico_rafael_gomes.pdf", CaminhoLocal = Path.Combine(caminhoSeed, "historico_rafael_gomes.pdf"), DataUpload = new DateTime(2026, 3, 10, 0, 0, 0, DateTimeKind.Utc), Validado = true, CandidatoId = candidato7.Id },
+            new() { Tipo = TipoDocumento.CurriculumLatte, NomeArquivo = "Curriculo Lattes", CaminhoLocal = "", LinkUrl = "http://lattes.cnpq.br/7778889990", DataUpload = new DateTime(2026, 3, 10, 0, 0, 0, DateTimeKind.Utc), Validado = true, CandidatoId = candidato7.Id },
+            new() { Tipo = TipoDocumento.CartaRecomendacao, NomeArquivo = "recomendacao_rafael_gomes.pdf", CaminhoLocal = Path.Combine(caminhoSeed, "recomendacao_rafael_gomes.pdf"), DataUpload = new DateTime(2026, 3, 11, 0, 0, 0, DateTimeKind.Utc), Validado = false, CandidatoId = candidato7.Id }
         };
 
         _context.Documentos.AddRange(documentos);
         await _context.SaveChangesAsync();
 
         // ============================================================
-        // Baremas
+        // Baremas (formato PIBIC)
         // ============================================================
         var baremas = new List<Barema>
         {
@@ -346,9 +396,10 @@ public class DataSeeder
             {
                 CandidatoId = candidato2.Id,
                 AvaliadorId = avaliador1.Id,
-                CriteriosJson = """{"Originalidade":8.0,"Relevancia":9.0,"Metodologia":7.5,"Apresentacao":8.5}""",
-                NotaFinal = 8.25f,
-                Observacoes = "Candidata bem preparada. Projeto relevante para a area.",
+                TipoBarema = "PIBIC",
+                CriteriosJson = """{"analiseDocumental":"classificado","projeto":{"1_1":10,"1_2":4.0,"1_3":4.5,"1_4":4.0,"1_5":4.5,"1_6":4.0},"orientador":{"2_1":5,"2_2":5,"2_3":5,"2_4":7,"2_5":8},"candidato":{"3_1":5,"3_2":4,"3_3":3,"3_4":15}}""",
+                NotaFinal = 84f,
+                Observacoes = "Candidata bem preparada. Projeto relevante para a area. Orientador com boa producao.",
                 DataPreenchimento = new DateTime(2026, 7, 10, 0, 0, 0, DateTimeKind.Utc),
                 Status = StatusBarema.Concluido
             },
@@ -356,8 +407,9 @@ public class DataSeeder
             {
                 CandidatoId = candidato1.Id,
                 AvaliadorId = avaliador2.Id,
-                CriteriosJson = """{"Originalidade":7.0,"Relevancia":7.0,"Metodologia":6.5,"Apresentacao":7.5}""",
-                NotaFinal = 7.0f,
+                TipoBarema = "PIBIC",
+                CriteriosJson = """{"analiseDocumental":"classificado","projeto":{"1_1":5,"1_2":3.5,"1_3":3.0,"1_4":3.5,"1_5":3.0,"1_6":3.5},"orientador":{"2_1":5,"2_2":5,"2_3":5,"2_4":10,"2_5":7},"candidato":{"3_1":5,"3_2":2,"3_3":1,"3_4":15}}""",
+                NotaFinal = 81.5f,
                 Observacoes = "Projeto interessante, mas precisa de ajustes na metodologia.",
                 DataPreenchimento = new DateTime(2026, 7, 12, 0, 0, 0, DateTimeKind.Utc),
                 Status = StatusBarema.EmPreenchimento
@@ -366,6 +418,7 @@ public class DataSeeder
             {
                 CandidatoId = candidato4.Id,
                 AvaliadorId = avaliador3.Id,
+                TipoBarema = "PIBIC",
                 CriteriosJson = null,
                 NotaFinal = 0f,
                 Observacoes = "",
@@ -376,8 +429,9 @@ public class DataSeeder
             {
                 CandidatoId = candidato5.Id,
                 AvaliadorId = avaliador4.Id,
-                CriteriosJson = """{"Originalidade":9.0,"Relevancia":8.5,"Metodologia":9.5,"Apresentacao":9.0}""",
-                NotaFinal = 9.0f,
+                TipoBarema = "PIBIC",
+                CriteriosJson = """{"analiseDocumental":"classificado","projeto":{"1_1":10,"1_2":5.0,"1_3":5.0,"1_4":4.5,"1_5":5.0,"1_6":4.5},"orientador":{"2_1":5,"2_2":5,"2_3":5,"2_4":10,"2_5":10},"candidato":{"3_1":5,"3_2":4,"3_3":5,"3_4":15}}""",
+                NotaFinal = 98.5f,
                 Observacoes = "Excelente projeto. Candidato demonstra dominio do tema.",
                 DataPreenchimento = new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Utc),
                 Status = StatusBarema.Concluido
@@ -388,6 +442,6 @@ public class DataSeeder
         await _context.SaveChangesAsync();
 
         Console.WriteLine("[SeedData] Preenchimento automatico concluido com sucesso!");
-        Console.WriteLine("[SeedData] 3 Processos, 4 Avaliadores, 6 Candidatos, 15 Documentos, 4 Baremas");
+        Console.WriteLine("[SeedData] 4 Processos (PIBIC, PIBIT, MCTI, GETEC), 4 Avaliadores, 7 Candidatos com Orientador, 18 Documentos, 4 Baremas PIBIC");
     }
 }

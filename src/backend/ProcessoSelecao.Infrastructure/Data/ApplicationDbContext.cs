@@ -53,6 +53,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CorRaca).HasMaxLength(50);
             entity.Property(e => e.TipoVisto).HasMaxLength(50);
             entity.Property(e => e.FormaInscricao).HasMaxLength(100);
+            entity.Property(e => e.Orientador).HasMaxLength(200);
             entity.Property(e => e.LocalProva).HasMaxLength(200);
             entity.Property(e => e.CampusProva).HasMaxLength(200);
             entity.Property(e => e.ValorInscricao).HasColumnType("decimal(10,2)");
@@ -94,6 +95,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DomainEntities.Barema>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.TipoBarema).IsRequired().HasMaxLength(50);
             entity.Property(e => e.CriteriosJson).HasColumnType("nvarchar(max)");
             entity.Property(e => e.Observacoes).HasMaxLength(1000);
             entity.HasOne(e => e.Candidato).WithMany(c => c.Baremas).HasForeignKey(e => e.CandidatoId);
@@ -109,6 +111,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd().UseIdentityColumn(1, 1);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descricao).HasMaxLength(1000);
+            entity.Property(e => e.TipoProcesso).HasConversion<string>().HasMaxLength(50);
         });
     }
 }
