@@ -28,6 +28,9 @@ public class ProcessoSelecao : BaseEntity
     /// <summary>Nível da bolsa (IC, ITI, Mestrado, Doutorado)</summary>
     public string? NivelBolsa { get; set; }
     
+    /// <summary>Tipo do processo seletivo (PIBIC, PIBIT, PRH27, MCTI, GETEC, MPDS)</summary>
+    public TipoProcesso TipoProcesso { get; set; } = TipoProcesso.PIBIC;
+    
     /// <summary>Status atual do processo</summary>
     public StatusProcesso Status { get; set; } = StatusProcesso.Rascunho;
     

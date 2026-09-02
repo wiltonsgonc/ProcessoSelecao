@@ -28,6 +28,9 @@ public class Candidato : BaseEntity
     /// <summary>Título do projeto de pesquisa</summary>
     public string? TituloProjeto { get; set; }
     
+    /// <summary>Nome do orientador</summary>
+    public string? Orientador { get; set; }
+    
     /// <summary>Status de validação dos documentos</summary>
     public StatusValidacao StatusValidacao { get; set; } = StatusValidacao.Pendente;
     
