@@ -44,6 +44,9 @@ public interface IBaremaService
     
     /// <summary>Retorna progresso de avaliação por candidato em um processo</summary>
     Task<IEnumerable<ProgressoCandidatoDto>> GetProgressoAsync(long processoId);
+    
+    /// <summary>Retorna progresso de avaliação de todos os processos</summary>
+    Task<IEnumerable<ProgressoCandidatoDto>> GetProgressoAsync();
 }
 
 /// <summary>
@@ -225,6 +228,52 @@ public class BaremaService : IBaremaService
             var baremas = await _repository.GetByCandidatoIdAsync(candidato.Id);
             var baremasAtivas = baremas.Where(b => b.Status != StatusBarema.Cancelado).ToList();
 
+            var notasConcluidas = baremasAtivas
+                .Where(b => b.Status == StatusBarema.Concluido)
+                .Select(b => b.NotaFinal)
+                .ToList();
+
+            resultado.Add(new ProgressoCandidatoDto
+            {
+                CandidatoId = candidato.Id,
+                CandidatoNome = candidato.Nome,
+                NumeroInscricao = candidato.NumeroInscricao,
+                AvaliadoresAtribuidos = baremasAtivas.Count,
+                AvaliadoresConcluidos = notasConcluidas.Count,
+                AvaliadoresNecessarios = 2,
+                NotaFinal = notasConcluidas.Any() ? notasConcluidas.Average() : 0,
+                Baremas = baremasAtivas.Select(b => new BaremaProgressoDto
+                {
+                    BaremaId = b.Id,
+                    AvaliadorId = b.AvaliadorId,
+                    AvaliadorNome = b.Avaliador?.Nome,
+                    NotaFinal = b.NotaFinal,
+                    Status = b.Status,
+                    DataPreenchimento = b.DataPreenchimento
+                }).ToList()
+            });
+        }
+
+        return resultado;
+    }
+
+    /// <summary>Retorna progresso de avaliação de todos os processos</summary>
+    public async Task<IEnumerable<ProgressoCandidatoDto>> GetProgressoAsync()
+    {
+        var todosBaremas = await _repository.GetAllAsync();
+        var candidatosComBaremas = todosBaremas
+            .Where(b => b.Status != StatusBarema.Cancelado)
+            .GroupBy(b => b.CandidatoId)
+            .ToList();
+
+        var resultado = new List<ProgressoCandidatoDto>();
+
+        foreach (var grupo in candidatosComBaremas)
+        {
+            var candidato = await _candidatoRepository.GetByIdAsync(grupo.Key);
+            if (candidato == null) continue;
+
+            var baremasAtivas = grupo.ToList();
             var notasConcluidas = baremasAtivas
                 .Where(b => b.Status == StatusBarema.Concluido)
                 .Select(b => b.NotaFinal)
