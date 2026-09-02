@@ -2,6 +2,7 @@
 @using ProcessoSelecao.Blazor.Models
 @layout Layouts.AdminLayout
 @inject DocumentoService Service
+@inject ProcessoSelecaoService ProcessoService
 @inject IJSRuntime JS
 
 <PageTitle>Documentos</PageTitle>
@@ -11,6 +12,17 @@
     <div class="flex gap-2">
         <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="ShowUploadForm">Upload Documento</button>
     </div>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+    <label class="block text-sm font-medium mb-2">Processo Seletivo</label>
+    <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="processoSelecionadoId" @bind:after="OnProcessoChanged">
+        <option value="">-- Todos os processos --</option>
+        @foreach (var p in processos)
+        {
+            <option value="@p.Id">@p.Nome (@p.TipoProcesso)</option>
+        }
+    </select>
 </div>
 
 @if (showUploadForm)
@@ -149,6 +161,8 @@
 @code {
     private List<Documento> documentos = new();
     private List<DocGrupo> documentosAgrupados = new();
+    private List<ProcessoSelecao> processos = new();
+    private string? processoSelecionadoId;
     private bool showUploadForm = false;
     private bool showValidateModal = false;
     private bool showViewModal = false;
@@ -170,13 +184,30 @@
         public bool Expandido { get; set; }
     }
 
-    protected override async Task OnInitializedAsync() => await Load();
+    protected override async Task OnInitializedAsync()
+    {
+        processos = await ProcessoService.GetAllAsync();
+        await Load();
+    }
 
     private async Task Load()
     {
-        documentos = await Service.GetAllAsync();
+        if (!string.IsNullOrEmpty(processoSelecionadoId) && int.TryParse(processoSelecionadoId, out var pid))
+        {
+            documentos = await Service.GetByProcessoIdAsync(pid);
+        }
+        else
+        {
+            documentos = await Service.GetAllAsync();
+        }
         documentosAgrupados = documentos.GroupBy(d => d.CandidatoId)
             .Select(g => new DocGrupo { CandidatoId = g.Key, CandidatoNome = g.First().CandidatoNome, Documentos = g.ToList() }).ToList();
+    }
+
+    private async Task OnProcessoChanged()
+    {
+        await Load();
+        StateHasChanged();
     }
 
     private void ShowUploadForm() { showUploadForm = true; selectedFile = null; uploadTipo = "1"; uploadCandidatoId = 0; }
