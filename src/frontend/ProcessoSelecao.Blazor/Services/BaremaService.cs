@@ -38,4 +38,7 @@ public class BaremaService
 
     public virtual async Task<List<ProgressoCandidato>> GetProgressoAsync(int processoId)
         => await _api.GetAsync<List<ProgressoCandidato>>($"{Endpoint}/progresso/{processoId}") ?? new();
+
+    public virtual async Task<List<ProgressoCandidato>> GetProgressoAsync()
+        => await _api.GetAsync<List<ProgressoCandidato>>($"{Endpoint}/progresso") ?? new();
 }
