@@ -34,6 +34,9 @@ namespace ProcessoSelecao.Application.Services;
         
         /// <summary>Retorna o caminho do arquivo</summary>
         Task<string> GetFilePathAsync(long id);
+
+        /// <summary>Retorna documentos de candidatos de um processo seletivo</summary>
+        Task<IEnumerable<DocumentoDto>> GetByProcessoIdAsync(long processoId);
     }
 
 /// <summary>
@@ -191,6 +194,19 @@ public class DocumentoService : IDocumentoService
             throw new FileNotFoundException($"Arquivo não encontrado: {caminhoArquivo}");
         }
         return caminhoArquivo;
+    }
+
+    /// <summary>Retorna documentos de candidatos de um processo seletivo</summary>
+    public async Task<IEnumerable<DocumentoDto>> GetByProcessoIdAsync(long processoId)
+    {
+        var documentos = await _repository.GetByProcessoIdAsync(processoId);
+        var dtos = _mapper.Map<IEnumerable<DocumentoDto>>(documentos);
+        foreach (var dto in dtos)
+        {
+            var doc = documentos.FirstOrDefault(d => d.Id == dto.Id);
+            dto.CandidatoNome = doc?.Candidato?.Nome;
+        }
+        return dtos;
     }
 
     private static async Task<string> CalculateHashAsync(string filePath)
