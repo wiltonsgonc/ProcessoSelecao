@@ -104,4 +104,12 @@ public class BaremasController : ControllerBase
         var progresso = await _service.GetProgressoAsync(processoId);
         return Ok(progresso);
     }
+
+    /// <summary>Retorna progresso de avaliação de todos os processos</summary>
+    [HttpGet("progresso")]
+    public async Task<ActionResult<IEnumerable<ProgressoCandidatoDto>>> GetProgressoTodos()
+    {
+        var progresso = await _service.GetProgressoAsync();
+        return Ok(progresso);
+    }
 }
