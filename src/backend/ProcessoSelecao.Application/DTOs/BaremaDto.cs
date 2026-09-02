@@ -12,6 +12,7 @@ public class BaremaDto
     public string? CandidatoNome { get; set; }
     public long AvaliadorId { get; set; }
     public string? AvaliadorNome { get; set; }
+    public string TipoBarema { get; set; } = "PIBIC";
     public Dictionary<string, float>? Criterios { get; set; }
     public float NotaFinal { get; set; }
     public string? Observacoes { get; set; }
@@ -26,6 +27,7 @@ public class CreateBaremaDto
 {
     public long CandidatoId { get; set; }
     public long AvaliadorId { get; set; }
+    public string TipoBarema { get; set; } = "PIBIC";
 }
 
 /// <summary>
@@ -44,4 +46,50 @@ public class FinalizarBaremaDto
 {
     public Dictionary<string, float> Criterios { get; set; } = new();
     public string? Observacoes { get; set; }
+}
+
+/// <summary>
+/// DTO com dados para preenchimento automático do barema
+/// </summary>
+public class BaremaDadosDto
+{
+    public long BaremaId { get; set; }
+    public string? NomeOrientador { get; set; }
+    public string? NomeEstudante { get; set; }
+    public string? CursoGraduacao { get; set; }
+    public string? NomeAvaliador { get; set; }
+    public string TipoBarema { get; set; } = "PIBIC";
+    public StatusBarema Status { get; set; }
+    public string? CriteriosJson { get; set; }
+    public float NotaFinal { get; set; }
+    public string? Observacoes { get; set; }
+    public IEnumerable<DocumentoDto>? Documentos { get; set; }
+}
+
+/// <summary>
+/// DTO com progresso de avaliação por candidato
+/// </summary>
+public class ProgressoCandidatoDto
+{
+    public long CandidatoId { get; set; }
+    public string CandidatoNome { get; set; } = string.Empty;
+    public string? NumeroInscricao { get; set; }
+    public int AvaliadoresAtribuidos { get; set; }
+    public int AvaliadoresConcluidos { get; set; }
+    public int AvaliadoresNecessarios { get; set; } = 2;
+    public float NotaFinal { get; set; }
+    public List<BaremaProgressoDto> Baremas { get; set; } = new();
+}
+
+/// <summary>
+/// DTO com dados de um barema para o progresso
+/// </summary>
+public class BaremaProgressoDto
+{
+    public long BaremaId { get; set; }
+    public long AvaliadorId { get; set; }
+    public string? AvaliadorNome { get; set; }
+    public float NotaFinal { get; set; }
+    public StatusBarema Status { get; set; }
+    public DateTime? DataPreenchimento { get; set; }
 }
