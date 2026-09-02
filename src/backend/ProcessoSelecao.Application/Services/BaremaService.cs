@@ -312,7 +312,14 @@ public class BaremaService : IBaremaService
         
         if (!string.IsNullOrEmpty(barema.CriteriosJson))
         {
-            dto.Criterios = JsonSerializer.Deserialize<Dictionary<string, float>>(barema.CriteriosJson);
+            try
+            {
+                dto.Criterios = JsonSerializer.Deserialize<Dictionary<string, float>>(barema.CriteriosJson);
+            }
+            catch (JsonException)
+            {
+                dto.Criterios = new Dictionary<string, float>();
+            }
         }
         
         return dto;
