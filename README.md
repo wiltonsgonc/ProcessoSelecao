@@ -26,22 +26,25 @@ ProcessoSelecao/
 │   │       ├── Domain/                    # Testes de regras de negocio
 │   │       └── Application/               # Testes de services com mocks
 │   ├── frontend/
-│   │   └── ProcessoSelecao.Blazor/        # Frontend Blazor
-│   │       ├── Components/
-│   │       │   ├── App.razor              # Shell HTML
-│   │       │   ├── Routes.razor           # Router
-│   │       │   ├── Layouts/               # AdminLayout, AvaliadorLayout, CandidatoLayout e PublicLayout
-│   │       │   └── Pages/
-│   │       │       ├── Public/            # Home, ProcessoPublicList
-│   │       │       ├── Formulario/        # Wizard de inscricao (4 paginas)
-│   │       │       ├── Admin/             # CRUD + Avaliacao
-│   │       │       ├── Avaliador/         # Portal do avaliador (login, painel, avaliacao)
-│   │       │       └── Candidato/         # Portal do candidato (login, painel)
-│   │       ├── Models/                    # DTOs C# (ProcessoSelecao, Candidato, etc.)
-│   │       ├── Services/                  # HTTP clients para a API
-│   │       ├── wwwroot/css/app.css        # Estilos
-│   │       ├── Dockerfile                 # Dev: dotnet watch
-│   │       └── Dockerfile.prod            # Prod: build + runtime
+│   │   ├── ProcessoSelecao.Blazor/        # Frontend Blazor
+│   │   │   ├── Components/
+│   │   │   │   ├── App.razor              # Shell HTML
+│   │   │   │   ├── Routes.razor           # Router
+│   │   │   │   ├── Layouts/               # AdminLayout, AvaliadorLayout, CandidatoLayout e PublicLayout
+│   │   │   │   └── Pages/
+│   │   │   │       ├── Public/            # Home, ProcessoPublicList
+│   │   │   │       ├── Formulario/        # Wizard de inscricao (4 paginas)
+│   │   │   │       ├── Admin/             # CRUD + Avaliacao + DefinirAvaliador
+│   │   │   │       ├── Avaliador/         # Portal do avaliador (login, painel, avaliacao)
+│   │   │   │       └── Candidato/         # Portal do candidato (login, painel)
+│   │   │   ├── Models/                    # DTOs C# (ProcessoSelecao, Candidato, etc.)
+│   │   │   ├── Services/                  # HTTP clients para a API
+│   │   │   ├── wwwroot/css/app.css        # Estilos
+│   │   │   ├── Dockerfile                 # Dev: dotnet watch
+│   │   │   └── Dockerfile.prod            # Prod: build + runtime
+│   │   └── ProcessoSelecao.Blazor.Tests/  # Testes frontend (bUnit + xUnit)
+│   │       ├── Components/                # Testes de componentes Blazor
+│   │       └── Helpers/                   # Extensao para mocks
 │   └── Directory.Build.props              # NuGetAudit habilitado
 ├── scripts/
 │   ├── build-full.sh                      # Build completo (backend + frontend)
@@ -250,10 +253,10 @@ as migrations e preenche:
 
 | Entidade | Quantidade | Detalhes |
 |----------|-----------|----------|
-| ProcessosSelecao | 3 | PIBIC (aberto), PIBITI (aberto), Mestrado 2025 (finalizado) |
+| ProcessosSelecao | 4 | PIBIC (aberto), PIBITI (aberto), MCTI Doutorado (finalizado), GETEC Doutorado (aberto) |
 | Avaliadores | 4 | 2 internos, 2 externos (UFPE, UFRPE) -- senha padrao `123456` |
-| Candidatos | 6 | Distribuidos entre os 3 processos, com status variados |
-| Documentos | 15 | 2-3 por candidato (historicos, cartas, curriculos Lattes) |
+| Candidatos | 7 | Distribuidos entre os 4 processos, com status variados |
+| Documentos | 18 | 2-3 por candidato (historicos, cartas, curriculos Lattes) |
 | Baremas | 4 | Avaliacoes em diferentes estados (concluido, pendente, etc.) |
 
 #### Controles
@@ -294,16 +297,21 @@ Com o seed ativo, voce pode navegar pelo sistema usando:
 | Candidato 1 | CPF `52998224725` ou email `pedro.alves@email.com` + data nasc. 15/03/2002 | Primeiro acesso (definir senha) |
 | Candidato 2 | CPF `12345678909` ou email `lucia.mendes@email.com` + data nasc. 22/07/2001 | Primeiro acesso (definir senha) |
 | Candidato 3 | CPF `11122233396` ou email `roberto.lima@email.com` + data nasc. 05/11/2003 | Primeiro acesso (definir senha) |
+| Candidato 4 | CPF `55566677720` ou email `fernanda.souza@email.com` + data nasc. 18/09/2002 | Primeiro acesso (definir senha) |
+| Candidato 5 | CPF `98765432109` ou email `marcos.paulo@email.com` + data nasc. 30/12/2000 | Primeiro acesso (definir senha) |
+| Candidato 6 | CPF `99988877709` ou email `juliana.torres@email.com` + data nasc. 10/05/1999 | Primeiro acesso (definir senha) |
+| Candidato 7 | CPF `44455566677` ou email `rafael.gomes@email.com` + data nasc. 25/02/1998 | Primeiro acesso (definir senha) |
 
 Rotas disponiveis com dados preenchidos:
 
 | Rota | O que ve |
 |------|----------|
-| `/` | Lista de processos publicos (PIBIC, PIBITI abertos) |
+| `/` | Lista de processos publicos (PIBIC, PIBITI, GETEC abertos) |
 | `/inscricao/1` | Formulario de inscricao multi-step |
+| `/admin/definir-avaliador` | Definir 2 avaliadores por candidato (selecao em etapas) |
 | `/avaliador/login` | Login com CPF + `123456` |
 | `/avaliador/painel` | Baremas atribuidos ao avaliador logado |
-| `/avaliador/avaliacao/{id}` | Formulario de avaliacao com criterios pre-preenchidos |
+| `/avaliador/avaliacao/{id}` | Formulario de avaliacao PIBIC com criterios pre-preenchidos |
 | `/candidato/login` | Login do candidato (CPF ou email + data nascimento + senha) |
 | `/candidato/painel` | Painel do candidato (dados pessoais, status inscricao, documentos) |
 
@@ -440,11 +448,13 @@ podman compose build --no-cache && podman compose up -d
 - Criar, editar, iniciar e finalizar processos
 - Definir numero de vagas disponiveis
 - Copiar link de inscricao
+- Suporte a multiplos tipos: PIBIC, PIBIT, PRH27, MCTI, GETEC, MPDS
 
 ### Modulo Candidatos
 - Cadastrar candidatos com matricula e email
 - Validacao de CPF (mascara e digitos verificadores) no cadastro e na busca por inscricao
 - Associar candidatos a processos
+- Campo Orientador para prevenir auto-avaliacao
 - Visualizar pontuacao media e detalhes
 
 ### Modulo Portal do Candidato
@@ -458,6 +468,7 @@ podman compose build --no-cache && podman compose up -d
 - Validacao de documentos (aprovar/rejeitar com motivo)
 - Visualizacao de PDF inline
 - Download multiplo (ZIP)
+- Filtro por Processo Seletivo
 
 ### Modulo Avaliadores
 - Cadastrar avaliadores internos e externos
@@ -465,25 +476,35 @@ podman compose build --no-cache && podman compose up -d
 - Campos academicos: Link Lattes, Ultima Formacao, Cargo, Nivel CNPq (PQ/DT)
 - Associar avaliadores a processos
 - Login com CPF + senha (JWT)
-- Prevencao de auto-avaliação (CPF do avaliador != CPF do candidato)
+- Prevencao de auto-avaliacao (avaliador nao pode ser orientador do candidato)
+
+### Modulo Definir Avaliador (Admin)
+- Selecionar processo, candidato e 2 avaliadores diferentes
+- Verificar progresso antes de criar baremas
+- Criar 2 baremas simultaneamente
+- Copiar links de acesso para cada avaliador
 
 ### Modulo Portal do Avaliador
 - Login autenticado via CPF + senha
-- Lista de baremas atribuídos ao avaliador
-- Visualização de dados do candidato
-- Visualização e download de documentos (PDF inline)
-- Avaliação com 4 critérios (Originalidade, Relevancia, Metodologia, Apresentacao)
-- Finalização da avaliação com nota final calculada
+- Lista de baremas atribuidos ao avaliador
+- Visualizacao de dados do candidato
+- Visualizacao e download de documentos (PDF inline)
+- Formulario de avaliacao PIBIC com 3 secoes (Projeto, Orientador, Candidato)
+- Nota final calculada automaticamente pela media dos 2 avaliadores
+- Finalizacao da avaliacao com nota final
 
 ### Modulo Baremas
 - Criar baremas de avaliacao
-- Definir criterios (Originalidade, Relevancia, Metodologia, Apresentacao)
-- Calcular nota final
+- Definir criterios por tipo (PIBIC: Projeto/Orientador/Candidato)
+- Calcular nota final automaticamente
+- Tipo do barema associado ao tipo do processo seletivo
 
 ### Modulo Avaliacao (Admin)
-- Visualização consolidada de todas as avaliações
-- Filtro por status (Pendente, Em Andamento, Concluido, Cancelado)
-- Resumo geral com contagem e média das notas
+- Visualizacao consolidada de todas as avaliacoes
+- Progresso por candidato com 2 avaliadores
+- Nota final exibida quando ambos avaliadores concluem
+- Filtro por Processo Seletivo
+- Resumo geral com contagem e media das notas
 
 ### Modulo Inscricao (Publico)
 - Formulario multi-step (4 paginas)
@@ -531,8 +552,13 @@ podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 |----------|-----------|--------------|
 | GET/POST/PUT/DELETE /api/candidatos | Gestao de candidatos | Admin |
 | GET/POST/PUT/DELETE /api/documentos | Gestao de documentos | Admin |
+| GET /api/documentos/processo/{processoId} | Documentos por processo seletivo | Admin |
 | GET/POST/PUT/DELETE /api/avaliadores | Gestao de avaliadores | Admin |
 | GET/POST/PUT/DELETE /api/baremas | Gestao de baremas | Admin |
+| GET /api/baremas/{id}/dados | Dados para preenchimento automatico do barema | Admin |
+| GET /api/baremas/progresso | Progresso de todos os processos | Admin |
+| GET /api/baremas/progresso/{processoId} | Progresso por processo | Admin |
+| POST /api/baremas/{id}/finalizar-eliminacao | Finalizar por eliminacao (nota 0) | Admin |
 | GET/POST/PUT/DELETE /api/processosselecao | Gestao de processos | Admin |
 | POST /api/formulario/completa | Inscricao publica | Nao |
 | POST /api/avaliador-auth/login | Login do avaliador (CPF + senha) | Nao |
@@ -544,7 +570,7 @@ podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 | GET /api/avaliador-painel/candidato/{id} | Dados do candidato | JWT |
 | GET /api/avaliador-painel/documentos/{id} | Documentos do candidato | JWT |
 | GET /api/avaliador-painel/documentos/{id}/download | Download de documento | JWT |
-| POST /api/avaliador-painel/baremas/{id}/finalizar | Finalizar avaliação | JWT |
+| POST /api/avaliador-painel/baremas/{id}/finalizar | Finalizar avaliacao | JWT |
 
 ## Variaveis de Ambiente
 
@@ -595,36 +621,47 @@ cp .env.example .env.prod
 
 ## Testes Automatizados
 
-O projeto possui testes unitários nas camadas backend e frontend.
+O projeto possui testes unitarios nas camadas backend e frontend.
 
 ### Backend (xUnit + Moq + FluentAssertions)
 
 ```
 src/backend/ProcessoSelecao.Tests/
 ├── Domain/
-│   ├── ProcessoSelecaoTests.cs      # 13 testes - máquina de estados
-│   ├── CandidatoTests.cs            # 5 testes - validação documentos e pontuação
-│   ├── BaremaTests.cs               # 6 testes - cálculo de nota e completude
-│   ├── AvaliadorTests.cs            # 5 testes + 1 theory - avaliações pendentes
-│   └── CpfValidatorTests.cs         # 5 testes + 5 theories - validação e formatação de CPF
+│   ├── ProcessoSelecaoTests.cs      # 12 testes - maquina de estados
+│   ├── CandidatoTests.cs            # 5 testes - validacao documentos e pontuacao
+│   ├── BaremaTests.cs               # 6 testes - calculo de nota e completude
+│   ├── BaremaPibicTests.cs          # 7 testes - CalcularNotaFinalPibic (JSON)
+│   ├── TipoProcessoTests.cs         # 4 testes - enum values e contagem
+│   ├── AvaliadorTests.cs            # 5 testes - avaliacoes pendentes
+│   └── CpfValidatorTests.cs         # 9 testes - validacao e formatacao de CPF
 └── Application/
-    ├── AvaliadorServiceTests.cs     # 8 testes - CRUD + validação CPF
-    ├── BaremaServiceTests.cs        # 5 testes - criação, finalização, auto-avaliação
-    ├── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definição de senha
-    └── CandidatoServiceTests.cs     # 7 testes - CRUD + validação CPF
+    ├── AvaliadorServiceTests.cs     # 4 testes - CRUD
+    ├── AvaliadorAuthServiceTests.cs # 6 testes - login JWT, BCrypt, definicao de senha
+    ├── BaremaServiceTests.cs        # 12 testes - criacao, finalizacao, progresso, eliminacao
+    ├── CandidatoServiceTests.cs     # 10 testes - CRUD + validacao CPF
+    └── DocumentoServiceTests.cs     # 5 testes - CRUD + filtro por processo
 ```
+
+**Total: 119 testes backend**
 
 ### Frontend (bUnit + xUnit + FluentAssertions)
 
 ```
 src/frontend/ProcessoSelecao.Blazor.Tests/
-└── Components/
-    ├── AvaliadorLoginTests.cs       # 2 testes - renderização, erro de login
-    ├── AvaliadorAvaliacaoTests.cs   # 1 teste  - redirect sem token
-    ├── AvaliacaoListTests.cs        # 5 testes - renderização, filtro, vazio, tabela, resumo
-    ├── ProcessoListTests.cs         # 3 testes - headers, vazio, botão novo
-    └── CandidatoListTests.cs        # 3 testes - título, botão novo, colunas da tabela
+├── Components/
+│   ├── AvaliadorLoginTests.razor.cs       # 2 testes - renderizacao, erro de login
+│   ├── AvaliadorAvaliacaoTests.razor.cs   # 1 teste  - redirect sem token
+│   ├── AvaliacaoListTests.razor.cs        # 5 testes - renderizacao, filtro, vazio, tabela, resumo
+│   ├── ProcessoListTests.razor.cs         # 3 testes - headers, vazio, botao novo
+│   ├── CandidatoListTests.razor.cs        # 3 testes - titulo, botao novo, colunas da tabela
+│   ├── DefinirAvaliadorTests.razor.cs     # 4 testes - titulo, limpar, dropdown, botao desabilitado
+│   └── DocumentoListTests.razor.cs        # 4 testes - titulo, filtro processo, upload, vazio
+└── Helpers/
+    └── ServiceMockExtensions.cs           # Extensao para mocks de IJSRuntime
 ```
+
+**Total: 22 testes frontend**
 
 ### Executar os testes
 
