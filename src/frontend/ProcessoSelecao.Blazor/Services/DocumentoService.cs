@@ -22,6 +22,9 @@ public class DocumentoService
     public virtual async Task<List<Documento>> GetByCandidatoIdAsync(long candidatoId)
         => await _api.GetAsync<List<Documento>>($"{Endpoint}/candidato/{candidatoId}") ?? new();
 
+    public virtual async Task<List<Documento>> GetByProcessoIdAsync(long processoId)
+        => await _api.GetAsync<List<Documento>>($"{Endpoint}/processo/{processoId}") ?? new();
+
     public virtual async Task<Documento?> UploadAsync(IBrowserFile file, CreateDocumento data)
     {
         using var content = new MultipartFormDataContent();
