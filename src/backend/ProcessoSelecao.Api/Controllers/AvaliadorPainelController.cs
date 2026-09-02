@@ -44,6 +44,14 @@ public class AvaliadorPainelController : ControllerBase
         return Ok(baremas);
     }
 
+    [HttpGet("barema-dados/{baremaId}")]
+    public async Task<ActionResult<BaremaDadosDto>> GetDadosBarema(long baremaId)
+    {
+        var dados = await _baremaService.GetDadosBaremaAsync(baremaId);
+        if (dados == null) return NotFound();
+        return Ok(dados);
+    }
+
     [HttpGet("candidato/{candidatoId}")]
     public async Task<ActionResult<CandidatoDto>> GetCandidato(long candidatoId)
     {
@@ -75,6 +83,13 @@ public class AvaliadorPainelController : ControllerBase
     {
         var avaliadorId = ObterAvaliadorId();
         var resultado = await _baremaService.FinalizarAsync(id, dto);
+        return Ok(resultado);
+    }
+
+    [HttpPost("baremas/{id}/finalizar-eliminacao")]
+    public async Task<ActionResult<BaremaDto>> FinalizarPorEliminacao(long id)
+    {
+        var resultado = await _baremaService.FinalizarPorEliminacaoAsync(id);
         return Ok(resultado);
     }
 }

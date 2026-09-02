@@ -96,4 +96,12 @@ public class BaremasController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>Retorna progresso de avaliação por candidato em um processo</summary>
+    [HttpGet("progresso/{processoId}")]
+    public async Task<ActionResult<IEnumerable<ProgressoCandidatoDto>>> GetProgresso(long processoId)
+    {
+        var progresso = await _service.GetProgressoAsync(processoId);
+        return Ok(progresso);
+    }
 }

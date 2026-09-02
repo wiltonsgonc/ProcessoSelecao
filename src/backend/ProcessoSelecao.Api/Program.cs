@@ -8,6 +8,7 @@ using ProcessoSelecao.Domain.Interfaces;
 using ProcessoSelecao.Infrastructure.Data;
 using ProcessoSelecao.Infrastructure.Repositories;
 using System.Text;
+using System.Text.Json.Serialization;
 
 
 /// <summary>
@@ -32,7 +33,10 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 });
 
 // Adiciona serviços de controllers e API Explorer
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddEndpointsApiExplorer();
 
 // Adiciona Swagger/OpenAPI
