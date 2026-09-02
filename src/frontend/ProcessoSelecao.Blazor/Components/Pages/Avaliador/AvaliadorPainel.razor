@@ -4,6 +4,7 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @using ProcessoSelecao.Blazor.Models
+@using ProcessoSelecao.Blazor.Services
 
 <PageTitle>Painel - Avaliador</PageTitle>
 
@@ -84,7 +85,7 @@ else
             var response = await Http.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
-                baremas = await response.Content.ReadFromJsonAsync<List<AvaliadorPainelBarema>>();
+                baremas = await response.Content.ReadFromJsonAsync<List<AvaliadorPainelBarema>>(JsonOptions.Default);
             }
         }
         catch { }

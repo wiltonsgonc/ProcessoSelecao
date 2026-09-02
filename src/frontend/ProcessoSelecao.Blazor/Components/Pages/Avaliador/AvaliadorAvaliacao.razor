@@ -4,10 +4,11 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @using ProcessoSelecao.Blazor.Models
+@using ProcessoSelecao.Blazor.Services
 @using System.Text.Json
 @using System.Text
 
-<PageTitle>Avaliação</PageTitle>
+<PageTitle>Avaliação PIBIC</PageTitle>
 
 @if (carregando)
 {
@@ -88,10 +89,10 @@ else
             }
         </div>
 
-        <!-- Lado direito: Formulário de avaliação -->
+        <!-- Lado direito: Formulário de avaliação PIBIC -->
         <div class="lg:col-span-2">
             <div class="bg-white border border-gray-200 rounded-lg p-5 sticky top-6">
-                <h3 class="font-bold text-gray-800 mb-4">Avaliação</h3>
+                <h3 class="font-bold text-gray-800 mb-4">BAREMA PIBIC - QUALIFICAÇÃO DO PROJETO E DO ORIENTADOR</h3>
 
                 @if (!string.IsNullOrEmpty(erro))
                 {
@@ -106,39 +107,155 @@ else
                     </div>
                 }
 
-                <div class="space-y-4">
+                <!-- Cabeçalho automático -->
+                <div class="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Originalidade (0-10)</label>
-                        <input type="range" min="0" max="10" step="0.5" class="w-full" @bind="originalidade" />
-                        <span class="text-sm text-gray-600">@originalidade.ToString("F1")</span>
+                        <label class="block text-xs font-medium text-gray-500">NOME DO ORIENTADOR</label>
+                        <p class="text-sm font-medium">@(nomeOrientador ?? "-")</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Relevância (0-10)</label>
-                        <input type="range" min="0" max="10" step="0.5" class="w-full" @bind="relevancia" />
-                        <span class="text-sm text-gray-600">@relevancia.ToString("F1")</span>
+                        <label class="block text-xs font-medium text-gray-500">NOME DO ESTUDANTE</label>
+                        <p class="text-sm font-medium">@(nomeEstudante ?? "-")</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Metodologia (0-10)</label>
-                        <input type="range" min="0" max="10" step="0.5" class="w-full" @bind="metodologia" />
-                        <span class="text-sm text-gray-600">@metodologia.ToString("F1")</span>
+                        <label class="block text-xs font-medium text-gray-500">CURSO DE GRADUAÇÃO</label>
+                        <p class="text-sm font-medium">@(cursoGraduacao ?? "-")</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Apresentação (0-10)</label>
-                        <input type="range" min="0" max="10" step="0.5" class="w-full" @bind="apresentacao" />
-                        <span class="text-sm text-gray-600">@apresentacao.ToString("F1")</span>
+                        <label class="block text-xs font-medium text-gray-500">AVALIADOR</label>
+                        <p class="text-sm font-medium">@(nomeAvaliador ?? "-")</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Média</label>
-                        <span class="text-lg font-bold text-indigo-600">@CalcularMedia().ToString("F2")</span>
+                </div>
+
+                <!-- ANÁLISE DOCUMENTAL -->
+                <div class="mb-4 p-3 border border-gray-200 rounded">
+                    <h4 class="font-bold text-sm mb-2">ANÁLISE DOCUMENTAL</h4>
+                    <p class="text-sm mb-2">Todos os documentos foram entregues de acordo com o EDITAL.</p>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-1 text-sm">
+                            <input type="radio" name="analiseDoc" value="classificado" @onchange="OnAnaliseDocChange" checked="@(analiseDocumental == "classificado")" />
+                            CLASSIFICADO (sim)
+                        </label>
+                        <label class="flex items-center gap-1 text-sm">
+                            <input type="radio" name="analiseDoc" value="eliminado" @onchange="OnAnaliseDocChange" checked="@(analiseDocumental == "eliminado")" />
+                            ELIMINADO (não)
+                        </label>
                     </div>
-                    <div>
+                </div>
+
+                @if (analiseDocumental != "eliminado")
+                {
+                    <!-- 1. PROJETO -->
+                    <div class="mb-4 p-3 border border-gray-200 rounded">
+                        <h4 class="font-bold text-sm mb-2">1. PROJETO (máx 35 pts)</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">1.1 Relação c/ projeto SENAI (0/5/10)</label>
+                                <input type="number" min="0" max="10" step="1" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p1_1" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">1.2 Resumo (0-5)</label>
+                                <input type="number" min="0" max="5" step="0.5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p1_2" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">1.3 Objetivos (0-5)</label>
+                                <input type="number" min="0" max="5" step="0.5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p1_3" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">1.4 Metodologia (0-5)</label>
+                                <input type="number" min="0" max="5" step="0.5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p1_4" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">1.5 Relevância (0-5)</label>
+                                <input type="number" min="0" max="5" step="0.5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p1_5" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">1.6 Exequibilidade (0-5)</label>
+                                <input type="number" min="0" max="5" step="0.5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p1_6" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-2 border-t font-bold text-sm">
+                                <span>TOTAL PARCIAL (máx 35)</span>
+                                <span class="text-indigo-600">@soma1.ToString("F1")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. ORIENTADOR -->
+                    <div class="mb-4 p-3 border border-gray-200 rounded">
+                        <h4 class="font-bold text-sm mb-2">2. ORIENTADOR (máx 35 pts)</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">2.1 Grau titulação (3/5)</label>
+                                <input type="number" min="0" max="5" step="1" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p2_1" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">2.2 Projeto relacionado (0/5)</label>
+                                <input type="number" min="0" max="5" step="5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p2_2" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">2.3 Experiência docente (0/5)</label>
+                                <input type="number" min="0" max="5" step="5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p2_3" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">2.4 Coordenação projetos (3/7/10)</label>
+                                <input type="number" min="0" max="10" step="1" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p2_4" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">2.5 Produção técnico-científica (0-10)</label>
+                                <input type="number" min="0" max="10" step="1" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p2_5" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-2 border-t font-bold text-sm">
+                                <span>TOTAL PARCIAL (máx 35)</span>
+                                <span class="text-indigo-600">@soma2.ToString("F1")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. CANDIDATO -->
+                    <div class="mb-4 p-3 border border-gray-200 rounded">
+                        <h4 class="font-bold text-sm mb-2">3. CANDIDATO (máx 30 pts)</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">3.1 Participação IC/IT (0/5)</label>
+                                <input type="number" min="0" max="5" step="5" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p3_1" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">3.2 Publicações (0-5, step 2)</label>
+                                <input type="number" min="0" max="5" step="2" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p3_2" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">3.3 Congressos (0-5, step 1)</label>
+                                <input type="number" min="0" max="5" step="1" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p3_3" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-xs flex-1">3.4 Desempenho acadêmico (3/6/15)</label>
+                                <input type="number" min="0" max="15" step="3" class="w-16 px-2 py-1 border rounded text-center text-sm" @bind="p3_4" @bind:after="CalcularTotais" />
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-2 border-t font-bold text-sm">
+                                <span>TOTAL PARCIAL (máx 30)</span>
+                                <span class="text-indigo-600">@soma3.ToString("F1")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SOMATÓRIO TOTAL -->
+                    <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded">
+                        <div class="flex items-center justify-between font-bold">
+                            <span>SOMATÓRIO TOTAL</span>
+                            <span class="text-lg text-indigo-600">@totalGeral.ToString("F1")</span>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="mb-4">
                         <label class="block text-sm font-medium mb-1">Observações</label>
                         <textarea class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 min-h-[80px]" @bind="observacoes"></textarea>
                     </div>
+
                     <button class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors font-medium" @onclick="Finalizar" disabled="@salvando">
                         @if (salvando) { <span>Salvando...</span> } else { <span>Finalizar Avaliação</span> }
                     </button>
-                </div>
+                }
             </div>
         </div>
     </div>
@@ -156,10 +273,18 @@ else
     private bool sucesso = false;
     private string erro = "";
 
-    private double originalidade = 5;
-    private double relevancia = 5;
-    private double metodologia = 5;
-    private double apresentacao = 5;
+    private string? nomeOrientador;
+    private string? nomeEstudante;
+    private string? cursoGraduacao;
+    private string? nomeAvaliador;
+
+    private string analiseDocumental = "";
+
+    private double p1_1, p1_2, p1_3, p1_4, p1_5, p1_6;
+    private double p2_1, p2_2, p2_3, p2_4, p2_5;
+    private double p3_1, p3_2, p3_3, p3_4;
+
+    private double soma1, soma2, soma3, totalGeral;
     private string observacoes = "";
 
     private bool pdfVisualizando = false;
@@ -186,13 +311,29 @@ else
         {
             var baseUrl = "http://localhost:5002";
 
-            // Carrega barema
+            // Carrega dados do barema (com auto-preenchimento)
+            var reqDados = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/avaliador-painel/barema-dados/{baremaId}");
+            reqDados.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+            var resDados = await Http.SendAsync(reqDados);
+            if (resDados.IsSuccessStatusCode)
+            {
+                var dados = await resDados.Content.ReadFromJsonAsync<BaremaDadosDto>(JsonOptions.Default);
+                if (dados != null)
+                {
+                    nomeOrientador = dados.NomeOrientador;
+                    nomeEstudante = dados.NomeEstudante;
+                    cursoGraduacao = dados.CursoGraduacao;
+                    nomeAvaliador = dados.NomeAvaliador;
+                }
+            }
+
+            // Carrega barema básico
             var reqBarema = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/baremas/{baremaId}");
             reqBarema.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
             var resBarema = await Http.SendAsync(reqBarema);
             if (resBarema.IsSuccessStatusCode)
             {
-                barema = await resBarema.Content.ReadFromJsonAsync<AvaliadorPainelBarema>();
+                barema = await resBarema.Content.ReadFromJsonAsync<AvaliadorPainelBarema>(JsonOptions.Default);
             }
 
             if (barema != null)
@@ -203,7 +344,7 @@ else
                 var resCandidato = await Http.SendAsync(reqCandidato);
                 if (resCandidato.IsSuccessStatusCode)
                 {
-                    candidato = await resCandidato.Content.ReadFromJsonAsync<AvaliadorCandidatoInfo>();
+                    candidato = await resCandidato.Content.ReadFromJsonAsync<AvaliadorCandidatoInfo>(JsonOptions.Default);
                 }
 
                 // Carrega documentos do candidato
@@ -212,7 +353,7 @@ else
                 var resDocs = await Http.SendAsync(reqDocs);
                 if (resDocs.IsSuccessStatusCode)
                 {
-                    documentos = await resDocs.Content.ReadFromJsonAsync<List<Models.Documento>>();
+                    documentos = await resDocs.Content.ReadFromJsonAsync<List<Models.Documento>>(JsonOptions.Default);
                 }
             }
         }
@@ -226,12 +367,58 @@ else
         }
     }
 
+    private void OnAnaliseDocChange(ChangeEventArgs e)
+    {
+        analiseDocumental = e.Value?.ToString() ?? "";
+        if (analiseDocumental == "eliminado")
+        {
+            _ = FinalizarPorEliminacao();
+        }
+    }
+
+    private async Task FinalizarPorEliminacao()
+    {
+        salvando = true;
+        erro = "";
+        try
+        {
+            var baseUrl = "http://localhost:5002";
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/api/avaliador-painel/baremas/{baremaId}/finalizar-eliminacao");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+            var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                sucesso = true;
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                erro = $"Erro ao finalizar: {msg}";
+            }
+        }
+        catch (Exception ex)
+        {
+            erro = $"Erro ao finalizar: {ex.Message}";
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private void CalcularTotais()
+    {
+        soma1 = p1_1 + p1_2 + p1_3 + p1_4 + p1_5 + p1_6;
+        soma2 = p2_1 + p2_2 + p2_3 + p2_4 + p2_5;
+        soma3 = p3_1 + p3_2 + p3_3 + p3_4;
+        totalGeral = soma1 + soma2 + soma3;
+    }
+
     private async Task VisualizarPdf(long documentoId)
     {
         var baseUrl = "http://localhost:5002";
         var token = await JS.InvokeAsync<string>("sessionStorage.getItem", "avaliador_token");
 
-        // Download do PDF e conversão para base64
         var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/api/avaliador-painel/documentos/{documentoId}/download");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
@@ -250,11 +437,6 @@ else
         return $"http://localhost:5002/api/avaliador-painel/documentos/{documentoId}/download";
     }
 
-    private double CalcularMedia()
-    {
-        return (originalidade + relevancia + metodologia + apresentacao) / 4.0;
-    }
-
     private async Task Finalizar()
     {
         salvando = true;
@@ -264,18 +446,35 @@ else
         try
         {
             var baseUrl = "http://localhost:5002";
-            var criterios = new Dictionary<string, double>
+
+            var criterios = new Dictionary<string, object>
             {
-                { "Originalidade", originalidade },
-                { "Relevancia", relevancia },
-                { "Metodologia", metodologia },
-                { "Apresentacao", apresentacao }
+                { "analiseDocumental", analiseDocumental },
+                { "projeto", new Dictionary<string, double>
+                    {
+                        { "1_1", p1_1 }, { "1_2", p1_2 }, { "1_3", p1_3 },
+                        { "1_4", p1_4 }, { "1_5", p1_5 }, { "1_6", p1_6 }
+                    }
+                },
+                { "orientador", new Dictionary<string, double>
+                    {
+                        { "2_1", p2_1 }, { "2_2", p2_2 }, { "2_3", p2_3 },
+                        { "2_4", p2_4 }, { "2_5", p2_5 }
+                    }
+                },
+                { "candidato", new Dictionary<string, double>
+                    {
+                        { "3_1", p3_1 }, { "3_2", p3_2 }, { "3_3", p3_3 }, { "3_4", p3_4 }
+                    }
+                }
             };
+
+            var payload = new { Criterios = criterios, Observacoes = observacoes };
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/api/avaliador-painel/baremas/{baremaId}/finalizar");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
             request.Content = new StringContent(
-                JsonSerializer.Serialize(new { Criterios = criterios, Observacoes = observacoes }),
+                JsonSerializer.Serialize(payload),
                 Encoding.UTF8,
                 "application/json");
 

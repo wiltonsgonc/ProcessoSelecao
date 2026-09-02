@@ -4,6 +4,7 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @using ProcessoSelecao.Blazor.Models
+@using ProcessoSelecao.Blazor.Services
 
 <PageTitle>Login - Avaliador</PageTitle>
 
@@ -85,7 +86,7 @@
                 return;
             }
 
-            var result = await response.Content.ReadFromJsonAsync<AvaliadorAuthResponse>();
+            var result = await response.Content.ReadFromJsonAsync<AvaliadorAuthResponse>(JsonOptions.Default);
             if (result != null)
             {
                 await JS.InvokeVoidAsync("sessionStorage.setItem", "avaliador_token", result.Token);
