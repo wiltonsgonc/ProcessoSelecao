@@ -45,6 +45,14 @@ public class DocumentosController : ControllerBase
         return Ok(documentos);
     }
 
+    /// <summary>Retorna documentos de candidatos de um processo seletivo</summary>
+    [HttpGet("processo/{processoId}")]
+    public async Task<ActionResult<IEnumerable<DocumentoDto>>> GetByProcessoId(long processoId)
+    {
+        var documentos = await _service.GetByProcessoIdAsync(processoId);
+        return Ok(documentos);
+    }
+
     /// <summary>Download de um documento</summary>
     [HttpGet("{id}/download")]
     public async Task<ActionResult> Download(long id)
