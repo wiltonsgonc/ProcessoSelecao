@@ -138,6 +138,7 @@ public class DadosPagina1
     public string? Email { get; set; }
     public string? Telefone { get; set; }
     public string? AreaOfertada { get; set; }
+    public string? Orientador { get; set; }
     public bool PoliticaPrivacidade { get; set; }
 }
 

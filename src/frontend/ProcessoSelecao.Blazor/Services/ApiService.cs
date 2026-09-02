@@ -1,6 +1,16 @@
 using System.Net;
+using System.Text.Json.Serialization;
 
 namespace ProcessoSelecao.Blazor.Services;
+
+public static class JsonOptions
+{
+    public static readonly System.Text.Json.JsonSerializerOptions Default = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+}
 
 public class ApiService
 {
@@ -36,7 +46,7 @@ public class ApiService
                     return default;
                 }
 
-                return await response.Content.ReadFromJsonAsync<T>();
+                return await response.Content.ReadFromJsonAsync<T>(JsonOptions.Default);
             }
             catch (HttpRequestException ex) when (i < 5)
             {
@@ -49,16 +59,16 @@ public class ApiService
 
     public virtual async Task<T?> PostAsync<T>(string endpoint, object data)
     {
-        var response = await _http.PostAsJsonAsync(endpoint, data);
+        var response = await _http.PostAsJsonAsync(endpoint, data, JsonOptions.Default);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<T>();
+        return await response.Content.ReadFromJsonAsync<T>(JsonOptions.Default);
     }
 
     public virtual async Task<T?> PutAsync<T>(string endpoint, object data)
     {
-        var response = await _http.PutAsJsonAsync(endpoint, data);
+        var response = await _http.PutAsJsonAsync(endpoint, data, JsonOptions.Default);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<T>();
+        return await response.Content.ReadFromJsonAsync<T>(JsonOptions.Default);
     }
 
     public virtual async Task DeleteAsync(string endpoint)
@@ -71,7 +81,7 @@ public class ApiService
     {
         var response = await _http.PostAsync(endpoint, formData);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<T>();
+        return await response.Content.ReadFromJsonAsync<T>(JsonOptions.Default);
     }
 
     public virtual async Task<byte[]> GetBytesAsync(string endpoint)
@@ -81,7 +91,7 @@ public class ApiService
 
     public virtual async Task<byte[]> PostBytesAsync(string endpoint, object data)
     {
-        var response = await _http.PostAsJsonAsync(endpoint, data);
+        var response = await _http.PostAsJsonAsync(endpoint, data, JsonOptions.Default);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsByteArrayAsync();
     }

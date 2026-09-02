@@ -35,4 +35,7 @@ public class BaremaService
 
     public virtual async Task DeleteAsync(int id)
         => await _api.DeleteAsync($"{Endpoint}/{id}");
+
+    public virtual async Task<List<ProgressoCandidato>> GetProgressoAsync(int processoId)
+        => await _api.GetAsync<List<ProgressoCandidato>>($"{Endpoint}/progresso/{processoId}") ?? new();
 }
