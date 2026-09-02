@@ -152,7 +152,7 @@
 </div>
 
 <!-- Ação -->
-<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((avaliador1 == null || avaliador2 == null) ? "opacity-50 pointer-events-none" : "")">
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((avaliador1 == null || avaliador2 == null) ? "opacity-50" : "")">
     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold">4</span>
         Confirmar Atribuição
@@ -185,7 +185,7 @@
                 <span>Criar 2 Baremas</span>
             }
         </button>
-        <button class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600 transition-colors" @onclick="Limpar">Limpar</button>
+        <button class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600 transition-colors opacity-100" @onclick="Limpar">Limpar</button>
     </div>
 </div>
 
