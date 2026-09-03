@@ -27,6 +27,9 @@ public interface IBaremaService
     /// <summary>Finaliza um barema</summary>
     Task<BaremaDto> FinalizarAsync(long id, FinalizarBaremaDto dto);
     
+    /// <summary>Finaliza um barema com template (itens individuais)</summary>
+    Task<BaremaDto> FinalizarComTemplateAsync(long id, FinalizarBaremaTemplateDto dto);
+    
     /// <summary>Remove um barema</summary>
     Task DeleteAsync(long id);
     
@@ -106,6 +109,7 @@ public class BaremaService : IBaremaService
             CandidatoId = dto.CandidatoId,
             AvaliadorId = dto.AvaliadorId,
             TipoBarema = dto.TipoBarema,
+            TemplateId = dto.TemplateId,
             Status = StatusBarema.Pendente
         };
         var created = await _repository.AddAsync(entity);
@@ -133,16 +137,51 @@ public class BaremaService : IBaremaService
     {
         var entity = await _repository.GetByIdAsync(id) ?? throw new Exception("Barema não encontrado");
         
-        entity.CriteriosJson = JsonSerializer.Serialize(dto.Criterios);
-        
-        if (entity.TipoBarema == "PIBIC")
+        if (entity.TemplateId.HasValue)
         {
+            // Template-based finalization: save items as JSON for backward compatibility
+            var itensDict = dto.Criterios;
+            entity.CriteriosJson = JsonSerializer.Serialize(itensDict);
+            entity.NotaFinal = entity.CalcularNotaFinal(dto.Criterios);
+        }
+        else if (entity.TipoBarema == "PIBIC")
+        {
+            entity.CriteriosJson = JsonSerializer.Serialize(dto.Criterios);
             entity.NotaFinal = entity.CalcularNotaFinalPibic(entity.CriteriosJson);
         }
         else
         {
+            entity.CriteriosJson = JsonSerializer.Serialize(dto.Criterios);
             entity.NotaFinal = entity.CalcularNotaFinal(dto.Criterios);
         }
+        
+        entity.Observacoes = dto.Observacoes;
+        entity.DataPreenchimento = DateTime.UtcNow;
+        entity.Status = StatusBarema.Concluido;
+        
+        var updated = await _repository.UpdateAsync(entity);
+        return MapToDto(updated);
+    }
+
+    /// <summary>Finaliza um barema com template (itens individuais)</summary>
+    public async Task<BaremaDto> FinalizarComTemplateAsync(long id, FinalizarBaremaTemplateDto dto)
+    {
+        var entity = await _repository.GetByIdAsync(id) ?? throw new Exception("Barema não encontrado");
+        
+        if (!entity.TemplateId.HasValue)
+            throw new Exception("Este barema não possui template vinculado");
+        
+        // Calculate average from items
+        if (dto.Itens == null || !dto.Itens.Any())
+            throw new Exception("Nenhum item de avaliação fornecido");
+        
+        entity.NotaFinal = dto.Itens.Average(i => i.Nota);
+        
+        // Store items as JSON for backward compatibility
+        var itensDict = dto.Itens.ToDictionary(
+            i => i.TemplateItemId.ToString(),
+            i => i.Nota);
+        entity.CriteriosJson = JsonSerializer.Serialize(itensDict);
         
         entity.Observacoes = dto.Observacoes;
         entity.DataPreenchimento = DateTime.UtcNow;
@@ -309,6 +348,17 @@ public class BaremaService : IBaremaService
         dto.CandidatoNome = barema.Candidato?.Nome;
         dto.AvaliadorNome = barema.Avaliador?.Nome;
         dto.TipoBarema = barema.TipoBarema;
+        dto.TemplateId = barema.TemplateId;
+        dto.TemplateNome = barema.Template?.Nome;
+        
+        if (barema.ItensAvaliacao != null && barema.ItensAvaliacao.Any())
+        {
+            dto.ItensAvaliacao = barema.ItensAvaliacao.Select(i => new BaremaItemAvaliacaoDto
+            {
+                TemplateItemId = i.TemplateItemId,
+                Nota = i.Nota
+            }).ToList();
+        }
         
         if (!string.IsNullOrEmpty(barema.CriteriosJson))
         {

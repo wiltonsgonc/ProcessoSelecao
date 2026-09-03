@@ -13,7 +13,10 @@ public class BaremaDto
     public long AvaliadorId { get; set; }
     public string? AvaliadorNome { get; set; }
     public string TipoBarema { get; set; } = "PIBIC";
+    public long? TemplateId { get; set; }
+    public string? TemplateNome { get; set; }
     public Dictionary<string, float>? Criterios { get; set; }
+    public List<BaremaItemAvaliacaoDto>? ItensAvaliacao { get; set; }
     public float NotaFinal { get; set; }
     public string? Observacoes { get; set; }
     public DateTime? DataPreenchimento { get; set; }
@@ -28,6 +31,7 @@ public class CreateBaremaDto
     public long CandidatoId { get; set; }
     public long AvaliadorId { get; set; }
     public string TipoBarema { get; set; } = "PIBIC";
+    public long? TemplateId { get; set; }
 }
 
 /// <summary>
