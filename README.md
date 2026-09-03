@@ -258,6 +258,7 @@ as migrations e preenche:
 | Candidatos | 7 | Distribuidos entre os 4 processos, com status variados |
 | Documentos | 18 | 2-3 por candidato (historicos, cartas, curriculos Lattes) |
 | Baremas | 4 | Avaliacoes em diferentes estados (concluido, pendente, etc.) |
+| Templates | 1 | PIBIC 2026 (3 secoes, 15 itens de avaliacao) |
 
 #### Controles
 
@@ -308,7 +309,8 @@ Rotas disponiveis com dados preenchidos:
 |------|----------|
 | `/` | Lista de processos publicos (PIBIC, PIBITI, GETEC abertos) |
 | `/inscricao/1` | Formulario de inscricao multi-step |
-| `/admin/definir-avaliador` | Definir 2 avaliadores por candidato (selecao em etapas) |
+| `/admin/definir-avaliador` | Definir avaliadores por candidato (selecao em etapas) |
+| `/admin/barema-templates` | Gerenciar templates de avaliacao (CRUD, clonar, ativar/desativar) |
 | `/avaliador/login` | Login com CPF + `123456` |
 | `/avaliador/painel` | Baremas atribuidos ao avaliador logado |
 | `/avaliador/avaliacao/{id}` | Formulario de avaliacao PIBIC com criterios pre-preenchidos |
@@ -490,14 +492,23 @@ podman compose build --no-cache && podman compose up -d
 - Visualizacao de dados do candidato
 - Visualizacao e download de documentos (PDF inline)
 - Formulario de avaliacao PIBIC com 3 secoes (Projeto, Orientador, Candidato)
+- Formulario dinamico baseado em templates (quando barema possui template vinculado)
 - Nota final calculada automaticamente pela media dos 2 avaliadores
 - Finalizacao da avaliacao com nota final
 
 ### Modulo Baremas
 - Criar baremas de avaliacao
+- Vincular barema a um template de avaliacao (opcional)
 - Definir criterios por tipo (PIBIC: Projeto/Orientador/Candidato)
 - Calcular nota final automaticamente
 - Tipo do barema associado ao tipo do processo seletivo
+
+### Modulo Templates de Barema (Admin)
+- Criar, editar, clonar e excluir templates de avaliacao
+- Definir secoes, itens e ranges de nota (minima, maxima, passo)
+- Templates predefinidos seedados: PIBIC 2026 (3 secoes, 15 itens)
+- Ativar/desativar templates
+- Barema pode usar template existente ou ser fixo (sem template)
 
 ### Modulo Avaliacao (Admin)
 - Visualizacao consolidada de todas as avaliacoes
@@ -571,6 +582,11 @@ podman exec processo-selecao-sqlserver /opt/mssql-tools18/bin/sqlcmd \
 | GET /api/avaliador-painel/documentos/{id} | Documentos do candidato | JWT |
 | GET /api/avaliador-painel/documentos/{id}/download | Download de documento | JWT |
 | POST /api/avaliador-painel/baremas/{id}/finalizar | Finalizar avaliacao | JWT |
+| POST /api/avaliador-painel/baremas/{id}/finalizar-com-template | Finalizar com template | JWT |
+| GET/POST/PUT/DELETE /api/barematemplates | CRUD de templates de barema | Admin |
+| GET /api/barematemplates/ativas | Templates ativos | Admin |
+| POST /api/barematemplates/{id}/clone | Clonar template | Admin |
+| PUT /api/barematemplates/{id}/toggle-ativo | Ativar/desativar template | Admin |
 
 ## Variaveis de Ambiente
 
