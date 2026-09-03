@@ -23,6 +23,15 @@ public class Barema : BaseEntity
     /// <summary>Tipo do barema (PIBIC, PIBIT, etc.)</summary>
     public string TipoBarema { get; set; } = "PIBIC";
     
+    /// <summary>ID do template used (null para baremas antigos)</summary>
+    public long? TemplateId { get; set; }
+    
+    /// <summary>Template relacionado</summary>
+    public virtual BaremaTemplate? Template { get; set; }
+    
+    /// <summary>Itens de avaliação preenchidos pelo avaliador</summary>
+    public virtual ICollection<BaremaItemAvaliacao> ItensAvaliacao { get; set; } = new List<BaremaItemAvaliacao>();
+    
     /// <summary>Critérios de avaliação em formato JSON</summary>
     public string? CriteriosJson { get; set; }
     
