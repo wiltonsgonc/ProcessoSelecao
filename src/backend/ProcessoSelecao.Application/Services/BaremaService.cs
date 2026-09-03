@@ -240,7 +240,7 @@ public class BaremaService : IBaremaService
                 NumeroInscricao = candidato.NumeroInscricao,
                 AvaliadoresAtribuidos = baremasAtivas.Count,
                 AvaliadoresConcluidos = notasConcluidas.Count,
-                AvaliadoresNecessarios = 2,
+                AvaliadoresNecessarios = baremasAtivas.Count,
                 NotaFinal = notasConcluidas.Any() ? notasConcluidas.Average() : 0,
                 Baremas = baremasAtivas.Select(b => new BaremaProgressoDto
                 {
@@ -286,7 +286,7 @@ public class BaremaService : IBaremaService
                 NumeroInscricao = candidato.NumeroInscricao,
                 AvaliadoresAtribuidos = baremasAtivas.Count,
                 AvaliadoresConcluidos = notasConcluidas.Count,
-                AvaliadoresNecessarios = 2,
+                AvaliadoresNecessarios = baremasAtivas.Count,
                 NotaFinal = notasConcluidas.Any() ? notasConcluidas.Average() : 0,
                 Baremas = baremasAtivas.Select(b => new BaremaProgressoDto
                 {
