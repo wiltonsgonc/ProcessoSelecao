@@ -1,0 +1,329 @@
+@page "/admin/barema-templates"
+@using ProcessoSelecao.Blazor.Models
+@using ProcessoSelecao.Blazor.Services
+@layout Layouts.AdminLayout
+@inject BaremaTemplateService TemplateService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Templates de Barema</PageTitle>
+
+<div class="flex justify-between items-center mb-5">
+    <h1 class="text-2xl font-bold">Templates de Barema</h1>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="NovoTemplate">+ Novo Template</button>
+</div>
+
+@if (carregando)
+{
+    <p class="text-gray-500">Carregando...</p>
+}
+else if (!templates.Any())
+{
+    <p class="text-gray-500">Nenhum template encontrado.</p>
+}
+else
+{
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Nome</th>
+                    <th class="text-left px-4 py-3 font-semibold">Tipo</th>
+                    <th class="text-left px-4 py-3 font-semibold">Itens</th>
+                    <th class="text-left px-4 py-3 font-semibold">Ponto Máx</th>
+                    <th class="text-left px-4 py-3 font-semibold">Status</th>
+                    <th class="text-left px-4 py-3 font-semibold">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in templates)
+                {
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="px-4 py-3 font-medium">@t.Nome</td>
+                        <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">@t.TipoBarema</span></td>
+                        <td class="px-4 py-3">@t.TotalItens</td>
+                        <td class="px-4 py-3">@t.PontoMaximo</td>
+                        <td class="px-4 py-3">
+                            @if (t.Ativo)
+                            {
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Ativo</span>
+                            }
+                            else
+                            {
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">Inativo</span>
+                            }
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex gap-2">
+                                <button class="text-blue-600 hover:text-blue-800 text-xs" @onclick="() => Editar(t)">Editar</button>
+                                <button class="text-green-600 hover:text-green-800 text-xs" @onclick="() => Clonar(t)">Clonar</button>
+                                <button class="text-yellow-600 hover:text-yellow-800 text-xs" @onclick="() => ToggleAtivo(t)">@(t.Ativo ? "Desativar" : "Ativar")</button>
+                                <button class="text-red-600 hover:text-red-800 text-xs" @onclick="() => Excluir(t)">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (showForm)
+{
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-lg font-semibold mb-4">@(editando ? "Editar Template" : "Novo Template")</h2>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nome</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.Nome" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tipo Barema</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.TipoBarema">
+                            <option value="PIBIC">PIBIC</option>
+                            <option value="PIBIT">PIBIT</option>
+                            <option value="PRH27">PRH 2.7</option>
+                            <option value="CUSTOM">Customizado</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Descrição</label>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.Descricao" rows="2"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Ponto Máximo</label>
+                    <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.PontoMaximo" min="1" />
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-semibold">Itens de Avaliação</label>
+                        <button type="button" class="text-blue-600 hover:text-blue-800 text-sm" @onclick="AdicionarSecao">+ Adicionar Seção</button>
+                    </div>
+
+                    @if (formData.Itens.Any())
+                    {
+                        var secoes = formData.Itens.GroupBy(i => i.SecaoOrdem).OrderBy(g => g.Key);
+                        @foreach (var secao in secoes)
+                        {
+                            <div class="border border-gray-200 rounded p-3 mb-3">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium text-sm">@secao.First().Secao</span>
+                                    <button type="button" class="text-red-500 hover:text-red-700 text-xs" @onclick="() => RemoverSecao(secao.Key)">Remover Seção</button>
+                                </div>
+                                @foreach (var item in formData.Itens.Where(i => i.SecaoOrdem == secao.Key).OrderBy(i => i.Ordem))
+                                {
+                                    <div class="grid grid-cols-12 gap-2 mb-2 items-center">
+                                        <div class="col-span-5">
+                                            <input type="text" class="w-full text-sm px-2 py-1 border border-gray-200 rounded" @bind="item.Nome" placeholder="Nome do item" />
+                                        </div>
+                                        <div class="col-span-2">
+                                            <input type="number" class="w-full text-sm px-2 py-1 border border-gray-200 rounded" @bind="item.NotaMaxima" placeholder="Máx" />
+                                        </div>
+                                        <div class="col-span-2">
+                                            <input type="number" class="w-full text-sm px-2 py-1 border border-gray-200 rounded" @bind="item.Passo" step="0.5" placeholder="Passo" />
+                                        </div>
+                                        <div class="col-span-2 text-center">
+                                            <input type="checkbox" checked="@item.Obrigatorio" @onchange="e => item.Obrigatorio = e.Value is bool b && b" />
+                                            <span class="text-xs text-gray-500 ml-1">Obrig.</span>
+                                        </div>
+                                        <div class="col-span-1 text-right">
+                                            <button type="button" class="text-red-400 hover:text-red-600 text-xs" @onclick="() => RemoverItem(item)">X</button>
+                                        </div>
+                                    </div>
+                                }
+                                <button type="button" class="text-blue-600 hover:text-blue-800 text-xs mt-1" @onclick="() => AdicionarItem(secao.Key)">+ Item</button>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" @onclick="Salvar" disabled="@salvando">
+                    @if (salvando) { <span>Salvando...</span> } else { <span>Salvar</span> }
+                </button>
+                <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensagem))
+{
+    <div class="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+        @mensagem
+    </div>
+}
+
+@code {
+    private List<BaremaTemplate> templates = new();
+    private bool carregando = true;
+    private bool showForm = false;
+    private bool editando = false;
+    private bool salvando = false;
+    private string? mensagem;
+    private long editingId;
+    private CreateBaremaTemplate formData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarDados();
+    }
+
+    private async Task CarregarDados()
+    {
+        carregando = true;
+        templates = await TemplateService.GetAllAsync();
+        carregando = false;
+    }
+
+    private void NovoTemplate()
+    {
+        editando = false;
+        editingId = 0;
+        formData = new CreateBaremaTemplate
+        {
+            Nome = "",
+            TipoBarema = "CUSTOM",
+            PontoMaximo = 100,
+            Itens = new List<CreateBaremaTemplateItem>()
+        };
+        showForm = true;
+    }
+
+    private void Editar(BaremaTemplate template)
+    {
+        editando = true;
+        editingId = template.Id;
+        formData = new CreateBaremaTemplate
+        {
+            Nome = template.Nome,
+            Descricao = template.Descricao,
+            TipoBarema = template.TipoBarema,
+            PontoMaximo = template.PontoMaximo,
+            Itens = template.Itens.Select(i => new CreateBaremaTemplateItem
+            {
+                Secao = i.Secao,
+                SecaoOrdem = i.SecaoOrdem,
+                Nome = i.Nome,
+                Ordem = i.Ordem,
+                NotaMinima = i.NotaMinima,
+                NotaMaxima = i.NotaMaxima,
+                Passo = i.Passo,
+                Obrigatorio = i.Obrigatorio
+            }).ToList()
+        };
+        showForm = true;
+    }
+
+    private async Task Clonar(BaremaTemplate template)
+    {
+        var novoNome = $"{template.Nome} (Cópia)";
+        await TemplateService.CloneAsync(template.Id, novoNome);
+        await CarregarDados();
+        mensagem = "Template clonado com sucesso!";
+        StateHasChanged();
+        await Task.Delay(2000);
+        mensagem = null;
+        StateHasChanged();
+    }
+
+    private async Task ToggleAtivo(BaremaTemplate template)
+    {
+        await TemplateService.ToggleAtivoAsync(template.Id);
+        await CarregarDados();
+    }
+
+    private async Task Excluir(BaremaTemplate template)
+    {
+        await TemplateService.DeleteAsync(template.Id);
+        await CarregarDados();
+    }
+
+    private void AdicionarSecao()
+    {
+        var proximaOrdem = formData.Itens.Any() ? formData.Itens.Max(i => i.SecaoOrdem) + 1 : 1;
+        var proximaOrdemItem = 1;
+        formData.Itens.Add(new CreateBaremaTemplateItem
+        {
+            Secao = $"Seção {proximaOrdem}",
+            SecaoOrdem = proximaOrdem,
+            Nome = "",
+            Ordem = proximaOrdemItem,
+            NotaMaxima = 5,
+            Passo = 1
+        });
+    }
+
+    private void AdicionarItem(int secaoOrdem)
+    {
+        var proximaOrdem = formData.Itens.Where(i => i.SecaoOrdem == secaoOrdem).Any()
+            ? formData.Itens.Where(i => i.SecaoOrdem == secaoOrdem).Max(i => i.Ordem) + 1
+            : 1;
+        formData.Itens.Add(new CreateBaremaTemplateItem
+        {
+            Secao = formData.Itens.First(i => i.SecaoOrdem == secaoOrdem).Secao,
+            SecaoOrdem = secaoOrdem,
+            Nome = "",
+            Ordem = proximaOrdem,
+            NotaMaxima = 5,
+            Passo = 1
+        });
+    }
+
+    private void RemoverSecao(int secaoOrdem)
+    {
+        formData.Itens.RemoveAll(i => i.SecaoOrdem == secaoOrdem);
+    }
+
+    private void RemoverItem(CreateBaremaTemplateItem item)
+    {
+        formData.Itens.Remove(item);
+    }
+
+    private async Task Salvar()
+    {
+        if (string.IsNullOrWhiteSpace(formData.Nome)) return;
+        salvando = true;
+        StateHasChanged();
+
+        try
+        {
+            if (editando)
+            {
+                await TemplateService.UpdateAsync(editingId, new UpdateBaremaTemplate
+                {
+                    Nome = formData.Nome,
+                    Descricao = formData.Descricao,
+                    Itens = formData.Itens
+                });
+            }
+            else
+            {
+                await TemplateService.CreateAsync(formData);
+            }
+
+            showForm = false;
+            await CarregarDados();
+            mensagem = editando ? "Template atualizado!" : "Template criado!";
+            StateHasChanged();
+            await Task.Delay(2000);
+            mensagem = null;
+            StateHasChanged();
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private void Cancelar()
+    {
+        showForm = false;
+    }
+}

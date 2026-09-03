@@ -3,6 +3,7 @@
 @using ProcessoSelecao.Blazor.Services
 @layout Layouts.AdminLayout
 @inject BaremaService Service
+@inject BaremaTemplateService TemplateService
 @inject CandidatoService CandidatoService
 @inject ProcessoSelecaoService ProcessoService
 @inject NavigationManager Nav
@@ -27,6 +28,16 @@
             <div>
                 <label class="block text-sm font-medium mb-1">ID do Avaliador</label>
                 <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.AvaliadorId" required />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Template de Avaliação (opcional)</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.TemplateId">
+                    <option value="">-- Nenhum (barema fixo) --</option>
+                    @foreach (var t in templatesAtivos)
+                    {
+                        <option value="@t.Id">@t.Nome (@t.TipoBarema - @t.TotalItens itens)</option>
+                    }
+                </select>
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar</button>
@@ -79,6 +90,7 @@
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidato</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Avaliador</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Processo</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Template</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nota Final</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Data</th>
@@ -93,6 +105,16 @@
                         <td class="px-3 py-2.5 border-b border-gray-200">@(b.CandidatoNome ?? b.CandidatoId.ToString())</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@(b.AvaliadorNome ?? b.AvaliadorId.ToString())</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@GetProcessoNome(b.CandidatoId)</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            @if (b.TemplateId.HasValue)
+                            {
+                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">@(b.TemplateNome ?? "Template")</span>
+                            }
+                            else
+                            {
+                                <span class="text-gray-400 text-xs">Fixo</span>
+                            }
+                        </td>
                         <td class="px-3 py-2.5 border-b border-gray-200">@b.NotaFinal.ToString("F2")</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">
                             <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @GetStatusClass(b.Status)">@GetStatusLabel(b.Status)</span>
@@ -121,6 +143,7 @@
     private List<Barema> baremas = new();
     private List<Candidato> candidatos = new();
     private List<ProcessoSelecao> processos = new();
+    private List<BaremaTemplate> templatesAtivos = new();
     private Dictionary<long, string> processoPorCandidato = new();
     private bool showForm = false;
     private bool showFinalizarModal = false;
@@ -144,6 +167,7 @@
         baremas = await Service.GetAllAsync();
         candidatos = await CandidatoService.GetAllAsync();
         processos = await ProcessoService.GetAllAsync();
+        templatesAtivos = await TemplateService.GetActiveAsync();
 
         processoPorCandidato = candidatos.ToDictionary(
             c => c.Id,
