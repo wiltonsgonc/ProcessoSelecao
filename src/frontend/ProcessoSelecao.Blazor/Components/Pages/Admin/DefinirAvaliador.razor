@@ -83,7 +83,7 @@
                         }
                         else
                         {
-                            <p class="text-blue-600 font-semibold mt-1">Nenhum avaliador definido. Selecione os 2 avaliadores abaixo.</p>
+                            <p class="text-blue-600 font-semibold mt-1">Nenhum avaliador definido. Selecione o(s) avaliador(es) abaixo.</p>
                         }
                     </div>
                 }
@@ -95,8 +95,8 @@
 <!-- Passo 3: Avaliadores -->
 <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((candidatoSelecionado == null) ? "opacity-50 pointer-events-none" : "")">
     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full @(avaliador1 != null && avaliador2 != null ? "bg-green-600 text-white" : "bg-blue-600 text-white") text-sm font-bold">3</span>
-        Selecionar 2 Avaliadores
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full @(avaliador1 != null ? "bg-green-600 text-white" : "bg-blue-600 text-white") text-sm font-bold">3</span>
+        Selecionar Avaliador(es)
     </h2>
 
     @if (carregandoAvaliadores)
@@ -152,7 +152,7 @@
 </div>
 
 <!-- Ação -->
-<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @((avaliador1 == null || avaliador2 == null) ? "opacity-50" : "")">
+<div class="bg-white border border-gray-200 rounded-lg p-5 mb-5 @(avaliador1 == null ? "opacity-50" : "")">
     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold">4</span>
         Confirmar Atribuição
@@ -165,16 +165,23 @@
         </div>
     }
 
-    @if (candidatoSelecionado != null && avaliador1 != null && avaliador2 != null)
+    @if (candidatoSelecionado != null && avaliador1 != null)
     {
         <div class="p-4 bg-gray-50 rounded mb-4 text-sm">
-            <p>Os avaliadores <strong>@avaliador1.Nome</strong> e <strong>@avaliador2.Nome</strong> serão designados para avaliar o candidato <strong>@candidatoSelecionado.Nome</strong> no processo <strong>@processoSelecionado?.Nome</strong>.</p>
+            @if (avaliador2 != null)
+            {
+                <p>Os avaliadores <strong>@avaliador1.Nome</strong> e <strong>@avaliador2.Nome</strong> serão designados para avaliar o candidato <strong>@candidatoSelecionado.Nome</strong> no processo <strong>@processoSelecionado?.Nome</strong>.</p>
+            }
+            else
+            {
+                <p>O avaliador <strong>@avaliador1.Nome</strong> será designado para avaliar o candidato <strong>@candidatoSelecionado.Nome</strong> no processo <strong>@processoSelecionado?.Nome</strong>.</p>
+            }
         </div>
     }
 
     <div class="flex gap-2">
         <button class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled="@(avaliador1 == null || avaliador2 == null || criando)"
+                disabled="@(avaliador1 == null || criando)"
                 @onclick="CriarBaremas">
             @if (criando)
             {
@@ -182,7 +189,7 @@
             }
             else
             {
-                <span>Criar 2 Baremas</span>
+                <span>Criar Barema(s)</span>
             }
         </button>
         <button class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600 transition-colors opacity-100" @onclick="Limpar">Limpar</button>
@@ -298,9 +305,9 @@
 
     private void ValidarAvaliadores()
     {
-        if (avaliador1 == null || avaliador2 == null || candidatoSelecionado == null) return;
+        if (avaliador1 == null || candidatoSelecionado == null) return;
 
-        if (avaliador1.Id == avaliador2.Id)
+        if (avaliador2 != null && avaliador1.Id == avaliador2.Id)
         {
             erroValidacao = "Os dois avaliadores devem ser diferentes.";
             return;
@@ -313,7 +320,7 @@
                 erroValidacao = $"O Avaliador 1 ({avaliador1.Nome}) é o orientador do candidato. Não é permitido.";
                 return;
             }
-            if (string.Equals(avaliador2.Nome.Trim(), candidatoSelecionado.Orientador.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (avaliador2 != null && string.Equals(avaliador2.Nome.Trim(), candidatoSelecionado.Orientador.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 erroValidacao = $"O Avaliador 2 ({avaliador2.Nome}) é o orientador do candidato. Não é permitido.";
                 return;
@@ -325,7 +332,7 @@
             erroValidacao = $"O Avaliador 1 ({avaliador1.Nome}) já está atribuído a este candidato.";
             return;
         }
-        if (progressoCandidato != null && progressoCandidato.Baremas.Any(b => b.AvaliadorId == avaliador2.Id))
+        if (avaliador2 != null && progressoCandidato != null && progressoCandidato.Baremas.Any(b => b.AvaliadorId == avaliador2.Id))
         {
             erroValidacao = $"O Avaliador 2 ({avaliador2.Nome}) já está atribuído a este candidato.";
             return;
@@ -342,7 +349,7 @@
 
     private async Task CriarBaremas()
     {
-        if (candidatoSelecionado == null || avaliador1 == null || avaliador2 == null) return;
+        if (candidatoSelecionado == null || avaliador1 == null) return;
         if (erroValidacao != null) return;
 
         criando = true;
@@ -352,6 +359,8 @@
         try
         {
             var tipoBarema = processoSelecionado?.TipoProcesso ?? "PIBIC";
+            var baseUrl = Nav.BaseUri.TrimEnd('/');
+            var linkPainel = $"{baseUrl}/avaliador/painel";
 
             var dto1 = new CreateBarema
             {
@@ -360,21 +369,35 @@
                 TipoBarema = tipoBarema
             };
 
-            var dto2 = new CreateBarema
-            {
-                CandidatoId = (int)candidatoSelecionado.Id,
-                AvaliadorId = avaliador2.Id,
-                TipoBarema = tipoBarema
-            };
-
             var result1 = await BaremaService.CreateAsync(dto1);
-            var result2 = await BaremaService.CreateAsync(dto2);
 
-            if (result1 != null && result2 != null)
+            if (result1 == null)
             {
-                var baseUrl = Nav.BaseUri.TrimEnd('/');
-                var linkPainel = $"{baseUrl}/avaliador/painel";
-                var link1 = $"{baseUrl}/avaliador/avaliacao/{result1.Id}";
+                sucesso = false;
+                mensagem = "Erro ao criar barema. Verifique se o avaliador já não está atribuído a este candidato.";
+                return;
+            }
+
+            var link1 = $"{baseUrl}/avaliador/avaliacao/{result1.Id}";
+
+            if (avaliador2 != null)
+            {
+                var dto2 = new CreateBarema
+                {
+                    CandidatoId = (int)candidatoSelecionado.Id,
+                    AvaliadorId = avaliador2.Id,
+                    TipoBarema = tipoBarema
+                };
+
+                var result2 = await BaremaService.CreateAsync(dto2);
+
+                if (result2 == null)
+                {
+                    sucesso = false;
+                    mensagem = "Erro ao criar o segundo barema. O primeiro avaliador foi criado com sucesso.";
+                    return;
+                }
+
                 var link2 = $"{baseUrl}/avaliador/avaliacao/{result2.Id}";
 
                 sucesso = true;
@@ -390,19 +413,26 @@
                     <button class='bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 mb-3' @onclick=""() => CopiarLink(""{link2}"")"">Copiar Link</button><br/>
 
                     <small class='text-gray-600'>Os avaliadores devem acessar <a href='{linkPainel}' target='_blank' class='text-blue-600 underline'>{linkPainel}</a> e fazer login com CPF e senha.</small>";
-
-                Limpar();
             }
             else
             {
-                sucesso = false;
-                mensagem = "Erro ao criar baremas. Verifique se os avaliadores já não estão atribuídos a este candidato.";
+                sucesso = true;
+                mensagem = $@"<strong>Barema criado com sucesso!</strong><br/>
+                    <strong>Candidato:</strong> {candidatoSelecionado.Nome}<br/><br/>
+
+                    <strong>Avaliador:</strong> {avaliador1.Nome}<br/>
+                    <code class='bg-gray-100 px-2 py-1 rounded text-sm block mb-1'>{link1}</code>
+                    <button class='bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 mb-3' @onclick=""() => CopiarLink(""{link1}"")"">Copiar Link</button><br/>
+
+                    <small class='text-gray-600'>O avaliador deve acessar <a href='{linkPainel}' target='_blank' class='text-blue-600 underline'>{linkPainel}</a> e fazer login com CPF e senha.</small>";
             }
+
+            Limpar();
         }
         catch
         {
             sucesso = false;
-            mensagem = "Erro ao criar baremas. Verifique se os avaliadores já não estão atribuídos a este candidato.";
+            mensagem = "Erro ao criar barema(s). Verifique se os avaliadores já não estão atribuídos a este candidato.";
         }
         finally
         {
