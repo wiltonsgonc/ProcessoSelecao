@@ -22,6 +22,15 @@ public class ApplicationDbContext : DbContext
     /// <summary>Baremas/Avaliações</summary>
     public DbSet<DomainEntities.Barema> Baremas => Set<DomainEntities.Barema>();
     
+    /// <summary>Templates de barema</summary>
+    public DbSet<DomainEntities.BaremaTemplate> BaremaTemplates => Set<DomainEntities.BaremaTemplate>();
+    
+    /// <summary>Itens de template de barema</summary>
+    public DbSet<DomainEntities.BaremaTemplateItem> BaremaTemplateItems => Set<DomainEntities.BaremaTemplateItem>();
+    
+    /// <summary>Respostas do avaliador para itens de template</summary>
+    public DbSet<DomainEntities.BaremaItemAvaliacao> BaremaItensAvaliacao => Set<DomainEntities.BaremaItemAvaliacao>();
+    
     /// <summary>Processos de Seleção</summary>
     public DbSet<DomainEntities.ProcessoSelecao> ProcessosSelecao => Set<DomainEntities.ProcessoSelecao>();
 
@@ -100,6 +109,40 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Observacoes).HasMaxLength(1000);
             entity.HasOne(e => e.Candidato).WithMany(c => c.Baremas).HasForeignKey(e => e.CandidatoId);
             entity.HasOne(e => e.Avaliador).WithMany(a => a.Baremas).HasForeignKey(e => e.AvaliadorId);
+            entity.HasOne(e => e.Template).WithMany(t => t.Baremas).HasForeignKey(e => e.TemplateId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ============================================
+        // BaremaTemplate
+        // ============================================
+        modelBuilder.Entity<DomainEntities.BaremaTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Descricao).HasMaxLength(500);
+            entity.Property(e => e.TipoBarema).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CriadoPor).HasMaxLength(100);
+        });
+
+        // ============================================
+        // BaremaTemplateItem
+        // ============================================
+        modelBuilder.Entity<DomainEntities.BaremaTemplateItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Secao).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(100);
+            entity.HasOne(e => e.Template).WithMany(t => t.Itens).HasForeignKey(e => e.TemplateId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ============================================
+        // BaremaItemAvaliacao
+        // ============================================
+        modelBuilder.Entity<DomainEntities.BaremaItemAvaliacao>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Barema).WithMany(b => b.ItensAvaliacao).HasForeignKey(e => e.BaremaId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.TemplateItem).WithMany().HasForeignKey(e => e.TemplateItemId).OnDelete(DeleteBehavior.Restrict);
         });
 
         // ============================================
