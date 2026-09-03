@@ -28,6 +28,7 @@ builder.Services.AddScoped<CandidatoService>();
 builder.Services.AddScoped<AvaliadorService>();
 builder.Services.AddScoped<DocumentoService>();
 builder.Services.AddScoped<BaremaService>();
+builder.Services.AddScoped<BaremaTemplateService>();
 builder.Services.AddScoped<FormularioService>();
 
 var app = builder.Build();

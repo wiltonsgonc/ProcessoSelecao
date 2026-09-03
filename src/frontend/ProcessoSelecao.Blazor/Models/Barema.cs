@@ -8,7 +8,10 @@ public class Barema
     public int AvaliadorId { get; set; }
     public string? AvaliadorNome { get; set; }
     public string TipoBarema { get; set; } = "PIBIC";
+    public long? TemplateId { get; set; }
+    public string? TemplateNome { get; set; }
     public Dictionary<string, double>? Criterios { get; set; }
+    public List<BaremaItemAvaliacaoInput>? ItensAvaliacao { get; set; }
     public double NotaFinal { get; set; }
     public string? Observacoes { get; set; }
     public string? DataPreenchimento { get; set; }
@@ -20,6 +23,7 @@ public class CreateBarema
     public int CandidatoId { get; set; }
     public int AvaliadorId { get; set; }
     public string TipoBarema { get; set; } = "PIBIC";
+    public long? TemplateId { get; set; }
 }
 
 public class UpdateBarema

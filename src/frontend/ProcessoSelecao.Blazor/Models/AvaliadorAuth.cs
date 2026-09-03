@@ -26,6 +26,8 @@ public class AvaliadorPainelBarema
     public string? DataPreenchimento { get; set; }
     public StatusBarema Status { get; set; }
     public Dictionary<string, double>? Criterios { get; set; }
+    public long? TemplateId { get; set; }
+    public string? TemplateNome { get; set; }
 }
 
 public class AvaliadorCandidatoInfo
