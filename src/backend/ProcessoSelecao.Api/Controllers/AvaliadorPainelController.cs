@@ -86,6 +86,14 @@ public class AvaliadorPainelController : ControllerBase
         return Ok(resultado);
     }
 
+    [HttpPost("baremas/{id}/finalizar-com-template")]
+    public async Task<ActionResult<BaremaDto>> FinalizarComTemplate(long id, [FromBody] FinalizarBaremaTemplateDto dto)
+    {
+        var avaliadorId = ObterAvaliadorId();
+        var resultado = await _baremaService.FinalizarComTemplateAsync(id, dto);
+        return Ok(resultado);
+    }
+
     [HttpPost("baremas/{id}/finalizar-eliminacao")]
     public async Task<ActionResult<BaremaDto>> FinalizarPorEliminacao(long id)
     {

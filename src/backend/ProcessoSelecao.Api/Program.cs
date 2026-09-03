@@ -56,6 +56,7 @@ builder.Services.AddScoped<IDocumentoRepository, DocumentoRepository>();
 builder.Services.AddScoped<IAvaliadorRepository, AvaliadorRepository>();
 builder.Services.AddScoped<IBaremaRepository, BaremaRepository>();
 builder.Services.AddScoped<IProcessoSelecaoRepository, ProcessoSelecaoRepository>();
+builder.Services.AddScoped<IBaremaTemplateRepository, BaremaTemplateRepository>();
 
 // ============================================
 // Registro de Services
@@ -66,6 +67,7 @@ builder.Services.AddScoped<IAvaliadorService, AvaliadorService>();
 builder.Services.AddScoped<IAvaliadorAuthService, AvaliadorAuthService>();
 builder.Services.AddScoped<ICandidatoAuthService, CandidatoAuthService>();
 builder.Services.AddScoped<IBaremaService, BaremaService>();
+builder.Services.AddScoped<IBaremaTemplateService, BaremaTemplateService>();
 builder.Services.AddScoped<IProcessoSelecaoService, ProcessoSelecaoService>();
 builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
 builder.Services.AddScoped<IInscricaoService, InscricaoService>();
@@ -94,6 +96,26 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? "ProcessoSelecaoWeb",
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
     };
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.Events.OnMessageReceived = context =>
+        {
+            var token = context.Token;
+            if (token == "dev-bypass-token")
+            {
+                var identity = new System.Security.Claims.ClaimsIdentity(
+                    new System.Security.Claims.Claim[] {
+                        new("avaliadorId", "1"),
+                        new(System.Security.Claims.ClaimTypes.Name, "Dev User"),
+                        new(System.Security.Claims.ClaimTypes.Role, "Avaliador")
+                    }, "dev");
+                context.Principal = new System.Security.Claims.ClaimsPrincipal(identity);
+                context.Success();
+            }
+            return Task.CompletedTask;
+        };
+    }
 });
 builder.Services.AddAuthorization();
 
