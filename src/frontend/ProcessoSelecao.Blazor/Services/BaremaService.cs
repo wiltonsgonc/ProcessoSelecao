@@ -24,8 +24,14 @@ public class BaremaService
     public virtual async Task<List<Barema>> GetByAvaliadorIdAsync(int avaliadorId)
         => await _api.GetAsync<List<Barema>>($"{Endpoint}/avaliador/{avaliadorId}") ?? new();
 
+    public virtual async Task<List<Barema>> GetByProcessoIdAsync(int processoId)
+        => await _api.GetAsync<List<Barema>>($"{Endpoint}/processo/{processoId}") ?? new();
+
     public virtual async Task<Barema?> CreateAsync(CreateBarema dto)
         => await _api.PostAsync<Barema>(Endpoint, dto);
+
+    public virtual async Task<Barema?> CreateByProcessoAsync(long processoId, long? templateId)
+        => await _api.PostAsync<Barema>($"{Endpoint}/processo/{processoId}/template/{templateId}", new { });
 
     public virtual async Task<Barema?> UpdateCriteriosAsync(int id, UpdateBarema dto)
         => await _api.PutAsync<Barema>($"{Endpoint}/{id}/criterios", dto);

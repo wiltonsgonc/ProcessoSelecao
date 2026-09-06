@@ -12,26 +12,33 @@
 <PageTitle>Baremas</PageTitle>
 
 <div class="flex justify-between items-center mb-5">
-    <h1 class="text-2xl font-bold">Baremas</h1>
+    <h1 class="text-2xl font-bold">Baremas por Processo</h1>
     <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" @onclick="() => showForm = true">Novo Barema</button>
 </div>
 
-@if (showForm)
+@if (carregando)
+{
+    <p class="text-gray-500">Carregando...</p>
+}
+
+@if (showForm && !carregando)
 {
     <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
         <h2 class="text-lg font-semibold mb-4">Novo Barema</h2>
         <form @onsubmit="Create" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium mb-1">ID do Candidato</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.CandidatoId" required />
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">ID do Avaliador</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.AvaliadorId" required />
+                <label class="block text-sm font-medium mb-1">Processo Seletivo</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded text-sm" @bind="formData.ProcessoSelecaoId" required>
+                    <option value="">-- Selecione --</option>
+                    @foreach (var p in processos)
+                    {
+                        <option value="@p.Id">@p.Nome (@p.TipoProcesso)</option>
+                    }
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Template de Avaliação (opcional)</label>
-                <select class="w-full px-3 py-2 border border-gray-300 rounded" @bind="formData.TemplateId">
+                <select class="w-full px-3 py-2 border border-gray-300 rounded text-sm" @bind="formData.TemplateId">
                     <option value="">-- Nenhum (barema fixo) --</option>
                     @foreach (var t in templatesAtivos)
                     {
@@ -47,89 +54,64 @@
     </div>
 }
 
-@if (showFinalizarModal && selectedBarema != null)
-{
-    <div class="bg-white border border-gray-200 rounded-lg p-5 mb-5">
-        <h2 class="text-lg font-semibold mb-4">Finalizar Barema</h2>
-        <form @onsubmit="Finalizar" class="space-y-4">
-            <div><label class="block text-sm font-medium mb-1">Candidato: @selectedBarema.CandidatoNome</label></div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Nota para Originalidade (0-10)</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Originalidade" min="0" max="10" step="0.5" />
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Nota para Relevância (0-10)</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Relevancia" min="0" max="10" step="0.5" />
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Nota para Metodologia (0-10)</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Metodologia" min="0" max="10" step="0.5" />
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Nota para Apresentação (0-10)</label>
-                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded" @bind="criterios.Apresentacao" min="0" max="10" step="0.5" />
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Observações</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded min-h-[80px]" @bind="finalizarObservacoes"></textarea>
-            </div>
-            <div class="flex gap-2">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Finalizar</button>
-                <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" @onclick="() => showFinalizarModal = false">Cancelar</button>
-            </div>
-        </form>
-    </div>
-}
-
 <div class="bg-white border border-gray-200 rounded-lg p-5">
     <div class="overflow-x-auto">
         <table class="w-full border-collapse">
             <thead>
                 <tr class="bg-gray-50">
-                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">ID</th>
-                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidato</th>
-                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Avaliador</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Processo</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Tipo</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Template</th>
-                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Nota Final</th>
-                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Status</th>
-                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Data</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Candidatos</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Baremas Criados</th>
+                    <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Prazo</th>
                     <th class="px-3 py-2.5 text-left font-semibold border-b border-gray-200">Ações</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var b in baremas)
+                @foreach (var p in processos)
                 {
+                    var candidatosDoProcesso = candidatos.Where(c => c.ProcessoSelecaoId == p.Id).ToList();
+                    var baremasDoProcesso = baremas.Where(b => candidatosDoProcesso.Any(c => c.Id == b.CandidatoId)).ToList();
+                    var templateSelecionado = templatesPorProcesso.GetValueOrDefault(p.Id);
+
                     <tr class="hover:bg-gray-50">
-                        <td class="px-3 py-2.5 border-b border-gray-200">@b.Id</td>
-                        <td class="px-3 py-2.5 border-b border-gray-200">@(b.CandidatoNome ?? b.CandidatoId.ToString())</td>
-                        <td class="px-3 py-2.5 border-b border-gray-200">@(b.AvaliadorNome ?? b.AvaliadorId.ToString())</td>
-                        <td class="px-3 py-2.5 border-b border-gray-200">@GetProcessoNome(b.CandidatoId)</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200 font-medium">@p.Nome</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">
-                            @if (b.TemplateId.HasValue)
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">@p.TipoProcesso</span>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200">
+                            <select class="px-2 py-1 border border-gray-300 rounded text-xs"
+                                    value="@templateSelecionado"
+                                    @onchange="e => OnTemplateChanged(p.Id, e)">
+                                <option value="">-- Fixo --</option>
+                                @foreach (var t in templatesAtivos)
+                                {
+                                    <option value="@t.Id">@t.Nome</option>
+                                }
+                            </select>
+                        </td>
+                        <td class="px-3 py-2.5 border-b border-gray-200 text-center">@candidatosDoProcesso.Count</td>
+                        <td class="px-3 py-2.5 border-b border-gray-200 text-center">
+                            @if (baremasDoProcesso.Any())
                             {
-                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">@(b.TemplateNome ?? "Template")</span>
+                                <span class="text-green-700 font-semibold">@baremasDoProcesso.Count</span>
                             }
                             else
                             {
-                                <span class="text-gray-400 text-xs">Fixo</span>
+                                <span class="text-gray-400">0</span>
                             }
                         </td>
-                        <td class="px-3 py-2.5 border-b border-gray-200">@b.NotaFinal.ToString("F2")</td>
-                        <td class="px-3 py-2.5 border-b border-gray-200">
-                            <span class="inline-block px-2 py-1 rounded text-xs font-semibold text-white @GetStatusClass(b.Status)">@GetStatusLabel(b.Status)</span>
+                        <td class="px-3 py-2.5 border-b border-gray-200 text-xs text-gray-500">
+                            @FormatDate(p.DataInicio) – @FormatDate(p.DataFim)
                         </td>
-                        <td class="px-3 py-2.5 border-b border-gray-200">@FormatDateTime(b.DataPreenchimento)</td>
                         <td class="px-3 py-2.5 border-b border-gray-200">
                             <div class="flex gap-1 flex-wrap">
-                                <button class="bg-gray-600 text-white px-2.5 py-1 rounded text-xs hover:bg-gray-700" @onclick="() => CopiarLink(b.Id)" title="Copiar link do avaliador">
-                                    <span class="material-icons text-sm align-middle">link</span>
+                                <button class="bg-green-600 text-white px-2.5 py-1 rounded text-xs hover:bg-green-700"
+                                        disabled="@(candidatosDoProcesso.Count == 0)"
+                                        @onclick="() => DefinirBarema(p.Id)">
+                                    Definir Barema
                                 </button>
-                                @if (b.Status != StatusBarema.Concluido)
-                                {
-                                    <button class="bg-blue-600 text-white px-2.5 py-1 rounded text-xs hover:bg-blue-700" @onclick="() => OpenFinalizar(b)">Avaliar</button>
-                                    <button class="bg-red-600 text-white px-2.5 py-1 rounded text-xs hover:bg-red-700" @onclick="() => Remove(b.Id)">Excluir</button>
-                                }
                             </div>
                         </td>
                     </tr>
@@ -144,103 +126,60 @@
     private List<Candidato> candidatos = new();
     private List<ProcessoSelecao> processos = new();
     private List<BaremaTemplate> templatesAtivos = new();
-    private Dictionary<long, string> processoPorCandidato = new();
+    private Dictionary<long, long?> templatesPorProcesso = new();
     private bool showForm = false;
-    private bool showFinalizarModal = false;
-    private Barema? selectedBarema;
     private CreateBarema formData = new();
-    private Criterios criterios = new();
-    private string? finalizarObservacoes;
+    private bool carregando = true;
 
-    class Criterios
+    protected override async Task OnInitializedAsync()
     {
-        public double Originalidade { get; set; }
-        public double Relevancia { get; set; }
-        public double Metodologia { get; set; }
-        public double Apresentacao { get; set; }
+        await Load();
+        carregando = false;
     }
-
-    protected override async Task OnInitializedAsync() => await Load();
 
     private async Task Load()
     {
-        baremas = await Service.GetAllAsync();
-        candidatos = await CandidatoService.GetAllAsync();
+        carregando = true;
         processos = await ProcessoService.GetAllAsync();
         templatesAtivos = await TemplateService.GetActiveAsync();
+        candidatos = await CandidatoService.GetAllAsync();
+        baremas = await Service.GetAllAsync();
 
-        processoPorCandidato = candidatos.ToDictionary(
-            c => c.Id,
-            c => processos.FirstOrDefault(p => p.Id == c.ProcessoSelecaoId)?.Nome ?? $"Processo #{c.ProcessoSelecaoId}");
+        templatesPorProcesso = new Dictionary<long, long?>();
+        foreach (var p in processos)
+        {
+            var baremasDoProcesso = baremas.Where(b =>
+                candidatos.Any(c => c.Id == b.CandidatoId && c.ProcessoSelecaoId == p.Id)
+            ).ToList();
+
+            templatesPorProcesso[p.Id] = baremasDoProcesso
+                .Where(b => b.TemplateId.HasValue)
+                .Select(b => b.TemplateId)
+                .FirstOrDefault();
+        }
+
+        carregando = false;
     }
 
-    private string GetProcessoNome(int candidatoId)
+    private void OnTemplateChanged(long processoId, ChangeEventArgs e)
     {
-        if (processoPorCandidato.TryGetValue(candidatoId, out var nome)) return nome;
-        var c = candidatos.FirstOrDefault(x => x.Id == candidatoId);
-        return c != null ? $"Processo #{c.ProcessoSelecaoId}" : "-";
+        var value = e.Value?.ToString();
+        long? templateId = string.IsNullOrEmpty(value) ? null : long.Parse(value);
+        templatesPorProcesso[processoId] = templateId;
     }
 
-    private async Task CopiarLink(int baremaId)
+    private async Task DefinirBarema(long processoId)
     {
-        var baseUrl = Nav.BaseUri.TrimEnd('/');
-        var link = $"{baseUrl}/avaliador/avaliacao/{baremaId}";
-        await JS.InvokeVoidAsync("navigator.clipboard.writeText", link);
-        await JS.InvokeVoidAsync("alert", $"Link copiado!\n\n{link}");
+        var templateId = templatesPorProcesso.GetValueOrDefault(processoId);
+        await Service.CreateByProcessoAsync(processoId, templateId);
+        await Load();
     }
 
     private async Task Create()
     {
-        await Service.CreateAsync(formData);
+        await Service.CreateByProcessoAsync(formData.ProcessoSelecaoId, formData.TemplateId);
         showForm = false; formData = new(); await Load();
     }
 
-    private void OpenFinalizar(Barema b)
-    {
-        selectedBarema = b;
-        criterios = b.Criterios != null ? new Criterios
-        {
-            Originalidade = b.Criterios.GetValueOrDefault("originalidade"),
-            Relevancia = b.Criterios.GetValueOrDefault("relevancia"),
-            Metodologia = b.Criterios.GetValueOrDefault("metodologia"),
-            Apresentacao = b.Criterios.GetValueOrDefault("apresentacao")
-        } : new();
-        finalizarObservacoes = b.Observacoes;
-        showFinalizarModal = true;
-    }
-
-    private async Task Finalizar()
-    {
-        if (selectedBarema == null) return;
-        await Service.FinalizarAsync(selectedBarema.Id, new FinalizarBarema
-        {
-            Criterios = new Dictionary<string, double>
-            {
-                ["originalidade"] = criterios.Originalidade, ["relevancia"] = criterios.Relevancia,
-                ["metodologia"] = criterios.Metodologia, ["apresentacao"] = criterios.Apresentacao
-            },
-            Observacoes = finalizarObservacoes
-        });
-        showFinalizarModal = false; await Load();
-    }
-
-    private async Task Remove(int id)
-    {
-        if (await JS.InvokeAsync<bool>("confirm", "Deseja excluir este barema?"))
-        { await Service.DeleteAsync(id); await Load(); }
-    }
-
-    private string GetStatusLabel(StatusBarema s) => s switch
-    {
-        StatusBarema.Pendente => "Pendente", StatusBarema.EmPreenchimento => "Em Preenchimento",
-        StatusBarema.Concluido => "Concluído", StatusBarema.Cancelado => "Cancelado", _ => "Desconhecido"
-    };
-
-    private string GetStatusClass(StatusBarema s) => s switch
-    {
-        StatusBarema.Pendente => "bg-yellow-500", StatusBarema.EmPreenchimento => "bg-cyan-600",
-        StatusBarema.Concluido => "bg-green-600", StatusBarema.Cancelado => "bg-red-600", _ => "bg-gray-500"
-    };
-
-    private string FormatDateTime(string? dt) => DateTime.TryParse(dt, out var d) ? d.ToString("dd/MM/yyyy HH:mm") : "-";
+    private string FormatDate(string? dt) => DateTime.TryParse(dt, out var d) ? d.ToString("dd/MM/yyyy") : "-";
 }

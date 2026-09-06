@@ -20,6 +20,7 @@ public class Barema
 
 public class CreateBarema
 {
+    public long ProcessoSelecaoId { get; set; }
     public int CandidatoId { get; set; }
     public int AvaliadorId { get; set; }
     public string TipoBarema { get; set; } = "PIBIC";
