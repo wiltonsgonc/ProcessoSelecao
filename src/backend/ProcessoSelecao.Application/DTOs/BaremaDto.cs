@@ -97,3 +97,12 @@ public class BaremaProgressoDto
     public StatusBarema Status { get; set; }
     public DateTime? DataPreenchimento { get; set; }
 }
+
+/// <summary>
+/// DTO para criação de baremas por processo seletivo
+/// </summary>
+public class CreateBaremaProcessoDto
+{
+    public long ProcessoSelecaoId { get; set; }
+    public long? TemplateId { get; set; }
+}

@@ -21,6 +21,9 @@ public interface IBaremaService
     /// <summary>Cria um novo barema</summary>
     Task<BaremaDto> CreateAsync(CreateBaremaDto dto);
     
+    /// <summary>Cria baremas para todos os candidatos de um processo com um template</summary>
+    Task<BaremaDto> CreateByProcessoAsync(CreateBaremaProcessoDto dto);
+    
     /// <summary>Atualiza critérios de um barema</summary>
     Task<BaremaDto> UpdateCriteriosAsync(long id, UpdateBaremaDto dto);
     
@@ -42,6 +45,9 @@ public interface IBaremaService
     /// <summary>Retorna dados para preenchimento automático do barema</summary>
     Task<BaremaDadosDto?> GetDadosBaremaAsync(long baremaId);
     
+    /// <summary>Retorna avaliações de um processo seletivo</summary>
+    Task<IEnumerable<BaremaDto>> GetByProcessoIdAsync(long processoId);
+    
     /// <summary>Finaliza automaticamente por eliminação na análise documental</summary>
     Task<BaremaDto> FinalizarPorEliminacaoAsync(long baremaId);
     
@@ -61,14 +67,16 @@ public class BaremaService : IBaremaService
     private readonly ICandidatoRepository _candidatoRepository;
     private readonly IAvaliadorRepository _avaliadorRepository;
     private readonly IDocumentoRepository _documentoRepository;
+    private readonly IBaremaTemplateRepository _templateRepository;
     private readonly IMapper _mapper;
 
-    public BaremaService(IBaremaRepository repository, ICandidatoRepository candidatoRepository, IAvaliadorRepository avaliadorRepository, IDocumentoRepository documentoRepository, IMapper mapper)
+    public BaremaService(IBaremaRepository repository, ICandidatoRepository candidatoRepository, IAvaliadorRepository avaliadorRepository, IDocumentoRepository documentoRepository, IBaremaTemplateRepository templateRepository, IMapper mapper)
     {
         _repository = repository;
         _candidatoRepository = candidatoRepository;
         _avaliadorRepository = avaliadorRepository;
         _documentoRepository = documentoRepository;
+        _templateRepository = templateRepository;
         _mapper = mapper;
     }
 
@@ -114,6 +122,32 @@ public class BaremaService : IBaremaService
         };
         var created = await _repository.AddAsync(entity);
         return MapToDto(created);
+    }
+
+    /// <summary>Cria baremas para todos os candidatos de um processo com um template</summary>
+    public async Task<BaremaDto> CreateByProcessoAsync(CreateBaremaProcessoDto dto)
+    {
+        var template = await _templateRepository.GetByIdAsync(dto.TemplateId ?? 0);
+        var tipoBarema = template?.TipoBarema ?? "PIBIC";
+
+        var candidatos = await _candidatoRepository.GetByProcessoIdAsync(dto.ProcessoSelecaoId);
+        if (!candidatos.Any())
+            throw new Exception("Nenhum candidato encontrado para este processo");
+
+        var results = new List<Barema>();
+        foreach (var candidato in candidatos)
+        {
+            var entity = new Barema
+            {
+                CandidatoId = candidato.Id,
+                TemplateId = dto.TemplateId,
+                TipoBarema = tipoBarema,
+                Status = StatusBarema.Pendente
+            };
+            results.Add(await _repository.AddAsync(entity));
+        }
+
+        return MapToDto(results.First());
     }
 
     /// <summary>Atualiza critérios de um barema</summary>
@@ -206,14 +240,21 @@ public class BaremaService : IBaremaService
 
     /// <summary>Retorna baremas de um avaliador</summary>
     public async Task<IEnumerable<BaremaDto>> GetByAvaliadorIdAsync(long avaliadorId)
-    {
-        var baremas = await _repository.GetByAvaliadorIdAsync(avaliadorId);
-        return baremas.Select(MapToDto);
-    }
+        {
+            var baremas = await _repository.GetByAvaliadorIdAsync(avaliadorId);
+            return baremas.Select(MapToDto);
+        }
 
-    /// <summary>Retorna dados para preenchimento automático do barema</summary>
-    public async Task<BaremaDadosDto?> GetDadosBaremaAsync(long baremaId)
-    {
+        /// <summary>Retorna baremas de um processo seletivo</summary>
+        public async Task<IEnumerable<BaremaDto>> GetByProcessoIdAsync(long processoId)
+        {
+            var baremas = await _repository.GetByProcessoIdAsync(processoId);
+            return baremas.Select(MapToDto);
+        }
+
+        /// <summary>Retorna dados para preenchimento automático do barema</summary>
+        public async Task<BaremaDadosDto?> GetDadosBaremaAsync(long baremaId)
+        {
         var barema = await _repository.GetByIdAsync(baremaId);
         if (barema == null) return null;
 

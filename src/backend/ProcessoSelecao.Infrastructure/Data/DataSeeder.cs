@@ -26,6 +26,8 @@ public class DataSeeder
             return;
         }
 
+        await SeedBaremaTemplatesAsync();
+
         if (await _context.ProcessosSelecao.AnyAsync())
         {
             Console.WriteLine("[SeedData] Banco ja possui dados. Seed ignorado (idempotente).");
@@ -441,47 +443,54 @@ public class DataSeeder
         _context.Baremas.AddRange(baremas);
         await _context.SaveChangesAsync();
 
-        // ============================================================
-        // Template PIBIC
-        // ============================================================
-        if (!_context.BaremaTemplates.Any())
-        {
-            var templatePibic = new BaremaTemplate
-            {
-                Nome = "PIBIC 2026",
-                Descricao = "Template de avaliação PIBIC - Programa Institucional de Bolsas de Iniciação à Ciência",
-                TipoBarema = "PIBIC",
-                PontoMaximo = 100,
-                Ativo = true,
-                CriadoPor = "Sistema"
-            };
-
-            // Seção 1: PROJETO (max 35)
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.1 Relação com projeto SENAI CIMATEC", Ordem = 1, NotaMinima = 0, NotaMaxima = 10, Passo = 5, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.2 Resumo do projeto", Ordem = 2, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.3 Objetivos", Ordem = 3, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.4 Metodologia", Ordem = 4, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.5 Relevância do projeto", Ordem = 5, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.6 Exequibilidade do projeto", Ordem = 6, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
-
-            // Seção 2: ORIENTADOR (max 35)
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.1 Grau de titulação", Ordem = 1, NotaMinima = 0, NotaMaxima = 5, Passo = 2, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.2 Projeto de orientador relação c/ IC", Ordem = 2, NotaMinima = 0, NotaMaxima = 5, Passo = 5, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.3 Experiência docente últimos 12 meses", Ordem = 3, NotaMinima = 0, NotaMaxima = 5, Passo = 5, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.4 Experiência coord. projetos/pesquisa", Ordem = 4, NotaMinima = 0, NotaMaxima = 10, Passo = 1, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.5 Produção técnico-científica 24 meses", Ordem = 5, NotaMinima = 0, NotaMaxima = 10, Passo = 1, Obrigatorio = true });
-
-            // Seção 3: CANDIDATO (max 30)
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.1 Participação IC/IT", Ordem = 1, NotaMinima = 0, NotaMaxima = 5, Passo = 5, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.2 Publicações", Ordem = 2, NotaMinima = 0, NotaMaxima = 5, Passo = 2, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.3 Congressos/seminários", Ordem = 3, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
-            templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.4 Desempenho acadêmico (média global)", Ordem = 4, NotaMinima = 0, NotaMaxima = 15, Passo = 1, Obrigatorio = true });
-
-            _context.BaremaTemplates.Add(templatePibic);
-            await _context.SaveChangesAsync();
-        }
-
         Console.WriteLine("[SeedData] Preenchimento automatico concluido com sucesso!");
         Console.WriteLine("[SeedData] 4 Processos (PIBIC, PIBIT, MCTI, GETEC), 4 Avaliadores, 7 Candidatos com Orientador, 18 Documentos, 4 Baremas PIBIC, 1 Template PIBIC");
+    }
+
+    private async Task SeedBaremaTemplatesAsync()
+    {
+        if (await _context.BaremaTemplates.AnyAsync())
+        {
+            Console.WriteLine("[SeedData] BaremaTemplates ja existem. Seed ignorado.");
+            return;
+        }
+
+        Console.WriteLine("[SeedData] Criando templates de barema...");
+
+        var templatePibic = new BaremaTemplate
+        {
+            Nome = "PIBIC 2026",
+            Descricao = "Template de avaliação PIBIC - Programa Institucional de Bolsas de Iniciação à Ciência",
+            TipoBarema = "PIBIC",
+            PontoMaximo = 100,
+            Ativo = true,
+            CriadoPor = "Sistema"
+        };
+
+        // Seção 1: PROJETO (max 35)
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.1 Relação com projeto SENAI CIMATEC", Ordem = 1, NotaMinima = 0, NotaMaxima = 10, Passo = 5, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.2 Resumo do projeto", Ordem = 2, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.3 Objetivos", Ordem = 3, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.4 Metodologia", Ordem = 4, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.5 Relevância do projeto", Ordem = 5, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "PROJETO", SecaoOrdem = 1, Nome = "1.6 Exequibilidade do projeto", Ordem = 6, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
+
+        // Seção 2: ORIENTADOR (max 35)
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.1 Grau de titulação", Ordem = 1, NotaMinima = 0, NotaMaxima = 5, Passo = 2, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.2 Projeto de orientador relação c/ IC", Ordem = 2, NotaMinima = 0, NotaMaxima = 5, Passo = 5, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.3 Experiência docente últimos 12 meses", Ordem = 3, NotaMinima = 0, NotaMaxima = 5, Passo = 5, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.4 Experiência coord. projetos/pesquisa", Ordem = 4, NotaMinima = 0, NotaMaxima = 10, Passo = 1, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "ORIENTADOR", SecaoOrdem = 2, Nome = "2.5 Produção técnico-científica 24 meses", Ordem = 5, NotaMinima = 0, NotaMaxima = 10, Passo = 1, Obrigatorio = true });
+
+        // Seção 3: CANDIDATO (max 30)
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.1 Participação IC/IT", Ordem = 1, NotaMinima = 0, NotaMaxima = 5, Passo = 5, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.2 Publicações", Ordem = 2, NotaMinima = 0, NotaMaxima = 5, Passo = 2, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.3 Congressos/seminários", Ordem = 3, NotaMinima = 0, NotaMaxima = 5, Passo = 1, Obrigatorio = true });
+        templatePibic.Itens.Add(new BaremaTemplateItem { Secao = "CANDIDATO", SecaoOrdem = 3, Nome = "3.4 Desempenho acadêmico (média global)", Ordem = 4, NotaMinima = 0, NotaMaxima = 15, Passo = 1, Obrigatorio = true });
+
+        _context.BaremaTemplates.Add(templatePibic);
+        await _context.SaveChangesAsync();
+
+        Console.WriteLine("[SeedData] Template PIBIC 2026 criado com 14 itens em 3 seções.");
     }
 }
