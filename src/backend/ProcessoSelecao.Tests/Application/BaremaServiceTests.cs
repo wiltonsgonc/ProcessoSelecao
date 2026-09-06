@@ -15,6 +15,7 @@ public class BaremaServiceTests
     private readonly Mock<IAvaliadorRepository> _avaliadorRepositoryMock;
     private readonly Mock<ICandidatoRepository> _candidatoRepositoryMock;
     private readonly Mock<IDocumentoRepository> _documentoRepositoryMock;
+    private readonly Mock<IBaremaTemplateRepository> _templateRepositoryMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly BaremaService _service;
 
@@ -24,12 +25,14 @@ public class BaremaServiceTests
         _avaliadorRepositoryMock = new Mock<IAvaliadorRepository>();
         _candidatoRepositoryMock = new Mock<ICandidatoRepository>();
         _documentoRepositoryMock = new Mock<IDocumentoRepository>();
+        _templateRepositoryMock = new Mock<IBaremaTemplateRepository>();
         _mapperMock = new Mock<IMapper>();
         _service = new BaremaService(
             _repositoryMock.Object,
             _candidatoRepositoryMock.Object,
             _avaliadorRepositoryMock.Object,
             _documentoRepositoryMock.Object,
+            _templateRepositoryMock.Object,
             _mapperMock.Object);
     }
 
