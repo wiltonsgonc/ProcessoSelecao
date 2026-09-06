@@ -91,9 +91,20 @@ public class BaremaRepository : IBaremaRepository
     public async Task<IEnumerable<Barema>> GetPendentesAsync()
     {
         return await _context.Baremas
-            .Where(b => b.Status == StatusBarema.Pendente || b.Status == StatusBarema.EmPreenchimento)
+.Where(b => b.Status == StatusBarema.Pendente || b.Status == StatusBarema.EmPreenchimento)
             .Include(b => b.Candidato)
             .Include(b => b.Avaliador)
             .ToListAsync();
+        }
+
+        /// <summary>Retorna avaliações de um processo seletivo</summary>
+        public async Task<IEnumerable<Barema>> GetByProcessoIdAsync(long processoId)
+        {
+            return await _context.Baremas
+                .Where(b => b.Candidato.ProcessoSelecaoId == processoId)
+                .Include(b => b.Candidato)
+                .Include(b => b.Avaliador)
+                .Include(b => b.Template)
+                .ToListAsync();
+        }
     }
-}

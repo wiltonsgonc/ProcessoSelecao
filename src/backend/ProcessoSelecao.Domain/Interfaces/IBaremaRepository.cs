@@ -15,4 +15,7 @@ public interface IBaremaRepository : IRepository<Barema>
     
     /// <summary>Retorna avaliações pendentes</summary>
     Task<IEnumerable<Barema>> GetPendentesAsync();
+    
+    /// <summary>Retorna avaliações de um processo seletivo</summary>
+    Task<IEnumerable<Barema>> GetByProcessoIdAsync(long processoId);
 }
