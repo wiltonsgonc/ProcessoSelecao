@@ -112,4 +112,28 @@ public class BaremasController : ControllerBase
         var progresso = await _service.GetProgressoAsync();
         return Ok(progresso);
     }
+
+    /// <summary>Retorna baremas de um processo seletivo</summary>
+    [HttpGet("processo/{processoId}")]
+    public async Task<ActionResult<IEnumerable<BaremaDto>>> GetByProcessoId(long processoId)
+    {
+        var baremas = await _service.GetByProcessoIdAsync(processoId);
+        return Ok(baremas);
+    }
+
+    /// <summary>Cria baremas para todos os candidatos de um processo com um template</summary>
+    [HttpPost("processo/{processoId}/template/{templateId}")]
+    public async Task<ActionResult<BaremaDto>> CreateByProcesso(long processoId, long templateId)
+    {
+        try
+        {
+            var dto = new CreateBaremaProcessoDto { ProcessoSelecaoId = processoId, TemplateId = templateId };
+            var resultado = await _service.CreateByProcessoAsync(dto);
+            return CreatedAtAction(nameof(GetByProcessoId), new { processoId }, resultado);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }
